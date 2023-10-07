@@ -2,5 +2,8 @@
 name = "ReSet-Lib"
 version = "0.1.0"
 edition = "2021"
+description = "Data structure library for ReSet"
+repository = "https://github.com/Xetibo/ReSet-Lib"
+license = "GPL-3.0-only"
 
 [dependencies]

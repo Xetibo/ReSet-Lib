@@ -2,10 +2,10 @@ use dbus::{
     arg::{self, Append, Arg, ArgType, Get},
     Signature,
 };
-use pulse::context::introspect::{SourceOutputInfo, SinkInputInfo, SinkInfo, SourceInfo};
+use pulse::context::introspect::{SinkInfo, SinkInputInfo, SourceInfo, SourceOutputInfo};
 
 #[derive(Debug)]
-pub struct PulseError(&'static str);
+pub struct PulseError(pub &'static str);
 
 pub struct Source {
     pub index: u32,

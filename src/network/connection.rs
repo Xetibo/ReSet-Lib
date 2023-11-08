@@ -20,11 +20,11 @@ pub struct ConversionError {
 
 #[derive(Debug)]
 pub struct Connection {
-    settings: ConnectionSettings,
+    pub settings: ConnectionSettings,
     // x802: X802Settings,
-    device: TypeSettings,
-    ipv4: IPV4Settings,
-    ipv6: IPV6Settings,
+    pub device: TypeSettings,
+    pub ipv4: IPV4Settings,
+    pub ipv6: IPV6Settings,
     // TODO check if x802 is actually even necessary?
     // TODO implement wifi security settings
 }
@@ -303,11 +303,11 @@ impl ToString for TypeSettings {
 
 #[derive(Debug, Clone)]
 pub struct EthernetSettings {
-    auto_negotiate: bool,
-    duplex: Duplex,
-    mtu: u32,
-    name: String,
-    speed: u32,
+    pub auto_negotiate: bool,
+    pub duplex: Duplex,
+    pub mtu: u32,
+    pub name: String,
+    pub speed: u32,
 }
 
 impl PropMapConvert for EthernetSettings {
@@ -352,13 +352,13 @@ impl PropMapConvert for EthernetSettings {
 
 #[derive(Debug, Clone)]
 pub struct VPNSettings {
-    data: HashMap<String, String>,
-    name: String,
-    persistent: bool,
-    secrets: HashMap<String, String>,
-    service_type: String,
-    timeout: u32,
-    user_name: String,
+    pub data: HashMap<String, String>,
+    pub name: String,
+    pub persistent: bool,
+    pub secrets: HashMap<String, String>,
+    pub service_type: String,
+    pub timeout: u32,
+    pub user_name: String,
 }
 
 impl PropMapConvert for VPNSettings {
@@ -431,13 +431,13 @@ impl PropMapConvert for VPNSettings {
 
 #[derive(Debug, Clone)]
 pub struct WifiSettings {
-    band: Band,
-    channel: u32,
-    mode: Mode,
-    mtu: u32,
-    powersave: u32,
-    rate: u32,
-    ssid: Vec<u8>,
+    pub band: Band,
+    pub channel: u32,
+    pub mode: Mode,
+    pub mtu: u32,
+    pub powersave: u32,
+    pub rate: u32,
+    pub ssid: Vec<u8>,
 }
 
 impl PropMapConvert for WifiSettings {
@@ -497,16 +497,16 @@ impl PropMapConvert for WifiSettings {
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct X802Settings {
-    ca_cert: Vec<u8>,
-    ca_cert_string: String,
-    client_cert: Vec<u8>,
-    domain_suffix: String,
-    eap: Vec<String>,
-    identity: String,
-    pac_file: String,
-    password: String,
-    password_flags: u32,
-    password_raw_flags: Vec<u8>,
+    pub ca_cert: Vec<u8>,
+    pub ca_cert_string: String,
+    pub client_cert: Vec<u8>,
+    pub domain_suffix: String,
+    pub eap: Vec<String>,
+    pub identity: String,
+    pub pac_file: String,
+    pub password: String,
+    pub password_flags: u32,
+    pub password_raw_flags: Vec<u8>,
 }
 
 // impl PropMapConvert for X802Settings {
@@ -596,7 +596,7 @@ pub struct X802Settings {
 // }
 
 #[derive(Debug)]
-struct Address {
+pub struct Address {
     address: String,
     prefix_length: u32,
 }
@@ -614,7 +614,7 @@ impl Address {
 }
 
 #[derive(Debug, Default)]
-enum DNSMethod {
+pub enum DNSMethod {
     #[default]
     AUTO,
     MANUAL,
@@ -672,19 +672,19 @@ impl Enum for DNSMethod {
 }
 
 #[derive(Debug)]
-struct IPV4Settings {
-    address_data: Vec<Address>,
-    dns: Vec<Vec<u8>>,
-    dns_options: Vec<String>,
-    dns_priority: i32,
-    dns_search: Vec<String>,
-    gateway: String,
-    ignore_auto_dns: bool,
-    ignore_auto_dns_routes: bool,
-    may_fail: bool,
-    dns_method: DNSMethod,
-    never_default: bool,
-    route_data: Vec<Address>,
+pub struct IPV4Settings {
+    pub address_data: Vec<Address>,
+    pub dns: Vec<Vec<u8>>,
+    pub dns_options: Vec<String>,
+    pub dns_priority: i32,
+    pub dns_search: Vec<String>,
+    pub gateway: String,
+    pub ignore_auto_dns: bool,
+    pub ignore_auto_dns_routes: bool,
+    pub may_fail: bool,
+    pub dns_method: DNSMethod,
+    pub never_default: bool,
+    pub route_data: Vec<Address>,
 }
 
 impl PropMapConvert for IPV4Settings {
@@ -796,7 +796,7 @@ impl PropMapConvert for IPV4Settings {
 }
 
 #[derive(Debug, Default)]
-enum IPV6PrivacyMode {
+pub enum IPV6PrivacyMode {
     DISABLED,
     ENABLEDPEFERPUBLIC,
     ENABLEDPEFERTEMPORARY,
@@ -849,20 +849,20 @@ impl Enum for IPV6PrivacyMode {
 }
 
 #[derive(Debug)]
-struct IPV6Settings {
-    address_data: Vec<Address>,
-    dns: Vec<Vec<u8>>,
-    dns_options: Vec<String>,
-    dns_priority: i32,
-    dns_search: Vec<String>,
-    gateway: String,
-    ignore_auto_dns: bool,
-    ignore_auto_dns_routes: bool,
-    ipv6_privacy: IPV6PrivacyMode,
-    may_fail: bool,
-    dns_method: DNSMethod,
-    never_default: bool,
-    route_data: Vec<Address>,
+pub struct IPV6Settings {
+    pub address_data: Vec<Address>,
+    pub dns: Vec<Vec<u8>>,
+    pub dns_options: Vec<String>,
+    pub dns_priority: i32,
+    pub dns_search: Vec<String>,
+    pub gateway: String,
+    pub ignore_auto_dns: bool,
+    pub ignore_auto_dns_routes: bool,
+    pub ipv6_privacy: IPV6PrivacyMode,
+    pub may_fail: bool,
+    pub dns_method: DNSMethod,
+    pub never_default: bool,
+    pub route_data: Vec<Address>,
 }
 
 impl PropMapConvert for IPV6Settings {
@@ -1012,14 +1012,14 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
 }
 
 #[derive(Debug)]
-struct ConnectionSettings {
-    autoconnect: bool,
-    autoconnect_priority: i32,
-    metered: i32,
-    name: String,
-    device_type: String,
-    uuid: String,
-    zone: Trust,
+pub struct ConnectionSettings {
+    pub autoconnect: bool,
+    pub autoconnect_priority: i32,
+    pub metered: i32,
+    pub name: String,
+    pub device_type: String,
+    pub uuid: String,
+    pub zone: Trust,
 }
 
 impl PropMapConvert for ConnectionSettings {

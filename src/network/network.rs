@@ -18,7 +18,7 @@ impl fmt::Display for Error {
 
 #[derive(Debug, Clone)]
 pub struct ConnectionError {
-    method: &'static str,
+    pub method: &'static str,
 }
 
 impl fmt::Display for ConnectionError {
@@ -39,7 +39,7 @@ pub enum DeviceType {
 
 #[allow(dead_code)]
 impl DeviceType {
-    fn from_u32(num: u32) -> Self {
+    pub fn from_u32(num: u32) -> Self {
         match num {
             0 => DeviceType::UNKNOWN,
             1 => DeviceType::GENERIC,
@@ -49,7 +49,7 @@ impl DeviceType {
             _ => DeviceType::OTHER,
         }
     }
-    fn _to_u32(&self) -> u32 {
+    pub fn _to_u32(&self) -> u32 {
         match self {
             DeviceType::UNKNOWN => 0,
             DeviceType::GENERIC => 1,

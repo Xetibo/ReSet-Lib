@@ -2,6 +2,9 @@ use directories_next as dirs;
 use std::{fmt, fs, path::PathBuf};
 
 mod tests;
+pub mod audio;
+pub mod network;
+pub mod bluetooth;
 
 #[derive(Debug, Clone)]
 struct PathNotFoundError;
@@ -12,6 +15,7 @@ impl fmt::Display for PathNotFoundError {
     }
 }
 
+#[allow(dead_code)]
 fn create_config(project_organization: &str, project_name: &str) -> Option<PathBuf> {
     let config_dir = dirs::ProjectDirs::from("com", project_organization, project_name)?;
     let config_dir = config_dir.config_dir();

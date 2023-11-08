@@ -8,3 +8,4 @@ license = "GPL-3.0-only"
 
 [dependencies]
 directories-next = "2.0.0"
+dbus = "0.9.7"

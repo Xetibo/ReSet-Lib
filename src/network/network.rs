@@ -37,6 +37,26 @@ pub enum DeviceType {
     OTHER,
 }
 
+#[derive(Default, Copy, Clone)]
+pub enum WifiStrength {
+    Excellent,
+    Ok,
+    Weak,
+    #[default]
+    None,
+}
+
+impl WifiStrength {
+    pub fn from_u8(num: u8) -> Self {
+        match num {
+            0..=42 => WifiStrength::Weak,
+            43..=84 => WifiStrength::Ok,
+            85..=128 => WifiStrength::Excellent,
+            _ => WifiStrength::None,
+        }
+    }
+}
+
 #[allow(dead_code)]
 impl DeviceType {
     pub fn from_u32(num: u32) -> Self {

@@ -81,7 +81,7 @@ impl DeviceType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct AccessPoint {
     pub ssid: Vec<u8>,
     pub strength: u8,

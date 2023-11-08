@@ -5,15 +5,15 @@ use dbus::{
 
 #[derive(Debug, Clone)]
 pub struct BluetoothDevice {
-    path: Path<'static>,
-    rssi: i16,
-    name: String,
-    adapter: Path<'static>,
-    trusted: bool,
-    bonded: bool,
-    paired: bool,
-    blocked: bool,
-    address: String,
+    pub path: Path<'static>,
+    pub rssi: i16,
+    pub name: String,
+    pub adapter: Path<'static>,
+    pub trusted: bool,
+    pub bonded: bool,
+    pub paired: bool,
+    pub blocked: bool,
+    pub address: String,
 }
 
 unsafe impl Send for BluetoothDevice {}

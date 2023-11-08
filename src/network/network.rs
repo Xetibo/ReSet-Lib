@@ -89,6 +89,9 @@ pub struct AccessPoint {
     pub dbus_path: Path<'static>,
 }
 
+unsafe impl Send for AccessPoint {}
+unsafe impl Sync for AccessPoint {}
+
 impl Append for AccessPoint {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {

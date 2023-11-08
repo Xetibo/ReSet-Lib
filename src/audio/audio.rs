@@ -8,12 +8,12 @@ use pulse::context::introspect::{SourceOutputInfo, SinkInputInfo, SinkInfo, Sour
 pub struct PulseError(&'static str);
 
 pub struct Source {
-    index: u32,
-    name: String,
-    alias: String,
-    channels: u16,
-    volume: Vec<u32>,
-    muted: bool,
+    pub index: u32,
+    pub name: String,
+    pub alias: String,
+    pub channels: u16,
+    pub volume: Vec<u32>,
+    pub muted: bool,
 }
 
 impl Append for Source {
@@ -87,12 +87,12 @@ impl From<&SourceInfo<'_>> for Source {
 
 #[derive(Debug)]
 pub struct Sink {
-    index: u32,
-    name: String,
-    alias: String,
-    channels: u16,
-    volume: Vec<u32>,
-    muted: bool,
+    pub index: u32,
+    pub name: String,
+    pub alias: String,
+    pub channels: u16,
+    pub volume: Vec<u32>,
+    pub muted: bool,
 }
 
 impl Append for Sink {
@@ -165,13 +165,13 @@ impl From<&SinkInfo<'_>> for Sink {
 }
 
 pub struct InputStream {
-    index: u32,
-    name: String,
-    application_name: String,
-    sink_index: u32,
-    channels: u16,
-    volume: Vec<u32>,
-    muted: bool,
+    pub index: u32,
+    pub name: String,
+    pub application_name: String,
+    pub sink_index: u32,
+    pub channels: u16,
+    pub volume: Vec<u32>,
+    pub muted: bool,
 }
 
 impl Append for InputStream {
@@ -245,13 +245,13 @@ impl From<&SinkInputInfo<'_>> for InputStream {
 }
 
 pub struct OutputStream {
-    index: u32,
-    name: String,
-    application_name: String,
-    source_index: u32,
-    channels: u16,
-    volume: Vec<u32>,
-    muted: bool,
+    pub index: u32,
+    pub name: String,
+    pub application_name: String,
+    pub source_index: u32,
+    pub channels: u16,
+    pub volume: Vec<u32>,
+    pub muted: bool,
 }
 
 impl Append for OutputStream {

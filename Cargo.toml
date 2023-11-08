@@ -1,6 +1,6 @@
 [package]
 name = "reset_lib"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Data structure library for ReSet"
 repository = "https://github.com/Xetibo/ReSet-Lib"

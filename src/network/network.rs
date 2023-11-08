@@ -87,6 +87,8 @@ pub struct AccessPoint {
     pub strength: u8,
     pub associated_connection: Path<'static>,
     pub dbus_path: Path<'static>,
+    pub connected: bool,
+    pub stored: bool,
 }
 
 unsafe impl Send for AccessPoint {}
@@ -104,19 +106,23 @@ impl Append for AccessPoint {
             i.append(&self.strength);
             i.append(&self.associated_connection);
             i.append(&self.dbus_path);
+            i.append(&self.connected);
+            i.append(&self.stored);
         });
     }
 }
 
 impl<'a> Get<'a> for AccessPoint {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (ssid, strength, associated_connection, dbus_path) =
-            <(Vec<u8>, u8, Path<'static>, Path<'static>)>::get(i)?;
+        let (ssid, strength, associated_connection, dbus_path, connected, stored) =
+            <(Vec<u8>, u8, Path<'static>, Path<'static>, bool, bool)>::get(i)?;
         Some(AccessPoint {
             ssid,
             strength,
             associated_connection,
             dbus_path,
+            connected,
+            stored,
         })
     }
 }
@@ -124,6 +130,6 @@ impl<'a> Get<'a> for AccessPoint {
 impl Arg for AccessPoint {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(ayyoo)\0") }
+        unsafe { Signature::from_slice_unchecked("(ayyoobb)\0") }
     }
 }

@@ -25,9 +25,9 @@ impl arg::ReadAll for BluetoothDeviceAdded {
     }
 }
 
-impl GetVal<BluetoothDevice> for BluetoothDeviceAdded {
-    fn get_value(&self) -> BluetoothDevice {
-        self.bluetooth_device.clone()
+impl GetVal<(BluetoothDevice,)> for BluetoothDeviceAdded {
+    fn get_value(&self) -> (BluetoothDevice,) {
+        (self.bluetooth_device.clone(),)
     }
 }
 
@@ -60,9 +60,9 @@ impl dbus::message::SignalArgs for BluetoothDeviceRemoved {
     const INTERFACE: &'static str = "org.xetibo.ReSet";
 }
 
-impl GetVal<Path<'static>> for BluetoothDeviceRemoved {
-    fn get_value(&self) -> Path<'static> {
-        self.bluetooth_device.clone()
+impl GetVal<(Path<'static>,)> for BluetoothDeviceRemoved {
+    fn get_value(&self) -> (Path<'static>,) {
+        (self.bluetooth_device.clone(),)
     }
 }
 
@@ -90,9 +90,9 @@ impl dbus::message::SignalArgs for AccessPointAdded {
     const INTERFACE: &'static str = "org.xetibo.ReSet";
 }
 
-impl GetVal<AccessPoint> for AccessPointAdded {
-    fn get_value(&self) -> AccessPoint {
-        self.access_point.clone()
+impl GetVal<(AccessPoint,)> for AccessPointAdded {
+    fn get_value(&self) -> (AccessPoint,) {
+        (self.access_point.clone(),)
     }
 }
 
@@ -120,8 +120,8 @@ impl dbus::message::SignalArgs for AccessPointRemoved {
     const INTERFACE: &'static str = "org.xetibo.ReSet";
 }
 
-impl GetVal<Path<'static>> for AccessPointRemoved {
-    fn get_value(&self) -> Path<'static> {
-        self.access_point.clone()
+impl GetVal<(Path<'static>,)> for AccessPointRemoved {
+    fn get_value(&self) -> (Path<'static>,) {
+        (self.access_point.clone(),)
     }
 }

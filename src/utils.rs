@@ -100,7 +100,7 @@ pub enum Events<
     RemovedEvent(RemovedEvent),
 }
 
-fn start_event_listener<
+pub fn start_event_listener<
     AddedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + Send + Sync + GetVal<AddedEvent> + 'static,
     RemovedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + Send + Sync + GetVal<RemovedEvent> + 'static,
 >(

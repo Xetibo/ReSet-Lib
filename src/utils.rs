@@ -92,20 +92,19 @@ pub fn call_reset_dbus_method<
     result
 }
 
-pub enum Events<
-    AddedEvent: ReadAll + AppendAll + dbus::message::SignalArgs,
-    RemovedEvent: ReadAll + AppendAll + dbus::message::SignalArgs,
-> {
-    AddedEvent(AddedEvent),
-    RemovedEvent(RemovedEvent),
+pub enum Events<AddedType: ReadAll + AppendAll, RemovedType: ReadAll + AppendAll> {
+    AddedEvent(AddedType),
+    RemovedEvent(RemovedType),
 }
 
 pub fn start_event_listener<
-    AddedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + Send + Sync + GetVal<AddedEvent> + 'static,
-    RemovedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + Send + Sync + GetVal<RemovedEvent> + 'static,
+    AddedType: ReadAll + AppendAll + Send + Sync + 'static,
+    RemovedType: ReadAll + AppendAll + Send + Sync + 'static,
+    AddedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + GetVal<AddedType>,
+    RemovedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + GetVal<RemovedType>,
 >(
     active_listener: Arc<AtomicBool>,
-    sender: Arc<Sender<Events<AddedEvent, RemovedEvent>>>,
+    sender: Arc<Sender<Events<AddedType, RemovedType>>>,
 ) -> Result<(), dbus::Error> {
     thread::spawn(move || {
         let added_sender = sender.clone();

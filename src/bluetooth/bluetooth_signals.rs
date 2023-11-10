@@ -21,55 +21,55 @@ pub trait OrgFreedesktopDBusObjectManager {
 }
 
 #[derive(Debug)]
-pub struct InterfacesAddedSignal {
+pub struct BluetoothDeviceAdded {
     pub object: dbus::Path<'static>,
     pub interfaces: ::std::collections::HashMap<String, arg::PropMap>,
 }
 
-impl arg::AppendAll for InterfacesAddedSignal {
+impl arg::AppendAll for BluetoothDeviceAdded {
     fn append(&self, i: &mut arg::IterAppend) {
         arg::RefArg::append(&self.object, i);
         arg::RefArg::append(&self.interfaces, i);
     }
 }
 
-impl arg::ReadAll for InterfacesAddedSignal {
+impl arg::ReadAll for BluetoothDeviceAdded {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
-        Ok(InterfacesAddedSignal {
+        Ok(BluetoothDeviceAdded {
             object: i.read()?,
             interfaces: i.read()?,
         })
     }
 }
 
-impl dbus::message::SignalArgs for InterfacesAddedSignal {
+impl dbus::message::SignalArgs for BluetoothDeviceAdded {
     const NAME: &'static str = "InterfacesAdded";
     const INTERFACE: &'static str = "org.freedesktop.DBus.ObjectManager";
 }
 
 #[derive(Debug)]
-pub struct InterfaceRemovedSignal {
+pub struct BluetoothDeviceRemoved {
     pub object: dbus::Path<'static>,
     pub interfaces: Vec<String>,
 }
 
-impl arg::AppendAll for InterfaceRemovedSignal {
+impl arg::AppendAll for BluetoothDeviceRemoved {
     fn append(&self, i: &mut arg::IterAppend) {
         arg::RefArg::append(&self.object, i);
         arg::RefArg::append(&self.interfaces, i);
     }
 }
 
-impl arg::ReadAll for InterfaceRemovedSignal {
+impl arg::ReadAll for BluetoothDeviceRemoved {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
-        Ok(InterfaceRemovedSignal {
+        Ok(BluetoothDeviceRemoved {
             object: i.read()?,
             interfaces: i.read()?,
         })
     }
 }
 
-impl dbus::message::SignalArgs for InterfaceRemovedSignal {
+impl dbus::message::SignalArgs for BluetoothDeviceRemoved {
     const NAME: &'static str = "InterfacesRemoved";
     const INTERFACE: &'static str = "org.freedesktop.DBus.ObjectManager";
 }

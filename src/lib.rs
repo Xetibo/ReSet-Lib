@@ -5,6 +5,8 @@ mod tests;
 pub mod audio;
 pub mod network;
 pub mod bluetooth;
+pub mod signals;
+pub mod utils;
 
 #[derive(Debug, Clone)]
 struct PathNotFoundError;

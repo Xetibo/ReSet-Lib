@@ -1,7 +1,8 @@
 use core::fmt;
+use std::any;
 
 use dbus::{
-    arg::{self, Append, Arg, ArgType, Get},
+    arg::{self, Append, Arg, ArgType, Get, IterAppend, RefArg},
     Path, Signature,
 };
 
@@ -131,5 +132,35 @@ impl Arg for AccessPoint {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
         unsafe { Signature::from_slice_unchecked("(ayyoobb)\0") }
+    }
+}
+
+impl RefArg for AccessPoint {
+    fn arg_type(&self) -> ArgType {
+        ArgType::Struct
+    }
+    fn signature(&self) -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(ayyoobb)\0") }
+    }
+    fn append(&self, i: &mut IterAppend) {
+        self.append_by_ref(i);
+    }
+    #[inline]
+    fn as_any(&self) -> &dyn any::Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+    #[inline]
+    fn as_any_mut(&mut self) -> &mut dyn any::Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+
+    fn box_clone(&self) -> Box<dyn RefArg + 'static> {
+        Box::new(self.clone())
     }
 }

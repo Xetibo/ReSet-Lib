@@ -106,56 +106,53 @@ pub fn start_event_listener<
     active_listener: Arc<AtomicBool>,
     sender: Arc<Sender<Events<AddedType, RemovedType>>>,
 ) -> Result<(), dbus::Error> {
-    thread::spawn(move || {
-        let added_sender = sender.clone();
-        let removed_sender = sender.clone();
-        let conn = Connection::new_system().unwrap();
-        let mr = AddedEvent::match_rule(
-            Some(&"org.xetibo.ReSet".into()),
-            Some(&Path::from("/org/xetibo/ReSet")),
-        )
-        .static_clone();
-        let mrb = RemovedEvent::match_rule(
-            Some(&"org.xetibo.ReSet".into()),
-            Some(&Path::from("/org/xetibo/ReSet")),
-        )
-        .static_clone();
-        let res = conn.add_match(mr, move |ir: AddedEvent, _, _| {
-            let res = added_sender.send(Events::AddedEvent(ir.get_value()));
-            if res.is_err() {
-                return false;
-            }
-            true
-        });
+    let added_sender = sender.clone();
+    let removed_sender = sender.clone();
+    let conn = Connection::new_system().unwrap();
+    let mr = AddedEvent::match_rule(
+        Some(&"org.xetibo.ReSet".into()),
+        Some(&Path::from("/org/xetibo/ReSet")),
+    )
+    .static_clone();
+    let mrb = RemovedEvent::match_rule(
+        Some(&"org.xetibo.ReSet".into()),
+        Some(&Path::from("/org/xetibo/ReSet")),
+    )
+    .static_clone();
+    let res = conn.add_match(mr, move |ir: AddedEvent, _, _| {
+        let res = added_sender.send(Events::AddedEvent(ir.get_value()));
         if res.is_err() {
-            return Err(dbus::Error::new_custom(
-                "SignalMatchFailed",
-                "Failed to match signal on ReSet.",
-            ));
+            return false;
         }
-        let res = conn.add_match(mrb, move |ir: RemovedEvent, _, _| {
-            let res = removed_sender.send(Events::RemovedEvent(ir.get_value()));
-            if res.is_err() {
-                return false;
-            }
-            true
-        });
-        if res.is_err() {
-            return Err(dbus::Error::new_custom(
-                "SignalMatchFailed",
-                "Failed to match signal on ReSet.",
-            ));
-        }
-        active_listener.store(true, Ordering::SeqCst);
-        loop {
-            let _ = conn.process(Duration::from_millis(1000))?;
-            if !active_listener.load(Ordering::SeqCst) {
-                break;
-            }
-            thread::sleep(Duration::from_millis(1000));
-        }
-        Ok(())
+        true
     });
+    if res.is_err() {
+        return Err(dbus::Error::new_custom(
+            "SignalMatchFailed",
+            "Failed to match signal on ReSet.",
+        ));
+    }
+    let res = conn.add_match(mrb, move |ir: RemovedEvent, _, _| {
+        let res = removed_sender.send(Events::RemovedEvent(ir.get_value()));
+        if res.is_err() {
+            return false;
+        }
+        true
+    });
+    if res.is_err() {
+        return Err(dbus::Error::new_custom(
+            "SignalMatchFailed",
+            "Failed to match signal on ReSet.",
+        ));
+    }
+    active_listener.store(true, Ordering::SeqCst);
+    loop {
+        let _ = conn.process(Duration::from_millis(1000))?;
+        if !active_listener.load(Ordering::SeqCst) {
+            break;
+        }
+        thread::sleep(Duration::from_millis(1000));
+    }
     Ok(())
 }
 

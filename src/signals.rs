@@ -98,7 +98,7 @@ impl GetVal<(AccessPoint,)> for AccessPointAdded {
 
 #[derive(Debug)]
 pub struct AccessPointRemoved {
-    pub access_point: Path<'static>,
+    pub access_point: AccessPoint, 
 }
 
 impl arg::AppendAll for AccessPointRemoved {
@@ -120,8 +120,8 @@ impl dbus::message::SignalArgs for AccessPointRemoved {
     const INTERFACE: &'static str = "org.xetibo.ReSet";
 }
 
-impl GetVal<(Path<'static>,)> for AccessPointRemoved {
-    fn get_value(&self) -> (Path<'static>,) {
+impl GetVal<(AccessPoint,)> for AccessPointRemoved {
+    fn get_value(&self) -> (AccessPoint,) {
         (self.access_point.clone(),)
     }
 }

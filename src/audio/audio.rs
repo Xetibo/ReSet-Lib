@@ -17,6 +17,9 @@ pub struct Source {
     pub muted: bool,
 }
 
+unsafe impl Send for Source {}
+unsafe impl Sync for Source {}
+
 impl Append for Source {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
@@ -95,6 +98,9 @@ pub struct Sink {
     pub volume: Vec<u32>,
     pub muted: bool,
 }
+
+unsafe impl Send for Sink {}
+unsafe impl Sync for Sink {}
 
 impl Append for Sink {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
@@ -307,7 +313,7 @@ impl From<&SourceOutputInfo<'_>> for OutputStream {
             .proplist
             .get_str("application.name")
             .unwrap_or_default();
-        let sink_index = value.source;
+        let source_index = value.source;
         let index = value.index;
         let channels = value.channel_map.len() as u16;
         let mut volume = vec![0; channels as usize];
@@ -319,7 +325,7 @@ impl From<&SourceOutputInfo<'_>> for OutputStream {
             index,
             name,
             application_name,
-            source_index: sink_index,
+            source_index,
             channels,
             volume,
             muted,

@@ -7,6 +7,7 @@ use pulse::context::introspect::{SinkInfo, SinkInputInfo, SourceInfo, SourceOutp
 #[derive(Debug)]
 pub struct PulseError(pub &'static str);
 
+#[derive(Debug, Clone, Default)]
 pub struct Source {
     pub index: u32,
     pub name: String,
@@ -85,7 +86,7 @@ impl From<&SourceInfo<'_>> for Source {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct Sink {
     pub index: u32,
     pub name: String,
@@ -164,6 +165,7 @@ impl From<&SinkInfo<'_>> for Sink {
     }
 }
 
+#[derive(Debug, Clone, Default)]
 pub struct InputStream {
     pub index: u32,
     pub name: String,
@@ -244,6 +246,7 @@ impl From<&SinkInputInfo<'_>> for InputStream {
     }
 }
 
+#[derive(Debug, Clone, Default)]
 pub struct OutputStream {
     pub index: u32,
     pub name: String,

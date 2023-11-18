@@ -5,7 +5,7 @@ use dbus::{
     Path, Signature,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct BluetoothDevice {
     pub path: Path<'static>,
     pub rssi: i16,

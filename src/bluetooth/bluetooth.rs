@@ -23,15 +23,18 @@ unsafe impl Sync for BluetoothDevice {}
 
 impl<'a> Get<'a> for BluetoothDevice {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let path = <Path<'static>>::get(i)?;
-        let rssi = <i16>::get(i)?;
-        let name = <String>::get(i)?;
-        let adapter = <Path<'static>>::get(i)?;
-        let trusted = <bool>::get(i)?;
-        let bonded = <bool>::get(i)?;
-        let paired = <bool>::get(i)?;
-        let blocked = <bool>::get(i)?;
-        let address = <String>::get(i)?;
+        let (path, rssi, name, adapter, trusted, bonded, paired, blocked, address) =
+            <(
+                Path<'static>,
+                i16,
+                String,
+                Path<'static>,
+                bool,
+                bool,
+                bool,
+                bool,
+                String,
+            )>::get(i)?;
         Some(BluetoothDevice {
             path,
             rssi,

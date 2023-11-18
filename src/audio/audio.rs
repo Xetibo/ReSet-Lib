@@ -386,10 +386,10 @@ impl Arg for Card {
 
 impl From<&CardInfo<'_>> for Card {
     fn from(value: &CardInfo<'_>) -> Self {
-        let name_opt = &value.name;
+        let name_opt = &value.proplist.get_str("alsa.card_name");
         let name: String;
         if name_opt.is_none() {
-            name = String::from("");
+            name = String::from("Unnamed");
         } else {
             name = String::from(name_opt.clone().unwrap());
         }

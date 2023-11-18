@@ -384,8 +384,8 @@ impl Arg for Card {
     }
 }
 
-impl From<CardInfo<'_>> for Card {
-    fn from(value: CardInfo<'_>) -> Self {
+impl From<&CardInfo<'_>> for Card {
+    fn from(value: &CardInfo<'_>) -> Self {
         let name_opt = &value.name;
         let name: String;
         if name_opt.is_none() {
@@ -398,16 +398,12 @@ impl From<CardInfo<'_>> for Card {
         for profile in value.profiles.iter() {
             profiles.push(CardProfile::from(profile));
         }
+        let profile_opt = value.active_profile.as_ref();
         let active_profile: String;
-        if value.active_profile.is_some() {
-            active_profile = value
-                .active_profile
-                .unwrap()
-                .name
-                .unwrap_or_default()
-                .to_string();
+        if profile_opt.is_none() {
+            active_profile = String::from("Off");
         } else {
-            active_profile = "Off".into();
+            active_profile = profile_opt.unwrap().name.clone().unwrap().to_string();
         }
         Self {
             index,

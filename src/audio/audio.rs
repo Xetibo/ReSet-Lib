@@ -2,7 +2,9 @@ use dbus::{
     arg::{self, Append, Arg, ArgType, Get},
     Signature,
 };
-use pulse::context::introspect::{SinkInfo, SinkInputInfo, SourceInfo, SourceOutputInfo};
+use pulse::context::introspect::{
+    CardInfo, CardProfileInfo, SinkInfo, SinkInputInfo, SourceInfo, SourceOutputInfo,
+};
 
 #[derive(Debug)]
 pub struct PulseError(pub &'static str);
@@ -180,6 +182,7 @@ pub struct InputStream {
     pub channels: u16,
     pub volume: Vec<u32>,
     pub muted: bool,
+    pub corked: bool,
 }
 
 impl Append for InputStream {
@@ -192,14 +195,15 @@ impl Append for InputStream {
             i.append(&self.channels);
             i.append(&self.volume);
             i.append(&self.muted);
+            i.append(&self.corked);
         });
     }
 }
 
 impl<'a> Get<'a> for InputStream {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (index, name, application_name, sink_index, channels, volume, muted) =
-            <(u32, String, String, u32, u16, Vec<u32>, bool)>::get(i)?;
+        let (index, name, application_name, sink_index, channels, volume, muted, corked) =
+            <(u32, String, String, u32, u16, Vec<u32>, bool, bool)>::get(i)?;
         Some(Self {
             index,
             name,
@@ -208,6 +212,7 @@ impl<'a> Get<'a> for InputStream {
             channels,
             volume,
             muted,
+            corked,
         })
     }
 }
@@ -215,7 +220,7 @@ impl<'a> Get<'a> for InputStream {
 impl Arg for InputStream {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(ussuqaub)\0") }
+        unsafe { Signature::from_slice_unchecked("(ussuqaubb)\0") }
     }
 }
 
@@ -240,6 +245,7 @@ impl From<&SinkInputInfo<'_>> for InputStream {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
         let muted = value.mute;
+        let corked = value.corked;
         Self {
             index,
             name,
@@ -248,6 +254,7 @@ impl From<&SinkInputInfo<'_>> for InputStream {
             channels,
             volume,
             muted,
+            corked,
         }
     }
 }
@@ -261,6 +268,7 @@ pub struct OutputStream {
     pub channels: u16,
     pub volume: Vec<u32>,
     pub muted: bool,
+    pub corked: bool,
 }
 
 impl Append for OutputStream {
@@ -273,14 +281,15 @@ impl Append for OutputStream {
             i.append(&self.channels);
             i.append(&self.volume);
             i.append(&self.muted);
+            i.append(&self.corked);
         });
     }
 }
 
 impl<'a> Get<'a> for OutputStream {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (index, name, application_name, source_index, channels, volume, muted) =
-            <(u32, String, String, u32, u16, Vec<u32>, bool)>::get(i)?;
+        let (index, name, application_name, source_index, channels, volume, muted, corked) =
+            <(u32, String, String, u32, u16, Vec<u32>, bool, bool)>::get(i)?;
         Some(Self {
             index,
             name,
@@ -289,6 +298,7 @@ impl<'a> Get<'a> for OutputStream {
             channels,
             volume,
             muted,
+            corked,
         })
     }
 }
@@ -296,7 +306,7 @@ impl<'a> Get<'a> for OutputStream {
 impl Arg for OutputStream {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(ussuqaub)\0") }
+        unsafe { Signature::from_slice_unchecked("(ussuqaubb)\0") }
     }
 }
 
@@ -321,6 +331,7 @@ impl From<&SourceOutputInfo<'_>> for OutputStream {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
         let muted = value.mute;
+        let corked = value.corked;
         Self {
             index,
             name,
@@ -329,6 +340,140 @@ impl From<&SourceOutputInfo<'_>> for OutputStream {
             channels,
             volume,
             muted,
+            corked,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Card {
+    pub index: u32,
+    pub name: String,
+    pub profiles: Vec<CardProfile>,
+    pub active_profile: String,
+}
+
+impl Append for Card {
+    fn append_by_ref(&self, iter: &mut arg::IterAppend) {
+        iter.append_struct(|i| {
+            i.append(&self.index);
+            i.append(&self.name);
+            i.append(&self.profiles);
+            i.append(&self.active_profile);
+        });
+    }
+}
+
+impl<'a> Get<'a> for Card {
+    fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
+        let (index, name, profiles, active_profile) =
+            <(u32, String, Vec<CardProfile>, String)>::get(i)?;
+        Some(Self {
+            index,
+            name,
+            profiles,
+            active_profile,
+        })
+    }
+}
+
+impl Arg for Card {
+    const ARG_TYPE: arg::ArgType = ArgType::Struct;
+    fn signature() -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(usa(ssb)s)\0") }
+    }
+}
+
+impl From<CardInfo<'_>> for Card {
+    fn from(value: CardInfo<'_>) -> Self {
+        let name_opt = &value.name;
+        let name: String;
+        if name_opt.is_none() {
+            name = String::from("");
+        } else {
+            name = String::from(name_opt.clone().unwrap());
+        }
+        let index = value.index;
+        let mut profiles = Vec::new();
+        for profile in value.profiles.iter() {
+            profiles.push(CardProfile::from(profile));
+        }
+        let active_profile: String;
+        if value.active_profile.is_some() {
+            active_profile = value
+                .active_profile
+                .unwrap()
+                .name
+                .unwrap_or_default()
+                .to_string();
+        } else {
+            active_profile = "".into();
+        }
+        Self {
+            index,
+            name,
+            profiles,
+            active_profile,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct CardProfile {
+    pub name: String,
+    pub description: String,
+    pub available: bool,
+}
+
+impl Append for CardProfile {
+    fn append_by_ref(&self, iter: &mut arg::IterAppend) {
+        iter.append_struct(|i| {
+            i.append(&self.name);
+            i.append(&self.description);
+            i.append(&self.available);
+        });
+    }
+}
+
+impl<'a> Get<'a> for CardProfile {
+    fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
+        let (name, description, available) = <(String, String, bool)>::get(i)?;
+        Some(Self {
+            name,
+            description,
+            available,
+        })
+    }
+}
+
+impl Arg for CardProfile {
+    const ARG_TYPE: arg::ArgType = ArgType::Struct;
+    fn signature() -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(ssb)\0") }
+    }
+}
+
+impl From<&CardProfileInfo<'_>> for CardProfile {
+    fn from(value: &CardProfileInfo<'_>) -> Self {
+        let name_opt = &value.name;
+        let name: String;
+        if name_opt.is_none() {
+            name = String::from("");
+        } else {
+            name = String::from(name_opt.clone().unwrap());
+        }
+        let description_opt = &value.description;
+        let description: String;
+        if description_opt.is_none() {
+            description = String::from("");
+        } else {
+            description = String::from(description_opt.clone().unwrap());
+        }
+        let available = value.available;
+        Self {
+            name,
+            description,
+            available,
         }
     }
 }

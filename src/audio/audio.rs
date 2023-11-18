@@ -350,7 +350,7 @@ pub struct Card {
     pub index: u32,
     pub name: String,
     pub profiles: Vec<CardProfile>,
-    pub active_profile: bool,
+    pub active_profile: String,
 }
 
 impl Append for Card {
@@ -367,7 +367,7 @@ impl Append for Card {
 impl<'a> Get<'a> for Card {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
         let (index, name, profiles, active_profile) =
-            <(u32, String, Vec<CardProfile>, bool)>::get(i)?;
+            <(u32, String, Vec<CardProfile>, String)>::get(i)?;
         Some(Self {
             index,
             name,
@@ -380,12 +380,12 @@ impl<'a> Get<'a> for Card {
 impl Arg for Card {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(usa(ssb)b)\0") }
+        unsafe { Signature::from_slice_unchecked("(usa(ssb)s)\0") }
     }
 }
 
-impl From<&CardInfo<'_>> for Card {
-    fn from(value: &CardInfo<'_>) -> Self {
+impl From<CardInfo<'_>> for Card {
+    fn from(value: CardInfo<'_>) -> Self {
         let name_opt = &value.name;
         let name: String;
         if name_opt.is_none() {
@@ -398,11 +398,16 @@ impl From<&CardInfo<'_>> for Card {
         for profile in value.profiles.iter() {
             profiles.push(CardProfile::from(profile));
         }
-        let active_profile: bool;
+        let active_profile: String;
         if value.active_profile.is_some() {
-            active_profile = true;
+            active_profile = value
+                .active_profile
+                .unwrap()
+                .name
+                .unwrap_or_default()
+                .to_string();
         } else {
-            active_profile = false;
+            active_profile = "Off".into();
         }
         Self {
             index,

@@ -18,7 +18,7 @@ pub struct ConversionError {
     message: &'static str,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Connection {
     pub settings: ConnectionSettings,
     // x802: X802Settings,
@@ -85,6 +85,7 @@ impl Connection {
             TypeSettings::WIFI(wifi) => wifi.to_propmap(&mut map),
             TypeSettings::ETHERNET(ethernet) => ethernet.to_propmap(&mut map),
             TypeSettings::VPN(vpn) => vpn.to_propmap(&mut map),
+            TypeSettings::None => (),
         }
         self.ipv4.to_propmap(&mut map);
         self.ipv6.to_propmap(&mut map);
@@ -284,11 +285,13 @@ impl Enum for Duplex {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum TypeSettings {
     WIFI(WifiSettings),
     ETHERNET(EthernetSettings),
     VPN(VPNSettings),
+    #[default]
+    None,
 }
 
 impl ToString for TypeSettings {
@@ -297,11 +300,12 @@ impl ToString for TypeSettings {
             TypeSettings::WIFI(_) => String::from("wifi"),
             TypeSettings::ETHERNET(_) => String::from("ethernet"),
             TypeSettings::VPN(_) => String::from("vpn"),
+            TypeSettings::None => String::from(""),
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EthernetSettings {
     pub auto_negotiate: bool,
     pub duplex: Duplex,
@@ -671,7 +675,7 @@ impl Enum for DNSMethod {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct IPV4Settings {
     pub address_data: Vec<Address>,
     pub dns: Vec<Vec<u8>>,
@@ -848,7 +852,7 @@ impl Enum for IPV6PrivacyMode {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct IPV6Settings {
     pub address_data: Vec<Address>,
     pub dns: Vec<Vec<u8>>,
@@ -1011,7 +1015,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     address_data
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ConnectionSettings {
     pub autoconnect: bool,
     pub autoconnect_priority: i32,

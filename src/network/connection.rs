@@ -308,6 +308,7 @@ impl ToString for TypeSettings {
 #[derive(Debug, Clone, Default)]
 pub struct EthernetSettings {
     pub auto_negotiate: bool,
+    pub cloned_mac_address: String,
     pub duplex: Duplex,
     pub mtu: u32,
     pub name: String,
@@ -317,6 +318,13 @@ pub struct EthernetSettings {
 impl PropMapConvert for EthernetSettings {
     fn from_propmap(map: PropMap) -> Self {
         let auto_negotiate: Option<&bool> = prop_cast(&map, "auto-negotiate");
+        let cloned_mac_address: String;
+        let cloned_address_opt: Option<&String> = prop_cast(&map, "cloned-mac-address");
+        if cloned_address_opt.is_none() {
+            cloned_mac_address = String::from("");
+        } else {
+            cloned_mac_address = cloned_address_opt.unwrap().clone();
+        }
         let duplex: Duplex;
         let duplex_opt: Option<&String> = prop_cast(&map, "mode");
         if duplex_opt.is_none() {
@@ -335,6 +343,7 @@ impl PropMapConvert for EthernetSettings {
         let speed: Option<&u32> = prop_cast(&map, "speed");
         Self {
             auto_negotiate: *auto_negotiate.unwrap_or_else(|| &true),
+            cloned_mac_address,
             duplex,
             mtu: *mtu.unwrap_or_else(|| &0),
             name,
@@ -437,6 +446,7 @@ impl PropMapConvert for VPNSettings {
 pub struct WifiSettings {
     pub band: Band,
     pub channel: u32,
+    pub cloned_mac_address: String,
     pub mode: Mode,
     pub mtu: u32,
     pub powersave: u32,
@@ -466,6 +476,13 @@ impl PropMapConvert for WifiSettings {
         } else {
             band = Band::from_str(band_opt.unwrap().as_str()).ok().unwrap();
         }
+        let cloned_mac_address: String;
+        let cloned_address_opt: Option<&String> = prop_cast(&map, "cloned-mac-address");
+        if cloned_address_opt.is_none() {
+            cloned_mac_address = String::from("");
+        } else {
+            cloned_mac_address = cloned_address_opt.unwrap().clone();
+        }
         let mtu = prop_cast(&map, "mtu");
         let powersave = prop_cast(&map, "powersave");
         let rate = prop_cast(&map, "rate");
@@ -479,6 +496,7 @@ impl PropMapConvert for WifiSettings {
         Self {
             band,
             channel: *channel.unwrap_or_else(|| &0),
+            cloned_mac_address,
             mode,
             mtu: *mtu.unwrap_or_else(|| &0),
             powersave: *powersave.unwrap_or_else(|| &0),

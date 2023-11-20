@@ -629,7 +629,7 @@ impl Address {
 }
 
 #[derive(Debug, Default)]
-pub enum DNSMethod {
+pub enum DNSMethod4 {
     #[default]
     AUTO,
     MANUAL,
@@ -638,50 +638,113 @@ pub enum DNSMethod {
     DISABLED,
 }
 
-impl FromStr for DNSMethod {
+impl FromStr for DNSMethod4 {
     type Err = ConversionError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "auto" => Ok(DNSMethod::AUTO),
-            "manual" => Ok(DNSMethod::MANUAL),
-            "link-local" => Ok(DNSMethod::LINKLOCAL),
-            "shared" => Ok(DNSMethod::SHARED),
-            _ => Ok(DNSMethod::DISABLED),
+            "auto" => Ok(DNSMethod4::AUTO),
+            "manual" => Ok(DNSMethod4::MANUAL),
+            "link-local" => Ok(DNSMethod4::LINKLOCAL),
+            "shared" => Ok(DNSMethod4::SHARED),
+            _ => Ok(DNSMethod4::DISABLED),
         }
     }
 }
 
-impl ToString for DNSMethod {
+impl ToString for DNSMethod4 {
     fn to_string(&self) -> String {
         match self {
-            DNSMethod::AUTO => String::from("auto"),
-            DNSMethod::MANUAL => String::from("manual"),
-            DNSMethod::LINKLOCAL => String::from("link-local"),
-            DNSMethod::SHARED => String::from("shared"),
-            DNSMethod::DISABLED => String::from("disabled"),
+            DNSMethod4::AUTO => String::from("auto"),
+            DNSMethod4::MANUAL => String::from("manual"),
+            DNSMethod4::LINKLOCAL => String::from("link-local"),
+            DNSMethod4::SHARED => String::from("shared"),
+            DNSMethod4::DISABLED => String::from("disabled"),
         }
     }
 }
 
-impl Enum for DNSMethod {
+impl Enum for DNSMethod4 {
     fn from_i32(num: i32) -> Self {
         match num {
-            0 => DNSMethod::AUTO,
-            1 => DNSMethod::MANUAL,
-            2 => DNSMethod::LINKLOCAL,
-            3 => DNSMethod::SHARED,
-            _ => DNSMethod::DISABLED,
+            0 => DNSMethod4::AUTO,
+            1 => DNSMethod4::MANUAL,
+            2 => DNSMethod4::LINKLOCAL,
+            3 => DNSMethod4::SHARED,
+            _ => DNSMethod4::DISABLED,
         }
     }
 
     fn to_i32(&self) -> i32 {
         match self {
-            DNSMethod::AUTO => 0,
-            DNSMethod::MANUAL => 1,
-            DNSMethod::LINKLOCAL => 2,
-            DNSMethod::SHARED => 3,
-            DNSMethod::DISABLED => 4,
+            DNSMethod4::AUTO => 0,
+            DNSMethod4::MANUAL => 1,
+            DNSMethod4::LINKLOCAL => 2,
+            DNSMethod4::SHARED => 3,
+            DNSMethod4::DISABLED => 4,
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub enum DNSMethod6 {
+    #[default]
+    AUTO,
+    DHCP,
+    MANUAL,
+    LINKLOCAL,
+    SHARED,
+    DISABLED,
+}
+
+impl FromStr for DNSMethod6 {
+    type Err = ConversionError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "auto" => Ok(DNSMethod6::AUTO),
+            "dhcp" => Ok(DNSMethod6::DHCP),
+            "manual" => Ok(DNSMethod6::MANUAL),
+            "link-local" => Ok(DNSMethod6::LINKLOCAL),
+            "shared" => Ok(DNSMethod6::SHARED),
+            _ => Ok(DNSMethod6::DISABLED),
+        }
+    }
+}
+
+impl ToString for DNSMethod6 {
+    fn to_string(&self) -> String {
+        match self {
+            DNSMethod6::AUTO => String::from("auto"),
+            DNSMethod6::DHCP => String::from("dhcp"),
+            DNSMethod6::MANUAL => String::from("manual"),
+            DNSMethod6::LINKLOCAL => String::from("link-local"),
+            DNSMethod6::SHARED => String::from("shared"),
+            DNSMethod6::DISABLED => String::from("disabled"),
+        }
+    }
+}
+
+impl Enum for DNSMethod6 {
+    fn from_i32(num: i32) -> Self {
+        match num {
+            0 => DNSMethod6::AUTO,
+            1 => DNSMethod6::DHCP,
+            2 => DNSMethod6::MANUAL,
+            3 => DNSMethod6::LINKLOCAL,
+            4 => DNSMethod6::SHARED,
+            _ => DNSMethod6::DISABLED,
+        }
+    }
+
+    fn to_i32(&self) -> i32 {
+        match self {
+            DNSMethod6::AUTO => 0,
+            DNSMethod6::DHCP => 1,
+            DNSMethod6::MANUAL => 2,
+            DNSMethod6::LINKLOCAL => 3,
+            DNSMethod6::SHARED => 4,
+            DNSMethod6::DISABLED => 5,
         }
     }
 }
@@ -697,7 +760,7 @@ pub struct IPV4Settings {
     pub ignore_auto_dns: bool,
     pub ignore_auto_dns_routes: bool,
     pub may_fail: bool,
-    pub dns_method: DNSMethod,
+    pub dns_method: DNSMethod4,
     pub never_default: bool,
     pub route_data: Vec<Address>,
 }
@@ -743,12 +806,12 @@ impl PropMapConvert for IPV4Settings {
         let ignore_auto_dns_routes =
             *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
         let may_fail = *prop_cast(&map, "may-fail").unwrap_or_else(|| &true);
-        let dns_method: DNSMethod;
+        let dns_method: DNSMethod4;
         let method_opt: Option<&String> = prop_cast(&map, "method");
         if method_opt.is_none() {
-            dns_method = DNSMethod::DISABLED;
+            dns_method = DNSMethod4::DISABLED;
         } else {
-            dns_method = DNSMethod::from_str(method_opt.unwrap().as_str()).unwrap();
+            dns_method = DNSMethod4::from_str(method_opt.unwrap().as_str()).unwrap();
         }
         let never_default = *prop_cast(&map, "never-default").unwrap_or_else(|| &true);
         let route_data = get_addresses(&map, "route-data");
@@ -875,7 +938,7 @@ pub struct IPV6Settings {
     pub ignore_auto_dns_routes: bool,
     pub ipv6_privacy: IPV6PrivacyMode,
     pub may_fail: bool,
-    pub dns_method: DNSMethod,
+    pub dns_method: DNSMethod6,
     pub never_default: bool,
     pub route_data: Vec<Address>,
 }
@@ -923,12 +986,12 @@ impl PropMapConvert for IPV6Settings {
         let ipv6_privacy =
             IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or_else(|| &-1));
         let may_fail = *prop_cast(&map, "may-fail").unwrap_or_else(|| &true);
-        let dns_method: DNSMethod;
+        let dns_method: DNSMethod6;
         let method_opt: Option<&String> = prop_cast(&map, "method");
         if method_opt.is_none() {
-            dns_method = DNSMethod::DISABLED;
+            dns_method = DNSMethod6::DISABLED;
         } else {
-            dns_method = DNSMethod::from_str(method_opt.unwrap().as_str()).unwrap();
+            dns_method = DNSMethod6::from_str(method_opt.unwrap().as_str()).unwrap();
         }
         let never_default = *prop_cast(&map, "never-default").unwrap_or_else(|| &true);
         let route_data = get_addresses(&map, "route-data");

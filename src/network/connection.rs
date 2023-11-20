@@ -603,6 +603,8 @@ pub struct X802Settings {
 pub struct Address {
     address: String,
     prefix_length: u32,
+    gateway: Option<String>,
+    metric: Option<u32>,
 }
 
 impl Address {
@@ -613,6 +615,15 @@ impl Address {
             "prefix-length".into(),
             Variant(Box::new(self.prefix_length)),
         );
+        if self.gateway.is_some() {
+            map.insert(
+                "gateway".into(),
+                Variant(Box::new(self.gateway.clone().unwrap())),
+            );
+        }
+        if self.metric.is_some() {
+            map.insert("metric".into(), Variant(Box::new(self.metric.unwrap())));
+        }
         map
     }
 }
@@ -991,8 +1002,12 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         for entry in address_data_opt.unwrap() {
             let address: String;
             let prefix_length: u32;
+            let gateway: Option<String>;
+            let metric: Option<u32>;
             let address_opt = entry.get("address");
             let prefix_length_opt = entry.get("prefix");
+            let gateway_opt = entry.get("gateway");
+            let metric_opt = entry.get("metric");
             if address_data_opt.is_none() {
                 address = String::from("");
             } else {
@@ -1005,10 +1020,24 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
                     .unwrap()
                     .clone();
             }
+            if gateway_opt.is_none() {
+                gateway = None;
+            } else {
+                gateway = arg::cast::<Option<String>>(address_opt.unwrap())
+                    .unwrap()
+                    .clone();
+            }
+            if metric_opt.is_none() {
+                metric = None;
+            } else {
+                metric = *arg::cast::<Option<u32>>(gateway_opt.unwrap()).unwrap();
+            }
 
             address_data.push(Address {
                 address,
                 prefix_length,
+                gateway,
+                metric,
             })
         }
     }

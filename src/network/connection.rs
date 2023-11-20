@@ -452,6 +452,7 @@ pub struct WifiSettings {
     pub powersave: u32,
     pub rate: u32,
     pub ssid: Vec<u8>,
+    pub security_settings: WifiSecuritySettings,
 }
 
 impl PropMapConvert for WifiSettings {
@@ -469,7 +470,8 @@ impl PropMapConvert for WifiSettings {
         } else {
             mode = Mode::from_str(mode_opt.unwrap().as_str()).ok().unwrap();
         }
-        let channel = prop_cast(&map, "channel");
+        let channel_opt: Option<&u32> = prop_cast(&map, "channel");
+        let channel = *channel_opt.unwrap_or(&0);
         let band_opt: Option<&String> = prop_cast(&map, "band");
         if band_opt.is_none() {
             band = Band::from_str("").ok().unwrap();
@@ -483,9 +485,12 @@ impl PropMapConvert for WifiSettings {
         } else {
             cloned_mac_address = cloned_address_opt.unwrap().clone();
         }
-        let mtu = prop_cast(&map, "mtu");
-        let powersave = prop_cast(&map, "powersave");
-        let rate = prop_cast(&map, "rate");
+        let mtu_opt: Option<&u32> = prop_cast(&map, "mtu");
+        let mtu = *mtu_opt.unwrap_or(&0);
+        let powersave_opt: Option<&u32> = prop_cast(&map, "powersave");
+        let powersave = *powersave_opt.unwrap_or(&0);
+        let rate_opt: Option<&u32> = prop_cast(&map, "rate");
+        let rate = *rate_opt.unwrap_or(&0);
         let ssid: Vec<u8>;
         let ssid_opt: Option<&Vec<u8>> = prop_cast(&map, "ssid");
         if ssid_opt.is_none() {
@@ -493,15 +498,17 @@ impl PropMapConvert for WifiSettings {
         } else {
             ssid = ssid_opt.unwrap().clone();
         }
+        let security_settings = WifiSecuritySettings::from_propmap(map);
         Self {
             band,
-            channel: *channel.unwrap_or_else(|| &0),
+            channel,
             cloned_mac_address,
             mode,
-            mtu: *mtu.unwrap_or_else(|| &0),
-            powersave: *powersave.unwrap_or_else(|| &0),
-            rate: *rate.unwrap_or_else(|| &0),
+            mtu,
+            powersave,
+            rate,
             ssid,
+            security_settings,
         }
     }
 
@@ -513,6 +520,7 @@ impl PropMapConvert for WifiSettings {
         map.insert("powersave".into(), Variant(Box::new(self.powersave)));
         map.insert("rate".into(), Variant(Box::new(self.rate)));
         map.insert("ssid".into(), Variant(Box::new(self.ssid.clone())));
+        self.security_settings.to_propmap(map);
     }
 }
 
@@ -1200,5 +1208,257 @@ impl PropMapConvert for ConnectionSettings {
         );
         map.insert("uuid".into(), Variant(Box::new(self.uuid.clone())));
         map.insert("zone".into(), Variant(Box::new(self.zone.to_i32())));
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub enum SecretSettingsFlag {
+    #[default]
+    NONE,
+    AGENT_OWNED,
+    NOT_SAVED,
+    NOT_REQUIRED,
+}
+
+impl Enum for SecretSettingsFlag {
+    fn from_i32(num: i32) -> Self {
+        match num {
+            0 => SecretSettingsFlag::NONE,
+            1 => SecretSettingsFlag::AGENT_OWNED,
+            2 => SecretSettingsFlag::NOT_SAVED,
+            _ => SecretSettingsFlag::NOT_REQUIRED,
+        }
+    }
+
+    fn to_i32(&self) -> i32 {
+        match self {
+            SecretSettingsFlag::NONE => 0,
+            SecretSettingsFlag::AGENT_OWNED => 1,
+            SecretSettingsFlag::NOT_SAVED => 2,
+            SecretSettingsFlag::NOT_REQUIRED => 3,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub enum WEPKeyType {
+    #[default]
+    UNKNOWN,
+    KEY,
+    PASSPHRASE,
+    LAST,
+}
+
+impl Enum for WEPKeyType {
+    fn from_i32(num: i32) -> Self {
+        match num {
+            0 => WEPKeyType::UNKNOWN,
+            1 => WEPKeyType::KEY,
+            2 => WEPKeyType::PASSPHRASE,
+            _ => WEPKeyType::LAST,
+        }
+    }
+
+    fn to_i32(&self) -> i32 {
+        match self {
+            WEPKeyType::UNKNOWN => 0,
+            WEPKeyType::KEY => 1,
+            WEPKeyType::PASSPHRASE => 2,
+            WEPKeyType::LAST => 3,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct WifiSecuritySettings {
+    pub authentication_algorithm: String,
+    pub group: Vec<String>,
+    pub key_management: String,
+    pub leap_password: String,
+    pub leap_password_flags: SecretSettingsFlag,
+    pub leap_username: String,
+    pub name: String,
+    pub pairwise: Vec<String>,
+    pub proto: Vec<String>,
+    pub psk: String,
+    pub psk_flags: SecretSettingsFlag,
+    pub wep_key_flags: SecretSettingsFlag,
+    pub wep_key_type: WEPKeyType,
+    pub wep_key0: String,
+    pub wep_key1: String,
+    pub wep_key2: String,
+    pub wep_key3: String,
+    pub wep_tx_keyidx: u32,
+}
+
+impl PropMapConvert for WifiSecuritySettings {
+    fn from_propmap(map: PropMap) -> Self {
+        println!("secret settings debug");
+        let authentication_algorithm: String;
+        let authentication_algorithm_opt: Option<&String> = prop_cast(&map, "auth-alg");
+        if authentication_algorithm_opt.is_none() {
+            authentication_algorithm = String::from("");
+        } else {
+            authentication_algorithm = authentication_algorithm_opt.unwrap().clone();
+        }
+        let group: Vec<String>;
+        let group_opt: Option<&Vec<String>> = prop_cast(&map, "group");
+        if group_opt.is_none() {
+            group = Vec::new();
+        } else {
+            group = group_opt.unwrap().clone();
+        }
+        let key_management: String;
+        let key_management_opt: Option<&String> = prop_cast(&map, "key-mgmt");
+        if key_management_opt.is_none() {
+            key_management = String::from("");
+        } else {
+            key_management = key_management_opt.unwrap().clone();
+        }
+        let leap_password: String;
+        let leap_password_opt: Option<&String> = prop_cast(&map, "leap-password");
+        if leap_password_opt.is_none() {
+            leap_password = String::from("");
+        } else {
+            leap_password = leap_password_opt.unwrap().clone();
+        }
+        let leap_password_flags_opt: Option<&u32> = prop_cast(&map, "leap-password-flags");
+        let leap_password_flags =
+            SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+        let leap_username: String;
+        let leap_username_opt: Option<&String> = prop_cast(&map, "leap-username");
+        if leap_username_opt.is_none() {
+            leap_username = String::from("");
+        } else {
+            leap_username = leap_username_opt.unwrap().clone();
+        }
+        let name: String;
+        let name_opt: Option<&String> = prop_cast(&map, "name");
+        if name_opt.is_none() {
+            name = String::from("");
+        } else {
+            name = name_opt.unwrap().clone();
+        }
+        let pairwise: Vec<String>;
+        let pairwise_opt: Option<&Vec<String>> = prop_cast(&map, "pairwise");
+        if pairwise_opt.is_none() {
+            pairwise = Vec::new();
+        } else {
+            pairwise = pairwise_opt.unwrap().clone();
+        }
+        let proto: Vec<String>;
+        let proto_opt: Option<&Vec<String>> = prop_cast(&map, "proto");
+        if proto_opt.is_none() {
+            proto = Vec::new();
+        } else {
+            proto = proto_opt.unwrap().clone();
+        }
+        let psk: String;
+        let psk_opt: Option<&String> = prop_cast(&map, "psk");
+        if psk_opt.is_none() {
+            psk = String::from("");
+        } else {
+            psk = psk_opt.unwrap().clone();
+        }
+        let psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
+        let psk_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+        let wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
+        let wep_key_flags =
+            SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+        let wep_key_type_opt: Option<&u32> = prop_cast(&map, "wep-key-type");
+        let wep_key_type = WEPKeyType::from_i32(*wep_key_type_opt.unwrap_or(&0) as i32);
+        let wep_key0: String;
+        let wep_key0_opt: Option<&String> = prop_cast(&map, "wep-key0");
+        if wep_key0_opt.is_none() {
+            wep_key0 = String::from("");
+        } else {
+            wep_key0 = wep_key0_opt.unwrap().clone();
+        }
+        let wep_key1: String;
+        let wep_key1_opt: Option<&String> = prop_cast(&map, "wep-key1");
+        if wep_key1_opt.is_none() {
+            wep_key1 = String::from("");
+        } else {
+            wep_key1 = wep_key1_opt.unwrap().clone();
+        }
+        let wep_key2: String;
+        let wep_key2_opt: Option<&String> = prop_cast(&map, "wep-key2");
+        if wep_key2_opt.is_none() {
+            wep_key2 = String::from("");
+        } else {
+            wep_key2 = wep_key2_opt.unwrap().clone();
+        }
+        let wep_key3: String;
+        let wep_key3_opt: Option<&String> = prop_cast(&map, "wep-key3");
+        if wep_key3_opt.is_none() {
+            wep_key3 = String::from("");
+        } else {
+            wep_key3 = wep_key3_opt.unwrap().clone();
+        }
+        let wep_tx_keyidx: Option<&u32> = prop_cast(&map, "wep-tx-keyidx");
+        Self {
+            authentication_algorithm,
+            group,
+            key_management,
+            leap_password,
+            leap_password_flags,
+            leap_username,
+            name,
+            pairwise,
+            proto,
+            psk,
+            psk_flags,
+            wep_key_flags,
+            wep_key_type,
+            wep_key0,
+            wep_key1,
+            wep_key2,
+            wep_key3,
+            wep_tx_keyidx: *wep_tx_keyidx.unwrap_or(&0),
+        }
+    }
+
+    fn to_propmap(&self, map: &mut PropMap) {
+        map.insert(
+            "auth-alg".into(),
+            Variant(Box::new(self.authentication_algorithm.clone())),
+        );
+        map.insert("group".into(), Variant(Box::new(self.group.clone())));
+        map.insert(
+            "key-mgmt".into(),
+            Variant(Box::new(self.key_management.clone())),
+        );
+        map.insert(
+            "leap-password".into(),
+            Variant(Box::new(self.leap_password.clone())),
+        );
+        map.insert(
+            "leap-password-flags".into(),
+            Variant(Box::new(self.leap_password_flags.to_i32())),
+        );
+        map.insert(
+            "leap-username".into(),
+            Variant(Box::new(self.leap_username.clone())),
+        );
+        map.insert("name".into(), Variant(Box::new(self.name.clone())));
+        map.insert("pairwise".into(), Variant(Box::new(self.pairwise.clone())));
+        map.insert("proto".into(), Variant(Box::new(self.proto.clone())));
+        map.insert("psk".into(), Variant(Box::new(self.psk.clone())));
+        map.insert(
+            "psk-flags".into(),
+            Variant(Box::new(self.psk_flags.to_i32())),
+        );
+        map.insert(
+            "wep-key-type".into(),
+            Variant(Box::new(self.wep_key_type.to_i32())),
+        );
+        map.insert("wep-key0".into(), Variant(Box::new(self.wep_key0.clone())));
+        map.insert("wep-key1".into(), Variant(Box::new(self.wep_key1.clone())));
+        map.insert("wep-key2".into(), Variant(Box::new(self.wep_key2.clone())));
+        map.insert("wep-key3".into(), Variant(Box::new(self.wep_key3.clone())));
+        map.insert(
+            "wep-tx-keyidx".into(),
+            Variant(Box::new(self.wep_tx_keyidx)),
+        );
     }
 }

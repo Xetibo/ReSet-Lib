@@ -6,8 +6,59 @@ use pulse::context::introspect::{
     CardInfo, CardProfileInfo, SinkInfo, SinkInputInfo, SourceInfo, SourceOutputInfo,
 };
 
+use crate::network::connection::Enum;
+
 #[derive(Debug)]
 pub struct PulseError(pub &'static str);
+
+#[derive(Debug, Clone, Default)]
+pub enum DeviceState {
+    #[default]
+    Idle,
+    Invalid,
+    Suspended,
+    Running,
+}
+
+impl Enum for DeviceState {
+    fn from_i32(num: i32) -> Self {
+        match num {
+            0 => DeviceState::Idle,
+            1 => DeviceState::Invalid,
+            2 => DeviceState::Suspended,
+            _ => DeviceState::Running,
+        }
+    }
+
+    fn to_i32(&self) -> i32 {
+        match self {
+            DeviceState::Idle => 0,
+            DeviceState::Invalid => 1,
+            DeviceState::Suspended => 2,
+            DeviceState::Running => 3,
+        }
+    }
+}
+
+impl Append for DeviceState {
+    fn append_by_ref(&self, iter: &mut arg::IterAppend) {
+        iter.append_struct(|i| i.append(self.to_i32()));
+    }
+}
+
+impl<'a> Get<'a> for DeviceState {
+    fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
+        let index = <i32>::get(i)?;
+        Some(DeviceState::from_i32(index))
+    }
+}
+
+impl Arg for DeviceState {
+    const ARG_TYPE: arg::ArgType = ArgType::Struct;
+    fn signature() -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(i)\0") }
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Source {
@@ -17,6 +68,7 @@ pub struct Source {
     pub channels: u16,
     pub volume: Vec<u32>,
     pub muted: bool,
+    pub active: DeviceState,
 }
 
 unsafe impl Send for Source {}
@@ -31,14 +83,15 @@ impl Append for Source {
             i.append(&self.channels);
             i.append(&self.volume);
             i.append(&self.muted);
+            i.append(&self.active);
         });
     }
 }
 
 impl<'a> Get<'a> for Source {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (index, name, alias, channels, volume, muted) =
-            <(u32, String, String, u16, Vec<u32>, bool)>::get(i)?;
+        let (index, name, alias, channels, volume, muted, active) =
+            <(u32, String, String, u16, Vec<u32>, bool, DeviceState)>::get(i)?;
         Some(Self {
             index,
             name,
@@ -46,6 +99,7 @@ impl<'a> Get<'a> for Source {
             channels,
             volume,
             muted,
+            active,
         })
     }
 }
@@ -53,7 +107,7 @@ impl<'a> Get<'a> for Source {
 impl Arg for Source {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(ussqaub)\0") }
+        unsafe { Signature::from_slice_unchecked("(ussqaub(i))\0") }
     }
 }
 
@@ -80,6 +134,7 @@ impl From<&SourceInfo<'_>> for Source {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
         let muted = value.mute;
+        let active = DeviceState::from_i32(value.state as i32);
         Self {
             index,
             name,
@@ -87,6 +142,7 @@ impl From<&SourceInfo<'_>> for Source {
             channels,
             volume,
             muted,
+            active,
         }
     }
 }
@@ -99,6 +155,7 @@ pub struct Sink {
     pub channels: u16,
     pub volume: Vec<u32>,
     pub muted: bool,
+    pub active: DeviceState,
 }
 
 unsafe impl Send for Sink {}
@@ -113,14 +170,15 @@ impl Append for Sink {
             i.append(&self.channels);
             i.append(&self.volume);
             i.append(&self.muted);
+            i.append(&self.active);
         });
     }
 }
 
 impl<'a> Get<'a> for Sink {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (index, name, alias, channels, volume, muted) =
-            <(u32, String, String, u16, Vec<u32>, bool)>::get(i)?;
+        let (index, name, alias, channels, volume, muted, active) =
+            <(u32, String, String, u16, Vec<u32>, bool, DeviceState)>::get(i)?;
         Some(Self {
             index,
             name,
@@ -128,6 +186,7 @@ impl<'a> Get<'a> for Sink {
             channels,
             volume,
             muted,
+            active,
         })
     }
 }
@@ -135,7 +194,7 @@ impl<'a> Get<'a> for Sink {
 impl Arg for Sink {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(ussqaub)\0") }
+        unsafe { Signature::from_slice_unchecked("(ussqaub(i))\0") }
     }
 }
 
@@ -162,6 +221,7 @@ impl From<&SinkInfo<'_>> for Sink {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
         let muted = value.mute;
+        let active = DeviceState::from_i32(value.mute as i32);
         Self {
             index,
             name,
@@ -169,6 +229,7 @@ impl From<&SinkInfo<'_>> for Sink {
             channels,
             volume,
             muted,
+            active,
         }
     }
 }

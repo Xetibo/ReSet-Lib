@@ -1,4 +1,7 @@
-use dbus::{arg, Path};
+use dbus::{
+    arg::{self, PropMap, RefArg, Variant},
+    Path,
+};
 
 use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::AccessPoint};
 
@@ -98,19 +101,22 @@ impl GetVal<(AccessPoint,)> for AccessPointAdded {
 
 #[derive(Debug)]
 pub struct AccessPointChanged {
-    pub access_point: AccessPoint,
+    pub path: Path<'static>,
+    pub map: PropMap,
 }
 
 impl arg::AppendAll for AccessPointChanged {
     fn append(&self, i: &mut arg::IterAppend) {
-        arg::RefArg::append(&self.access_point, i);
+        arg::RefArg::append(&self.path, i);
+        arg::RefArg::append(&self.map, i);
     }
 }
 
 impl arg::ReadAll for AccessPointChanged {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
         Ok(AccessPointChanged {
-            access_point: i.read()?,
+            path: i.read()?,
+            map: i.read()?,
         })
     }
 }
@@ -120,9 +126,13 @@ impl dbus::message::SignalArgs for AccessPointChanged {
     const INTERFACE: &'static str = "org.xetibo.ReSet";
 }
 
-impl GetVal<(AccessPoint,)> for AccessPointChanged {
-    fn get_value(&self) -> (AccessPoint,) {
-        (self.access_point.clone(),)
+impl GetVal<(Path<'static>, PropMap)> for AccessPointChanged {
+    fn get_value(&self) -> (Path<'static>, PropMap) {
+        let mut map = PropMap::new();
+        for (key, value) in self.map.iter() {
+            map.insert(key.clone(), Variant(value.box_clone()));
+        }
+        (self.path.clone(), map)
     }
 }
 

@@ -627,10 +627,10 @@ pub struct X802Settings {
 
 #[derive(Debug)]
 pub struct Address {
-    address: String,
-    prefix_length: u32,
-    gateway: Option<String>,
-    metric: Option<u32>,
+    pub address: String,
+    pub prefix_length: u32,
+    pub gateway: Option<String>,
+    pub metric: Option<u32>,
 }
 
 impl Address {

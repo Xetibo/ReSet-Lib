@@ -79,16 +79,18 @@ pub fn call_reset_dbus_method<
     I: AppendAll + Sync + Send + 'static,
     O: ReadAll + Sync + Send + 'static,
 >(
+    interface: &str,
     function: &str,
     params: I,
 ) -> Result<O, dbus::Error> {
     let conn = Connection::new_session().unwrap();
     let proxy = conn.with_proxy(
-        "org.xetibo.ReSet",
-        "/org/xetibo/Reset",
+        "org.Xetibo.ReSetDaemon",
+        "/org/Xetibo/ResetDaemon",
         Duration::from_millis(1000),
     );
-    let result: Result<O, dbus::Error> = proxy.method_call("org.xetibo.ReSet", function, params);
+    let result: Result<O, dbus::Error> =
+        proxy.method_call("org.Xetibo.ReSet".to_string() + interface, function, params);
     result
 }
 
@@ -103,6 +105,7 @@ pub fn start_event_listener<
     AddedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + GetVal<AddedType>,
     RemovedEvent: ReadAll + AppendAll + dbus::message::SignalArgs + GetVal<RemovedType>,
 >(
+    interface: String,
     active_listener: Arc<AtomicBool>,
     sender: Arc<Sender<Events<AddedType, RemovedType>>>,
 ) -> Result<(), dbus::Error> {
@@ -111,13 +114,13 @@ pub fn start_event_listener<
         let removed_sender = sender.clone();
         let conn = Connection::new_system().unwrap();
         let mr = AddedEvent::match_rule(
-            Some(&"org.xetibo.ReSet".into()),
-            Some(&Path::from("/org/xetibo/ReSet")),
+            Some(&("org.Xetibo.ReSet".to_string() + &interface).into()),
+            Some(&Path::from("/org/Xetibo/ReSet")),
         )
         .static_clone();
         let mrb = RemovedEvent::match_rule(
-            Some(&"org.xetibo.ReSet".into()),
-            Some(&Path::from("/org/xetibo/ReSet")),
+            Some(&("org.Xetibo.ReSet".to_string() + &interface).into()),
+            Some(&Path::from("/org/Xetibo/ReSet")),
         )
         .static_clone();
         let res = conn.add_match(mr, move |ir: AddedEvent, _, _| {

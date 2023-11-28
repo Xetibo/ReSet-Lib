@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use dbus::arg::{self, prop_cast, PropMap, RefArg, Variant};
+use crate::network::connection::Trust::DEFAULT;
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: PropMap) -> Self;
@@ -625,7 +626,7 @@ pub struct X802Settings {
 //     }
 // }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Address {
     pub address: String,
     pub prefix_length: u32,
@@ -634,6 +635,14 @@ pub struct Address {
 }
 
 impl Address {
+    pub fn new(address: String, prefix_length: u32, gateway: Option<String>, metric: Option<u32>) -> Self {
+        Address { address, prefix_length, gateway, metric }
+    }
+
+    pub fn theBetterNew(address: String, prefix_length: u32) -> Self {
+        Address { address, prefix_length, gateway: None, metric: None }
+    }
+
     pub fn to_map(&self) -> PropMap {
         let mut map = PropMap::new();
         map.insert("address".into(), Variant(Box::new(self.address.clone())));
@@ -829,8 +838,7 @@ impl PropMapConvert for IPV4Settings {
             gateway = gateway_opt.unwrap().clone();
         }
         let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or_else(|| &false);
-        let ignore_auto_dns_routes =
-            *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
+        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
         let may_fail = *prop_cast(&map, "may-fail").unwrap_or_else(|| &true);
         let dns_method: DNSMethod4;
         let method_opt: Option<&String> = prop_cast(&map, "method");
@@ -1007,10 +1015,8 @@ impl PropMapConvert for IPV6Settings {
             gateway = gateway_opt.unwrap().clone();
         }
         let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or_else(|| &false);
-        let ignore_auto_dns_routes =
-            *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
-        let ipv6_privacy =
-            IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or_else(|| &-1));
+        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
+        let ipv6_privacy = IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or_else(|| &-1));
         let may_fail = *prop_cast(&map, "may-fail").unwrap_or_else(|| &true);
         let dns_method: DNSMethod6;
         let method_opt: Option<&String> = prop_cast(&map, "method");
@@ -1105,16 +1111,12 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
             if prefix_length_opt.is_none() {
                 prefix_length = 0;
             } else {
-                prefix_length = arg::cast::<u32>(prefix_length_opt.unwrap())
-                    .unwrap()
-                    .clone();
+                prefix_length = arg::cast::<u32>(prefix_length_opt.unwrap()).unwrap().clone();
             }
             if gateway_opt.is_none() {
                 gateway = None;
             } else {
-                gateway = arg::cast::<Option<String>>(address_opt.unwrap())
-                    .unwrap()
-                    .clone();
+                gateway = arg::cast::<Option<String>>(address_opt.unwrap()).unwrap().clone();
             }
             if metric_opt.is_none() {
                 metric = None;
@@ -1323,8 +1325,7 @@ impl PropMapConvert for WifiSecuritySettings {
             leap_password = leap_password_opt.unwrap().clone();
         }
         let leap_password_flags_opt: Option<&u32> = prop_cast(&map, "leap-password-flags");
-        let leap_password_flags =
-            SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+        let leap_password_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
         let leap_username: String;
         let leap_username_opt: Option<&String> = prop_cast(&map, "leap-username");
         if leap_username_opt.is_none() {
@@ -1363,8 +1364,7 @@ impl PropMapConvert for WifiSecuritySettings {
         let psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
         let psk_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
         let wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
-        let wep_key_flags =
-            SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+        let wep_key_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
         let wep_key_type_opt: Option<&u32> = prop_cast(&map, "wep-key-type");
         let wep_key_type = WEPKeyType::from_i32(*wep_key_type_opt.unwrap_or(&0) as i32);
         let wep_key0: String;

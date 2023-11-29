@@ -90,7 +90,7 @@ pub fn call_reset_dbus_method<
         Duration::from_millis(1000),
     );
     let result: Result<O, dbus::Error> =
-        proxy.method_call("org.Xetibo.ReSet".to_string() + interface, function, params);
+        proxy.method_call("org.Xetibo.ReSet".to_string() + "." + interface, function, params);
     result
 }
 
@@ -114,12 +114,12 @@ pub fn start_event_listener<
         let removed_sender = sender.clone();
         let conn = Connection::new_system().unwrap();
         let mr = AddedEvent::match_rule(
-            Some(&("org.Xetibo.ReSet".to_string() + &interface).into()),
+            Some(&("org.Xetibo.ReSet".to_string() + "." + &interface).into()),
             Some(&Path::from("/org/Xetibo/ReSet")),
         )
         .static_clone();
         let mrb = RemovedEvent::match_rule(
-            Some(&("org.Xetibo.ReSet".to_string() + &interface).into()),
+            Some(&("org.Xetibo.ReSet".to_string() + "." + &interface).into()),
             Some(&Path::from("/org/Xetibo/ReSet")),
         )
         .static_clone();

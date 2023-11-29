@@ -1,4 +1,4 @@
-use dbus::{arg, Path};
+use dbus::{arg::{self, PropMap}, Path};
 
 use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::AccessPoint};
 
@@ -154,4 +154,34 @@ impl GetVal<(Path<'static>,)> for AccessPointRemoved {
     fn get_value(&self) -> (Path<'static>,) {
         (self.access_point.clone(),)
     }
+}
+
+#[derive(Debug)]
+pub struct PropertiesChanged {
+    pub interface: String,
+    pub map: PropMap,
+    pub invalid: Vec<String>,
+}
+
+impl arg::AppendAll for PropertiesChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        arg::RefArg::append(&self.interface, i);
+        arg::RefArg::append(&self.map, i);
+        arg::RefArg::append(&self.invalid, i);
+    }
+}
+
+impl arg::ReadAll for PropertiesChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(PropertiesChanged {
+            interface: i.read()?,
+            map: i.read()?,
+            invalid: i.read()?,
+        })
+    }
+}
+
+impl dbus::message::SignalArgs for PropertiesChanged {
+    const NAME: &'static str = "PropertiesChanged";
+    const INTERFACE: &'static str = "org.freedesktop.DBus.PropertiesChanged";
 }

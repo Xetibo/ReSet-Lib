@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use dbus::arg::{self, prop_cast, PropMap, RefArg, Variant};
-use crate::network::connection::Trust::DEFAULT;
+
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: PropMap) -> Self;
@@ -343,12 +343,12 @@ impl PropMapConvert for EthernetSettings {
         }
         let speed: Option<&u32> = prop_cast(&map, "speed");
         Self {
-            auto_negotiate: *auto_negotiate.unwrap_or_else(|| &true),
+            auto_negotiate: *auto_negotiate.unwrap_or(&true),
             cloned_mac_address,
             duplex,
-            mtu: *mtu.unwrap_or_else(|| &0),
+            mtu: *mtu.unwrap_or(&0),
             name,
-            speed: *speed.unwrap_or_else(|| &0),
+            speed: *speed.unwrap_or(&0),
         }
     }
 
@@ -418,10 +418,10 @@ impl PropMapConvert for VPNSettings {
         Self {
             data,
             name,
-            persistent: *persistent.unwrap_or_else(|| &false),
+            persistent: *persistent.unwrap_or(&false),
             secrets,
             service_type,
-            timeout: *timeout.unwrap_or_else(|| &0),
+            timeout: *timeout.unwrap_or(&0),
             user_name,
         }
     }
@@ -822,7 +822,7 @@ impl PropMapConvert for IPV4Settings {
         } else {
             dns_options = dns_options_opt.unwrap().clone();
         }
-        let dns_priority = *prop_cast(&map, "dns-priority").unwrap_or_else(|| &0);
+        let dns_priority = *prop_cast(&map, "dns-priority").unwrap_or(&0);
         let dns_search: Vec<String>;
         let dns_search_opt: Option<&Vec<String>> = prop_cast(&map, "dns-search");
         if dns_search_opt.is_none() {
@@ -837,9 +837,9 @@ impl PropMapConvert for IPV4Settings {
         } else {
             gateway = gateway_opt.unwrap().clone();
         }
-        let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or_else(|| &false);
-        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
-        let may_fail = *prop_cast(&map, "may-fail").unwrap_or_else(|| &true);
+        let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or(&false);
+        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or(&false);
+        let may_fail = *prop_cast(&map, "may-fail").unwrap_or(&true);
         let dns_method: DNSMethod4;
         let method_opt: Option<&String> = prop_cast(&map, "method");
         if method_opt.is_none() {
@@ -847,7 +847,7 @@ impl PropMapConvert for IPV4Settings {
         } else {
             dns_method = DNSMethod4::from_str(method_opt.unwrap().as_str()).unwrap();
         }
-        let never_default = *prop_cast(&map, "never-default").unwrap_or_else(|| &true);
+        let never_default = *prop_cast(&map, "never-default").unwrap_or(&true);
         let route_data = get_addresses(&map, "route-data");
         Self {
             address_data,
@@ -999,7 +999,7 @@ impl PropMapConvert for IPV6Settings {
         } else {
             dns_options = dns_options_opt.unwrap().clone();
         }
-        let dns_priority = *prop_cast(&map, "dns-priority").unwrap_or_else(|| &0);
+        let dns_priority = *prop_cast(&map, "dns-priority").unwrap_or(&0);
         let dns_search: Vec<String>;
         let dns_search_opt: Option<&Vec<String>> = prop_cast(&map, "dns-search");
         if dns_search_opt.is_none() {
@@ -1014,10 +1014,10 @@ impl PropMapConvert for IPV6Settings {
         } else {
             gateway = gateway_opt.unwrap().clone();
         }
-        let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or_else(|| &false);
-        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or_else(|| &false);
-        let ipv6_privacy = IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or_else(|| &-1));
-        let may_fail = *prop_cast(&map, "may-fail").unwrap_or_else(|| &true);
+        let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or(&false);
+        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or(&false);
+        let ipv6_privacy = IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or(&-1));
+        let may_fail = *prop_cast(&map, "may-fail").unwrap_or(&true);
         let dns_method: DNSMethod6;
         let method_opt: Option<&String> = prop_cast(&map, "method");
         if method_opt.is_none() {
@@ -1025,7 +1025,7 @@ impl PropMapConvert for IPV6Settings {
         } else {
             dns_method = DNSMethod6::from_str(method_opt.unwrap().as_str()).unwrap();
         }
-        let never_default = *prop_cast(&map, "never-default").unwrap_or_else(|| &true);
+        let never_default = *prop_cast(&map, "never-default").unwrap_or(&true);
         let route_data = get_addresses(&map, "route-data");
         Self {
             address_data,
@@ -1111,7 +1111,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
             if prefix_length_opt.is_none() {
                 prefix_length = 0;
             } else {
-                prefix_length = arg::cast::<u32>(prefix_length_opt.unwrap()).unwrap().clone();
+                prefix_length = *arg::cast::<u32>(prefix_length_opt.unwrap()).unwrap();
             }
             if gateway_opt.is_none() {
                 gateway = None;
@@ -1186,9 +1186,9 @@ impl PropMapConvert for ConnectionSettings {
             device_type = device_type_opt.unwrap().clone();
         }
         Self {
-            autoconnect: *autoconnect.unwrap_or_else(|| &false),
-            autoconnect_priority: *autoconnect_priority.unwrap_or_else(|| &-1),
-            metered: *metered.unwrap_or_else(|| &-1),
+            autoconnect: *autoconnect.unwrap_or(&false),
+            autoconnect_priority: *autoconnect_priority.unwrap_or(&-1),
+            metered: *metered.unwrap_or(&-1),
             name,
             device_type,
             uuid,
@@ -1361,9 +1361,9 @@ impl PropMapConvert for WifiSecuritySettings {
         } else {
             psk = psk_opt.unwrap().clone();
         }
-        let psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
+        let _psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
         let psk_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
-        let wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
+        let _wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
         let wep_key_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
         let wep_key_type_opt: Option<&u32> = prop_cast(&map, "wep-key-type");
         let wep_key_type = WEPKeyType::from_i32(*wep_key_type_opt.unwrap_or(&0) as i32);

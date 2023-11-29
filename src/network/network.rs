@@ -104,11 +104,11 @@ impl Append for AccessPoint {
                     i.append(byte);
                 }
             });
-            i.append(&self.strength);
+            i.append(self.strength);
             i.append(&self.associated_connection);
             i.append(&self.dbus_path);
-            i.append(&self.connected);
-            i.append(&self.stored);
+            i.append(self.connected);
+            i.append(self.stored);
         });
     }
 }

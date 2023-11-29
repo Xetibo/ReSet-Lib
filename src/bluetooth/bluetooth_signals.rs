@@ -11,8 +11,7 @@ pub trait OrgFreedesktopDBusIntrospectable {
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C> {
 
     fn introspect(&self) -> Result<String, dbus::Error> {
-        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .and_then(|r: (String, )| Ok(r.0, ))
+        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String, )| r.0)
     }
 }
 
@@ -77,7 +76,6 @@ impl dbus::message::SignalArgs for BluetoothDeviceRemoved {
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> OrgFreedesktopDBusObjectManager for blocking::Proxy<'a, C> {
 
     fn get_managed_objects(&self) -> Result<::std::collections::HashMap<dbus::Path<'static>, ::std::collections::HashMap<String, arg::PropMap>>, dbus::Error> {
-        self.method_call("org.freedesktop.DBus.ObjectManager", "GetManagedObjects", ())
-            .and_then(|r: (::std::collections::HashMap<dbus::Path<'static>, ::std::collections::HashMap<String, arg::PropMap>>, )| Ok(r.0, ))
+        self.method_call("org.freedesktop.DBus.ObjectManager", "GetManagedObjects", ()).map(|r: (::std::collections::HashMap<dbus::Path<'static>, ::std::collections::HashMap<String, arg::PropMap>>, )| r.0)
     }
 }

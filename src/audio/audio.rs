@@ -57,13 +57,13 @@ unsafe impl Sync for Source {}
 impl Append for Source {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
-            i.append(&self.index);
+            i.append(self.index);
             i.append(&self.name);
             i.append(&self.alias);
-            i.append(&self.channels);
+            i.append(self.channels);
             i.append(&self.volume);
-            i.append(&self.muted);
-            i.append(&self.active);
+            i.append(self.muted);
+            i.append(self.active);
         });
     }
 }
@@ -144,13 +144,13 @@ unsafe impl Sync for Sink {}
 impl Append for Sink {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
-            i.append(&self.index);
+            i.append(self.index);
             i.append(&self.name);
             i.append(&self.alias);
-            i.append(&self.channels);
+            i.append(self.channels);
             i.append(&self.volume);
-            i.append(&self.muted);
-            i.append(&self.active);
+            i.append(self.muted);
+            i.append(self.active);
         });
     }
 }
@@ -229,14 +229,14 @@ pub struct InputStream {
 impl Append for InputStream {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
-            i.append(&self.index);
+            i.append(self.index);
             i.append(&self.name);
             i.append(&self.application_name);
-            i.append(&self.sink_index);
-            i.append(&self.channels);
+            i.append(self.sink_index);
+            i.append(self.channels);
             i.append(&self.volume);
-            i.append(&self.muted);
-            i.append(&self.corked);
+            i.append(self.muted);
+            i.append(self.corked);
         });
     }
 }
@@ -315,14 +315,14 @@ pub struct OutputStream {
 impl Append for OutputStream {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
-            i.append(&self.index);
+            i.append(self.index);
             i.append(&self.name);
             i.append(&self.application_name);
-            i.append(&self.source_index);
-            i.append(&self.channels);
+            i.append(self.source_index);
+            i.append(self.channels);
             i.append(&self.volume);
-            i.append(&self.muted);
-            i.append(&self.corked);
+            i.append(self.muted);
+            i.append(self.corked);
         });
     }
 }
@@ -397,7 +397,7 @@ pub struct Card {
 impl Append for Card {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
-            i.append(&self.index);
+            i.append(self.index);
             i.append(&self.name);
             i.append(&self.profiles);
             i.append(&self.active_profile);
@@ -432,7 +432,7 @@ impl From<&CardInfo<'_>> for Card {
         if name_opt.is_none() {
             name = String::from("Unnamed");
         } else {
-            name = String::from(name_opt.clone().unwrap());
+            name = name_opt.clone().unwrap();
         }
         let index = value.index;
         let mut profiles = Vec::new();
@@ -467,7 +467,7 @@ impl Append for CardProfile {
         iter.append_struct(|i| {
             i.append(&self.name);
             i.append(&self.description);
-            i.append(&self.available);
+            i.append(self.available);
         });
     }
 }

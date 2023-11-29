@@ -74,15 +74,15 @@ impl Append for BluetoothDevice {
     fn append_by_ref(&self, iter: &mut arg::IterAppend) {
         iter.append_struct(|i| {
             i.append(&self.path);
-            i.append(&self.rssi);
+            i.append(self.rssi);
             i.append(&self.name);
             i.append(&self.alias);
             i.append(&self.adapter);
-            i.append(&self.trusted);
-            i.append(&self.bonded);
-            i.append(&self.paired);
-            i.append(&self.blocked);
-            i.append(&self.connected);
+            i.append(self.trusted);
+            i.append(self.bonded);
+            i.append(self.paired);
+            i.append(self.blocked);
+            i.append(self.connected);
             i.append(&self.icon);
             i.append(&self.address);
         });

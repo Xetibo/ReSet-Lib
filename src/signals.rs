@@ -183,5 +183,5 @@ impl arg::ReadAll for PropertiesChanged {
 
 impl dbus::message::SignalArgs for PropertiesChanged {
     const NAME: &'static str = "PropertiesChanged";
-    const INTERFACE: &'static str = "org.freedesktop.DBus.PropertiesChanged";
+    const INTERFACE: &'static str = "org.freedesktop.DBus.Properties";
 }

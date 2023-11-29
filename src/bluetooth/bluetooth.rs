@@ -92,7 +92,7 @@ impl Append for BluetoothDevice {
 impl Arg for BluetoothDevice {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(nssobbbbbss)\0") }
+        unsafe { Signature::from_slice_unchecked("(onssobbbbbss)\0") }
     }
 }
 
@@ -101,7 +101,7 @@ impl RefArg for BluetoothDevice {
         ArgType::Struct
     }
     fn signature(&self) -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(nssobbbbbss)\0") }
+        unsafe { Signature::from_slice_unchecked("(onssobbbbbss)\0") }
     }
     fn append(&self, i: &mut IterAppend) {
         self.append_by_ref(i);

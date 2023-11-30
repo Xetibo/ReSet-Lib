@@ -36,6 +36,37 @@ impl dbus::message::SignalArgs for BluetoothDeviceAdded {
     const INTERFACE: &'static str = "org.Xetibo.ReSetBluetooth";
 }
 
+
+#[derive(Debug)]
+pub struct BluetoothDeviceChanged {
+    pub bluetooth_device: BluetoothDevice,
+}
+
+impl arg::AppendAll for BluetoothDeviceChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        arg::RefArg::append(&self.bluetooth_device, i);
+    }
+}
+
+impl arg::ReadAll for BluetoothDeviceChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(BluetoothDeviceChanged {
+            bluetooth_device: i.read()?,
+        })
+    }
+}
+
+impl GetVal<(BluetoothDevice,)> for BluetoothDeviceChanged {
+    fn get_value(&self) -> (BluetoothDevice,) {
+        (self.bluetooth_device.clone(),)
+    }
+}
+
+impl dbus::message::SignalArgs for BluetoothDeviceChanged {
+    const NAME: &'static str = "BluetoothDeviceChanged";
+    const INTERFACE: &'static str = "org.Xetibo.ReSetBluetooth";
+}
+
 #[derive(Debug)]
 pub struct BluetoothDeviceRemoved {
     pub bluetooth_device: Path<'static>,

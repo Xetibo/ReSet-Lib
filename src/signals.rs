@@ -1,6 +1,6 @@
 use dbus::{arg::{self, PropMap}, Path};
 
-use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::WifiDevice};
+use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::{WifiDevice, AccessPoint}};
 
 pub trait GetVal<T> {
     fn get_value(&self) -> T;
@@ -129,7 +129,7 @@ impl GetVal<(WifiDevice,)> for AccessPointAdded {
 
 #[derive(Debug)]
 pub struct AccessPointChanged {
-    pub access_point: WifiDevice,
+    pub access_point: AccessPoint,
 }
 
 impl arg::AppendAll for AccessPointChanged {
@@ -151,8 +151,8 @@ impl dbus::message::SignalArgs for AccessPointChanged {
     const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
 }
 
-impl GetVal<(WifiDevice,)> for AccessPointChanged {
-    fn get_value(&self) -> (WifiDevice,) {
+impl GetVal<(AccessPoint,)> for AccessPointChanged {
+    fn get_value(&self) -> (AccessPoint,) {
         (self.access_point.clone(),)
     }
 }

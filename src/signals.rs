@@ -1,6 +1,6 @@
 use dbus::{arg::{self, PropMap}, Path};
 
-use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::AccessPoint};
+use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::WifiDevice};
 
 pub trait GetVal<T> {
     fn get_value(&self) -> T;
@@ -99,7 +99,7 @@ impl GetVal<(Path<'static>,)> for BluetoothDeviceRemoved {
 
 #[derive(Debug)]
 pub struct AccessPointAdded {
-    pub access_point: AccessPoint,
+    pub access_point: WifiDevice,
 }
 
 impl arg::AppendAll for AccessPointAdded {
@@ -121,15 +121,15 @@ impl dbus::message::SignalArgs for AccessPointAdded {
     const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
 }
 
-impl GetVal<(AccessPoint,)> for AccessPointAdded {
-    fn get_value(&self) -> (AccessPoint,) {
+impl GetVal<(WifiDevice,)> for AccessPointAdded {
+    fn get_value(&self) -> (WifiDevice,) {
         (self.access_point.clone(),)
     }
 }
 
 #[derive(Debug)]
 pub struct AccessPointChanged {
-    pub access_point: AccessPoint,
+    pub access_point: WifiDevice,
 }
 
 impl arg::AppendAll for AccessPointChanged {
@@ -151,8 +151,8 @@ impl dbus::message::SignalArgs for AccessPointChanged {
     const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
 }
 
-impl GetVal<(AccessPoint,)> for AccessPointChanged {
-    fn get_value(&self) -> (AccessPoint,) {
+impl GetVal<(WifiDevice,)> for AccessPointChanged {
+    fn get_value(&self) -> (WifiDevice,) {
         (self.access_point.clone(),)
     }
 }
@@ -184,6 +184,36 @@ impl dbus::message::SignalArgs for AccessPointRemoved {
 impl GetVal<(Path<'static>,)> for AccessPointRemoved {
     fn get_value(&self) -> (Path<'static>,) {
         (self.access_point.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct WifiDeviceChanged {
+    pub wifi_device: WifiDevice,
+}
+
+impl arg::AppendAll for WifiDeviceChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        arg::RefArg::append(&self.wifi_device, i);
+    }
+}
+
+impl arg::ReadAll for WifiDeviceChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(WifiDeviceChanged {
+            wifi_device: i.read()?,
+        })
+    }
+}
+
+impl dbus::message::SignalArgs for WifiDeviceChanged {
+    const NAME: &'static str = "WifiDeviceChanged";
+    const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
+}
+
+impl GetVal<(WifiDevice,)> for WifiDeviceChanged {
+    fn get_value(&self) -> (WifiDevice,) {
+        (self.wifi_device.clone(),)
     }
 }
 

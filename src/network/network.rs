@@ -161,3 +161,71 @@ impl RefArg for AccessPoint {
         Box::new(self.clone())
     }
 }
+
+#[derive(Debug, Clone, Default)]
+pub struct WifiDevice {
+    pub path: Path<'static>,
+    pub name: String,
+    pub active_access_point: Path<'static>,
+}
+
+unsafe impl Send for WifiDevice {}
+unsafe impl Sync for WifiDevice {}
+
+impl Append for WifiDevice {
+    fn append_by_ref(&self, iter: &mut arg::IterAppend) {
+        iter.append_struct(|i| {
+            i.append(&self.path);
+            i.append(&self.name);
+            i.append(&self.active_access_point);
+        });
+    }
+}
+
+impl<'a> Get<'a> for WifiDevice {
+    fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
+        let (path, name, active_access_point) = <(Path<'static>, String, Path<'static>)>::get(i)?;
+        Some(WifiDevice {
+            path,
+            name,
+            active_access_point,
+        })
+    }
+}
+
+impl Arg for WifiDevice {
+    const ARG_TYPE: arg::ArgType = ArgType::Struct;
+    fn signature() -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(oso)\0") }
+    }
+}
+
+impl RefArg for WifiDevice {
+    fn arg_type(&self) -> ArgType {
+        ArgType::Struct
+    }
+    fn signature(&self) -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(oso)\0") }
+    }
+    fn append(&self, i: &mut IterAppend) {
+        self.append_by_ref(i);
+    }
+    #[inline]
+    fn as_any(&self) -> &dyn any::Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+    #[inline]
+    fn as_any_mut(&mut self) -> &mut dyn any::Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+
+    fn box_clone(&self) -> Box<dyn RefArg + 'static> {
+        Box::new(self.clone())
+    }
+}

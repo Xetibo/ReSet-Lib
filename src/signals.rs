@@ -99,7 +99,7 @@ impl GetVal<(Path<'static>,)> for BluetoothDeviceRemoved {
 
 #[derive(Debug)]
 pub struct AccessPointAdded {
-    pub access_point: WifiDevice,
+    pub access_point: AccessPoint,
 }
 
 impl arg::AppendAll for AccessPointAdded {
@@ -121,8 +121,8 @@ impl dbus::message::SignalArgs for AccessPointAdded {
     const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
 }
 
-impl GetVal<(WifiDevice,)> for AccessPointAdded {
-    fn get_value(&self) -> (WifiDevice,) {
+impl GetVal<(AccessPoint,)> for AccessPointAdded {
+    fn get_value(&self) -> (AccessPoint,) {
         (self.access_point.clone(),)
     }
 }

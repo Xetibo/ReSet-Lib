@@ -125,3 +125,74 @@ impl RefArg for BluetoothDevice {
         Box::new(self.clone())
     }
 }
+
+#[derive(Debug, Clone, Default)]
+pub struct BluetoothAdapter {
+    pub path: Path<'static>,
+    pub alias: String,
+    pub powered: bool,
+    pub discoverable: bool,
+}
+
+unsafe impl Send for BluetoothAdapter {}
+unsafe impl Sync for BluetoothAdapter {}
+
+impl<'a> Get<'a> for BluetoothAdapter {
+    fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
+        let (path, alias, powered, discoverable) = <(Path<'static>, String, bool, bool)>::get(i)?;
+        Some(BluetoothAdapter {
+            path,
+            alias,
+            powered,
+            discoverable,
+        })
+    }
+}
+
+impl Append for BluetoothAdapter {
+    fn append_by_ref(&self, iter: &mut arg::IterAppend) {
+        iter.append_struct(|i| {
+            i.append(&self.path);
+            i.append(&self.alias);
+            i.append(self.powered);
+            i.append(self.discoverable);
+        });
+    }
+}
+
+impl Arg for BluetoothAdapter {
+    const ARG_TYPE: arg::ArgType = ArgType::Struct;
+    fn signature() -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(osbb)\0") }
+    }
+}
+
+impl RefArg for BluetoothAdapter {
+    fn arg_type(&self) -> ArgType {
+        ArgType::Struct
+    }
+    fn signature(&self) -> Signature<'static> {
+        unsafe { Signature::from_slice_unchecked("(osbb)\0") }
+    }
+    fn append(&self, i: &mut IterAppend) {
+        self.append_by_ref(i);
+    }
+    #[inline]
+    fn as_any(&self) -> &dyn any::Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+    #[inline]
+    fn as_any_mut(&mut self) -> &mut dyn any::Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+
+    fn box_clone(&self) -> Box<dyn RefArg + 'static> {
+        Box::new(self.clone())
+    }
+}

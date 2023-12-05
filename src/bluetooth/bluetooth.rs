@@ -132,6 +132,7 @@ pub struct BluetoothAdapter {
     pub alias: String,
     pub powered: bool,
     pub discoverable: bool,
+    pub pairable: bool,
 }
 
 unsafe impl Send for BluetoothAdapter {}
@@ -139,12 +140,13 @@ unsafe impl Sync for BluetoothAdapter {}
 
 impl<'a> Get<'a> for BluetoothAdapter {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (path, alias, powered, discoverable) = <(Path<'static>, String, bool, bool)>::get(i)?;
+        let (path, alias, powered, discoverable, pairable) = <(Path<'static>, String, bool, bool, bool)>::get(i)?;
         Some(BluetoothAdapter {
             path,
             alias,
             powered,
             discoverable,
+            pairable,
         })
     }
 }
@@ -156,6 +158,7 @@ impl Append for BluetoothAdapter {
             i.append(&self.alias);
             i.append(self.powered);
             i.append(self.discoverable);
+            i.append(self.pairable);
         });
     }
 }
@@ -163,7 +166,7 @@ impl Append for BluetoothAdapter {
 impl Arg for BluetoothAdapter {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(osbb)\0") }
+        unsafe { Signature::from_slice_unchecked("(osbbb)\0") }
     }
 }
 
@@ -172,7 +175,7 @@ impl RefArg for BluetoothAdapter {
         ArgType::Struct
     }
     fn signature(&self) -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(osbb)\0") }
+        unsafe { Signature::from_slice_unchecked("(osbbb)\0") }
     }
     fn append(&self, i: &mut IterAppend) {
         self.append_by_ref(i);

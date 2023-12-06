@@ -11,6 +11,56 @@ use crate::network::connection::Enum;
 #[derive(Debug)]
 pub struct PulseError(pub &'static str);
 
+pub enum Status {
+    RUNNING,
+    SUSPENDED,
+    IDLE,
+}
+
+pub enum Channel {
+    MONO,
+    STEREO,
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub struct Volume {
+    value: u32,
+}
+
+impl Volume {
+    pub fn from_i32(value: i32) -> Option<Self> {
+        match value {
+            i if i < 0 => None,
+            i if i > 100 => None,
+            _ => Some(Volume {
+                value: value as u32,
+            }),
+        }
+    }
+
+    pub fn add(&mut self, value: i32) {
+        let temporary = self.value as i32 + value;
+        match temporary {
+            i if i > 100 => self.value = 100,
+            i if i < 0 => self.value = 0,
+            _ => self.value = temporary as u32,
+        }
+    }
+}
+
+#[test]
+fn volume_test() {
+    let failvolume = Volume::from_i32(101);
+    assert!(failvolume.is_none());
+    let failvolume = Volume::from_i32(-1);
+    assert!(failvolume.is_none());
+    let volume = Volume::from_i32(78);
+    assert!(volume.is_some());
+    let mut volume = volume.unwrap();
+    volume.add(200);
+    assert_eq!(Volume::from_i32(100).unwrap(), volume);
+}
+
 #[derive(Debug, Clone, Default)]
 pub enum DeviceState {
     #[default]
@@ -93,36 +143,29 @@ impl Arg for Source {
 
 impl From<&SourceInfo<'_>> for Source {
     fn from(value: &SourceInfo<'_>) -> Self {
-        let name_opt = &value.name;
-        let alias_opt = &value.description;
-        let name: String;
-        let alias: String;
-        if name_opt.is_none() {
-            name = String::from("");
+        let name = if let Some(name_opt) = &value.name {
+            String::from(name_opt.clone())
         } else {
-            name = String::from(name_opt.clone().unwrap());
-        }
-        if alias_opt.is_none() {
-            alias = String::from("");
+            String::from("")
+        };
+        let alias = if let Some(alias_opt) = &value.description {
+            String::from(alias_opt.clone())
         } else {
-            alias = String::from(alias_opt.clone().unwrap());
-        }
-        let index = value.index;
+            String::from("")
+        };
         let channels = value.channel_map.len() as u16;
         let mut volume = vec![0; channels as usize];
         for i in 0..channels as usize {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
-        let muted = value.mute;
-        let active = value.state as i32;
         Self {
-            index,
+            index: value.index,
             name,
             alias,
             channels,
             volume,
-            muted,
-            active,
+            muted: value.mute,
+            active: value.state as i32,
         }
     }
 }
@@ -180,36 +223,29 @@ impl Arg for Sink {
 
 impl From<&SinkInfo<'_>> for Sink {
     fn from(value: &SinkInfo<'_>) -> Self {
-        let name_opt = &value.name;
-        let alias_opt = &value.description;
-        let name: String;
-        let alias: String;
-        if name_opt.is_none() {
-            name = String::from("");
+        let name = if let Some(name_opt) = &value.name {
+            String::from(name_opt.clone())
         } else {
-            name = String::from(name_opt.clone().unwrap());
-        }
-        if alias_opt.is_none() {
-            alias = String::from("");
+            String::from("")
+        };
+        let alias = if let Some(alias_opt) = &value.description {
+            String::from(alias_opt.clone())
         } else {
-            alias = String::from(alias_opt.clone().unwrap());
-        }
-        let index = value.index;
+            String::from("")
+        };
         let channels = value.channel_map.len() as u16;
         let mut volume = vec![0; channels as usize];
         for i in 0..channels as usize {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
-        let muted = value.mute;
-        let active = value.mute as i32;
         Self {
-            index,
+            index: value.index,
             name,
             alias,
             channels,
             volume,
-            muted,
-            active,
+            muted: value.mute,
+            active: value.mute as i32,
         }
     }
 }
@@ -267,35 +303,29 @@ impl Arg for InputStream {
 
 impl From<&SinkInputInfo<'_>> for InputStream {
     fn from(value: &SinkInputInfo<'_>) -> Self {
-        let name_opt = &value.name;
-        let name: String;
-        if name_opt.is_none() {
-            name = String::from("");
+        let name = if let Some(name_opt) = &value.name {
+            String::from(name_opt.clone())
         } else {
-            name = String::from(name_opt.clone().unwrap());
-        }
+            String::from("")
+        };
         let application_name = value
             .proplist
             .get_str("application.name")
             .unwrap_or_default();
-        let sink_index = value.sink;
-        let index = value.index;
         let channels = value.channel_map.len() as u16;
         let mut volume = vec![0; channels as usize];
         for i in 0..channels as usize {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
-        let muted = value.mute;
-        let corked = value.corked;
         Self {
-            index,
+            index: value.index,
             name,
             application_name,
-            sink_index,
+            sink_index: value.sink,
             channels,
             volume,
-            muted,
-            corked,
+            muted: value.mute,
+            corked: value.corked,
         }
     }
 }
@@ -353,35 +383,29 @@ impl Arg for OutputStream {
 
 impl From<&SourceOutputInfo<'_>> for OutputStream {
     fn from(value: &SourceOutputInfo<'_>) -> Self {
-        let name_opt = &value.name;
-        let name: String;
-        if name_opt.is_none() {
-            name = String::from("");
+        let name = if let Some(name_opt) = &value.name {
+            String::from(name_opt.clone())
         } else {
-            name = String::from(name_opt.clone().unwrap());
-        }
+            String::from("")
+        };
         let application_name = value
             .proplist
             .get_str("application.name")
             .unwrap_or_default();
-        let source_index = value.source;
-        let index = value.index;
         let channels = value.channel_map.len() as u16;
         let mut volume = vec![0; channels as usize];
         for i in 0..channels as usize {
             unsafe { *volume.get_unchecked_mut(i) = value.volume.get()[i].0 };
         }
-        let muted = value.mute;
-        let corked = value.corked;
         Self {
-            index,
+            index: value.index,
             name,
             application_name,
-            source_index,
+            source_index: value.source,
             channels,
             volume,
-            muted,
-            corked,
+            muted: value.mute,
+            corked: value.corked,
         }
     }
 }
@@ -427,25 +451,21 @@ impl Arg for Card {
 
 impl From<&CardInfo<'_>> for Card {
     fn from(value: &CardInfo<'_>) -> Self {
-        let name_opt = &value.proplist.get_str("alsa.card_name");
-        let name: String;
-        if name_opt.is_none() {
-            name = String::from("Unnamed");
+        let name = if let Some(name_opt) = &value.proplist.get_str("alsa.card_name") {
+            name_opt.clone()
         } else {
-            name = name_opt.clone().unwrap();
-        }
+            String::from("Unnamed")
+        };
         let index = value.index;
         let mut profiles = Vec::new();
         for profile in value.profiles.iter() {
             profiles.push(CardProfile::from(profile));
         }
-        let profile_opt = value.active_profile.as_ref();
-        let active_profile: String;
-        if profile_opt.is_none() {
-            active_profile = String::from("Off");
+        let active_profile = if let Some(profile_opt) = value.active_profile.as_ref() {
+            profile_opt.name.clone().unwrap().to_string()
         } else {
-            active_profile = profile_opt.unwrap().name.clone().unwrap().to_string();
-        }
+            String::from("Off")
+        };
         Self {
             index,
             name,
@@ -492,25 +512,20 @@ impl Arg for CardProfile {
 
 impl From<&CardProfileInfo<'_>> for CardProfile {
     fn from(value: &CardProfileInfo<'_>) -> Self {
-        let name_opt = &value.name;
-        let name: String;
-        if name_opt.is_none() {
-            name = String::from("");
+        let name = if let Some(name_opt) = &value.name {
+            String::from(name_opt.clone())
         } else {
-            name = String::from(name_opt.clone().unwrap());
-        }
-        let description_opt = &value.description;
-        let description: String;
-        if description_opt.is_none() {
-            description = String::from("");
+            String::from("")
+        };
+        let description = if let Some(description_opt) = &value.description {
+            String::from(description_opt.clone())
         } else {
-            description = String::from(description_opt.clone().unwrap());
-        }
-        let available = value.available;
+            String::from("")
+        };
         Self {
             name,
             description,
-            available,
+            available: value.available,
         }
     }
 }

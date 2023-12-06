@@ -140,7 +140,8 @@ unsafe impl Sync for BluetoothAdapter {}
 
 impl<'a> Get<'a> for BluetoothAdapter {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (path, alias, powered, discoverable, pairable) = <(Path<'static>, String, bool, bool, bool)>::get(i)?;
+        let (path, alias, powered, discoverable, pairable) =
+            <(Path<'static>, String, bool, bool, bool)>::get(i)?;
         Some(BluetoothAdapter {
             path,
             alias,

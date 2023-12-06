@@ -1,11 +1,11 @@
 use directories_next as dirs;
 use std::{fmt, fs, path::PathBuf};
 
-mod tests;
 pub mod audio;
-pub mod network;
 pub mod bluetooth;
+pub mod network;
 pub mod signals;
+mod tests;
 pub mod utils;
 
 #[derive(Debug, Clone)]

@@ -1,6 +1,12 @@
-use dbus::{arg::{self, PropMap}, Path};
+use dbus::{
+    arg::{self, PropMap},
+    Path,
+};
 
-use crate::{bluetooth::bluetooth::BluetoothDevice, network::network::{WifiDevice, AccessPoint}};
+use crate::{
+    bluetooth::bluetooth_structures::BluetoothDevice,
+    network::network_structures::{AccessPoint, WifiDevice},
+};
 
 pub trait GetVal<T> {
     fn get_value(&self) -> T;
@@ -35,7 +41,6 @@ impl dbus::message::SignalArgs for BluetoothDeviceAdded {
     const NAME: &'static str = "BluetoothDeviceAdded";
     const INTERFACE: &'static str = "org.Xetibo.ReSetBluetooth";
 }
-
 
 #[derive(Debug)]
 pub struct BluetoothDeviceChanged {

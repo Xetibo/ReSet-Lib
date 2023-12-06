@@ -245,7 +245,7 @@ impl From<&SinkInfo<'_>> for Sink {
             channels,
             volume,
             muted: value.mute,
-            active: value.mute as i32,
+            active: value.state as i32,
         }
     }
 }

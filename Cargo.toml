@@ -1,5 +1,5 @@
 [package]
-name = "re_set_lib"
+name = "reset_lib"
 version = "0.6.4"
 edition = "2021"
 description = "Data structure library for ReSet"

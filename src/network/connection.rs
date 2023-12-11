@@ -961,7 +961,7 @@ impl Enum for IPV6PrivacyMode {
 #[derive(Debug, Default)]
 pub struct IPV6Settings {
     pub address_data: Vec<Address>,
-    pub dns: Vec<u32>,
+    pub dns: Vec<Vec<u8>>,
     pub dns_options: Vec<String>,
     pub dns_priority: i32,
     pub dns_search: Vec<String>,
@@ -978,7 +978,7 @@ pub struct IPV6Settings {
 impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
-        let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
+        let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {

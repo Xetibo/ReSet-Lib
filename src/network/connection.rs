@@ -207,7 +207,7 @@ impl Enum for Mode {
     }
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub enum Band {
     _5GHZ,
     _24GHZ,

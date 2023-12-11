@@ -1155,7 +1155,7 @@ impl PropMapConvert for ConnectionSettings {
         let name = if let Some(name_opt) = name_opt {
             name_opt.clone()
         } else {
-            String::from("")
+            String::from("connection")
         };
         let device_type_opt: Option<&String> = prop_cast(&map, "type");
         let device_type = if let Some(device_type_opt) = device_type_opt {

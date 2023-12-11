@@ -801,7 +801,7 @@ pub struct IPV4Settings {
     pub ignore_auto_dns: bool,
     pub ignore_auto_dns_routes: bool,
     pub may_fail: bool,
-    pub dns_method: DNSMethod4,
+    pub method: DNSMethod4,
     pub never_default: bool,
     pub route_data: Vec<Address>,
 }
@@ -855,7 +855,7 @@ impl PropMapConvert for IPV4Settings {
             ignore_auto_dns,
             ignore_auto_dns_routes,
             may_fail,
-            dns_method,
+            method: dns_method,
             never_default,
             route_data,
         }
@@ -889,8 +889,8 @@ impl PropMapConvert for IPV4Settings {
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
         map.insert(
-            "dns-method".into(),
-            Variant(Box::new(self.dns_method.to_i32())),
+            "method".into(),
+            Variant(Box::new(self.method.to_i32())),
         );
         map.insert(
             "never-default".into(),

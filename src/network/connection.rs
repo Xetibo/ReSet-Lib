@@ -89,7 +89,9 @@ impl Connection {
         map.insert("connection".into(), self.settings.to_propmap());
         match &self.device {
             TypeSettings::WIFI(wifi) => map.insert("802-11-wireless".into(), wifi.to_propmap()),
-            TypeSettings::ETHERNET(ethernet) => map.insert("802-3-ethernet".into(), ethernet.to_propmap()),
+            TypeSettings::ETHERNET(ethernet) => {
+                map.insert("802-3-ethernet".into(), ethernet.to_propmap())
+            }
             TypeSettings::VPN(vpn) => map.insert("vpn".into(), vpn.to_propmap()),
             TypeSettings::None => None,
         };
@@ -791,7 +793,7 @@ impl Enum for DNSMethod6 {
 #[derive(Debug, Default)]
 pub struct IPV4Settings {
     pub address_data: Vec<Address>,
-    pub dns: Vec<u8>,
+    pub dns: Vec<u32>,
     pub dns_options: Vec<String>,
     pub dns_priority: i32,
     pub dns_search: Vec<String>,
@@ -807,7 +809,7 @@ pub struct IPV4Settings {
 impl PropMapConvert for IPV4Settings {
     fn from_propmap(map: PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
-        let dns_opt: Option<&Vec<u8>> = prop_cast(&map, "dns");
+        let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {
@@ -959,7 +961,7 @@ impl Enum for IPV6PrivacyMode {
 #[derive(Debug, Default)]
 pub struct IPV6Settings {
     pub address_data: Vec<Address>,
-    pub dns: Vec<u8>,
+    pub dns: Vec<u32>,
     pub dns_options: Vec<String>,
     pub dns_priority: i32,
     pub dns_search: Vec<String>,
@@ -976,7 +978,7 @@ pub struct IPV6Settings {
 impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
-        let dns_opt: Option<&Vec<u8>> = prop_cast(&map, "dns");
+        let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {

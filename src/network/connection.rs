@@ -1414,10 +1414,12 @@ impl PropMapConvert for WifiSecuritySettings {
 
     fn to_propmap(&self) -> PropMap {
         let mut map = PropMap::new();
-        map.insert(
-            "auth-alg".into(),
-            Variant(Box::new(self.authentication_algorithm.clone())),
-        );
+        if !self.authentication_algorithm.is_empty() {
+            map.insert(
+                "auth-alg".into(),
+                Variant(Box::new(self.authentication_algorithm.clone())),
+            );
+        }
         map.insert("group".into(), Variant(Box::new(self.group.clone())));
         map.insert(
             "key-mgmt".into(),

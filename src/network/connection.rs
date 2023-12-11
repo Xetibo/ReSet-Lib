@@ -968,7 +968,7 @@ pub struct IPV6Settings {
     pub gateway: String,
     pub ignore_auto_dns: bool,
     pub ignore_auto_dns_routes: bool,
-    pub ipv6_privacy: IPV6PrivacyMode,
+    pub ip6_privacy: IPV6PrivacyMode,
     pub may_fail: bool,
     pub method: DNSMethod6,
     pub never_default: bool,
@@ -1025,7 +1025,7 @@ impl PropMapConvert for IPV6Settings {
             gateway,
             ignore_auto_dns,
             ignore_auto_dns_routes,
-            ipv6_privacy,
+            ip6_privacy: ipv6_privacy,
             may_fail,
             method: dns_method,
             never_default,
@@ -1060,8 +1060,8 @@ impl PropMapConvert for IPV6Settings {
             Variant(Box::new(self.ignore_auto_dns_routes)),
         );
         map.insert(
-            "ipv6-privacy".into(),
-            Variant(Box::new(self.ipv6_privacy.to_i32())),
+            "ip6-privacy".into(),
+            Variant(Box::new(self.ip6_privacy.to_i32())),
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
         map.insert(

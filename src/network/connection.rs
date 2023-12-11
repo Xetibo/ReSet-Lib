@@ -1256,7 +1256,6 @@ pub struct WifiSecuritySettings {
     pub pairwise: Vec<String>,
     pub proto: Vec<String>,
     pub psk: String,
-    pub psk_flags: SecretSettingsFlag,
     pub wep_key_flags: SecretSettingsFlag,
     pub wep_key_type: WEPKeyType,
     pub wep_key0: String,
@@ -1326,8 +1325,6 @@ impl PropMapConvert for WifiSecuritySettings {
         } else {
             String::from("")
         };
-        let _psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
-        let psk_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
         let _wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
         let wep_key_flags =
             SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
@@ -1369,7 +1366,6 @@ impl PropMapConvert for WifiSecuritySettings {
             pairwise,
             proto,
             psk,
-            psk_flags,
             wep_key_flags,
             wep_key_type,
             wep_key0,
@@ -1407,10 +1403,6 @@ impl PropMapConvert for WifiSecuritySettings {
         map.insert("pairwise".into(), Variant(Box::new(self.pairwise.clone())));
         map.insert("proto".into(), Variant(Box::new(self.proto.clone())));
         map.insert("psk".into(), Variant(Box::new(self.psk.clone())));
-        map.insert(
-            "psk-flags".into(),
-            Variant(Box::new(self.psk_flags.to_i32())),
-        );
         map.insert(
             "wep-key-type".into(),
             Variant(Box::new(self.wep_key_type.to_i32())),

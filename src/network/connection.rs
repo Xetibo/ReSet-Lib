@@ -835,7 +835,7 @@ impl PropMapConvert for IPV4Settings {
             String::from("")
         };
         let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or(&false);
-        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or(&false);
+        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-routes").unwrap_or(&false);
         let may_fail = *prop_cast(&map, "may-fail").unwrap_or(&true);
         let method_opt: Option<&String> = prop_cast(&map, "method");
         let dns_method = if let Some(method_opt) = method_opt {
@@ -967,7 +967,7 @@ pub struct IPV6Settings {
     pub dns_search: Vec<String>,
     pub gateway: String,
     pub ignore_auto_dns: bool,
-    pub ignore_auto_dns_routes: bool,
+    pub ignore_auto_routes: bool,
     pub ip6_privacy: IPV6PrivacyMode,
     pub may_fail: bool,
     pub method: DNSMethod6,
@@ -1004,7 +1004,7 @@ impl PropMapConvert for IPV6Settings {
             String::from("")
         };
         let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or(&false);
-        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-dns-routes").unwrap_or(&false);
+        let ignore_auto_routes = *prop_cast(&map, "ignore-auto-routes").unwrap_or(&false);
         let ipv6_privacy =
             IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or(&-1));
         let may_fail = *prop_cast(&map, "may-fail").unwrap_or(&true);
@@ -1024,7 +1024,7 @@ impl PropMapConvert for IPV6Settings {
             dns_search,
             gateway,
             ignore_auto_dns,
-            ignore_auto_dns_routes,
+            ignore_auto_routes,
             ip6_privacy: ipv6_privacy,
             may_fail,
             method: dns_method,
@@ -1056,8 +1056,8 @@ impl PropMapConvert for IPV6Settings {
             Variant(Box::new(self.ignore_auto_dns)),
         );
         map.insert(
-            "ignore-auto-dns-routes".into(),
-            Variant(Box::new(self.ignore_auto_dns_routes)),
+            "ignore-auto-routes".into(),
+            Variant(Box::new(self.ignore_auto_routes)),
         );
         map.insert(
             "ip6-privacy".into(),

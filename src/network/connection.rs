@@ -212,7 +212,7 @@ pub enum Band {
     _5GHZ,
     _24GHZ,
     #[default]
-    DYN,
+    NONE,
 }
 
 impl FromStr for Band {
@@ -222,7 +222,7 @@ impl FromStr for Band {
         match s {
             "a" => Ok(Band::_5GHZ),
             "bg" => Ok(Band::_24GHZ),
-            _ => Ok(Band::DYN),
+            _ => Ok(Band::NONE),
         }
     }
 }
@@ -232,7 +232,7 @@ impl ToString for Band {
         match self {
             Band::_5GHZ => String::from("bg"),
             Band::_24GHZ => String::from("a"),
-            Band::DYN => String::from(""),
+            Band::NONE => String::from(""),
         }
     }
 }
@@ -242,7 +242,7 @@ impl Enum for Band {
         match num {
             0 => Band::_5GHZ,
             1 => Band::_24GHZ,
-            _ => Band::DYN,
+            _ => Band::NONE,
         }
     }
 
@@ -250,7 +250,7 @@ impl Enum for Band {
         match self {
             Band::_5GHZ => 0,
             Band::_24GHZ => 1,
-            Band::DYN => 2,
+            Band::NONE => 2,
         }
     }
 }
@@ -511,7 +511,9 @@ impl PropMapConvert for WifiSettings {
 
     fn to_propmap(&self) -> PropMap {
         let mut map = PropMap::new();
-        map.insert("band".into(), Variant(Box::new(self.band.to_string())));
+        if self.band != Band::NONE {
+            map.insert("band".into(), Variant(Box::new(self.band.to_string())));
+        }
         map.insert("channel".into(), Variant(Box::new(self.channel)));
         map.insert("mode".into(), Variant(Box::new(self.mode.to_string())));
         map.insert("mtu".into(), Variant(Box::new(self.mtu)));

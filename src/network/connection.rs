@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 use dbus::arg::{self, prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
-    fn from_propmap(map: PropMap) -> Self;
+    fn from_propmap(map: &PropMap) -> Self;
     fn to_propmap(&self) -> PropMap;
 }
 
@@ -45,23 +45,23 @@ impl Connection {
             match category.as_str() {
                 "802-11-wireless" => {
                     device = Some(TypeSettings::WIFI(Box::new(WifiSettings::from_propmap(
-                        submap,
-                    ))))
+                        &submap,
+                    )), Box::new(WifiSecuritySettings::from_propmap(&submap))));
                 }
                 "802-3-ethernet" => {
                     device = Some(TypeSettings::ETHERNET(Box::new(
-                        EthernetSettings::from_propmap(submap),
+                        EthernetSettings::from_propmap(&submap),
                     )))
                 }
                 "vpn" => {
                     device = Some(TypeSettings::VPN(Box::new(VPNSettings::from_propmap(
-                        submap,
+                        &submap,
                     ))))
                 }
-                "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(submap)),
-                "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(submap)),
-                "connection" => settings = Some(ConnectionSettings::from_propmap(submap)),
-                // "802-1x" => x802 = Some(X802Settings::from_propmap(submap)),
+                "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
+                "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
+                "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
+                // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
         }
@@ -88,12 +88,17 @@ impl Connection {
         let mut map = HashMap::new();
         map.insert("connection".into(), self.settings.to_propmap());
         match &self.device {
-            TypeSettings::WIFI(wifi) => map.insert("802-11-wireless".into(), wifi.to_propmap()),
+            TypeSettings::WIFI(wifi, wifisecurity) => {
+                map.insert("802-11-wireless".into(), wifi.to_propmap());
+                map.insert("802-11-wireless-security".into(), wifisecurity.to_propmap());
+            },
             TypeSettings::ETHERNET(ethernet) => {
-                map.insert("802-3-ethernet".into(), ethernet.to_propmap())
+                map.insert("802-3-ethernet".into(), ethernet.to_propmap());
             }
-            TypeSettings::VPN(vpn) => map.insert("vpn".into(), vpn.to_propmap()),
-            TypeSettings::None => None,
+            TypeSettings::VPN(vpn) => {
+                map.insert("vpn".into(), vpn.to_propmap());
+            },
+            TypeSettings::None => (),
         };
         map.insert("ipv4".into(), self.ipv4.to_propmap());
         map.insert("ipv6".into(), self.ipv6.to_propmap());
@@ -295,7 +300,7 @@ impl Enum for Duplex {
 
 #[derive(Debug, Default)]
 pub enum TypeSettings {
-    WIFI(Box<WifiSettings>),
+    WIFI(Box<WifiSettings>, Box<WifiSecuritySettings>),
     ETHERNET(Box<EthernetSettings>),
     VPN(Box<VPNSettings>),
     #[default]
@@ -305,7 +310,7 @@ pub enum TypeSettings {
 impl ToString for TypeSettings {
     fn to_string(&self) -> String {
         match self {
-            TypeSettings::WIFI(_) => String::from("wifi"),
+            TypeSettings::WIFI(_, _) => String::from("wifi"),
             TypeSettings::ETHERNET(_) => String::from("ethernet"),
             TypeSettings::VPN(_) => String::from("vpn"),
             TypeSettings::None => String::from(""),
@@ -324,7 +329,7 @@ pub struct EthernetSettings {
 }
 
 impl PropMapConvert for EthernetSettings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let auto_negotiate: Option<&bool> = prop_cast(&map, "auto-negotiate");
         let cloned_address_opt: Option<&String> = prop_cast(&map, "cloned-mac-address");
         let cloned_mac_address = if let Some(cloned_address_opt) = cloned_address_opt {
@@ -382,7 +387,7 @@ pub struct VPNSettings {
 }
 
 impl PropMapConvert for VPNSettings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let data_opt: Option<&HashMap<String, String>> = prop_cast(&map, "data");
         let data = if let Some(data_opt) = data_opt {
             data_opt.clone()
@@ -455,11 +460,10 @@ pub struct WifiSettings {
     pub powersave: u32,
     pub rate: u32,
     pub ssid: Vec<u8>,
-    pub security_settings: WifiSecuritySettings,
 }
 
 impl PropMapConvert for WifiSettings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let mode_opt: Option<&String> = prop_cast(&map, "mode");
         let mode = if let Some(mode_opt) = mode_opt {
             Mode::from_str(mode_opt.as_str()).ok().unwrap()
@@ -493,7 +497,6 @@ impl PropMapConvert for WifiSettings {
         } else {
             Vec::new()
         };
-        let security_settings = WifiSecuritySettings::from_propmap(map);
         Self {
             band,
             channel,
@@ -503,7 +506,6 @@ impl PropMapConvert for WifiSettings {
             powersave,
             rate,
             ssid,
-            security_settings,
         }
     }
 
@@ -516,7 +518,6 @@ impl PropMapConvert for WifiSettings {
         map.insert("powersave".into(), Variant(Box::new(self.powersave)));
         map.insert("rate".into(), Variant(Box::new(self.rate)));
         map.insert("ssid".into(), Variant(Box::new(self.ssid.clone())));
-        map.extend(self.security_settings.to_propmap());
         map
     }
 }
@@ -537,7 +538,7 @@ pub struct X802Settings {
 }
 
 // impl PropMapConvert for X802Settings {
-//     fn from_propmap(map: PropMap) -> Self {
+//     fn from_propmap(map: &PropMap) -> Self {
 //         let ca_cert: Vec<u8>;
 //         let ca_cert_string: String;
 //         let client_cert: Vec<u8>;
@@ -807,7 +808,7 @@ pub struct IPV4Settings {
 }
 
 impl PropMapConvert for IPV4Settings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
         let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
@@ -976,7 +977,7 @@ pub struct IPV6Settings {
 }
 
 impl PropMapConvert for IPV6Settings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
@@ -1135,7 +1136,7 @@ pub struct ConnectionSettings {
 }
 
 impl PropMapConvert for ConnectionSettings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let autoconnect = prop_cast(&map, "autoconnect");
         let autoconnect_priority = prop_cast(&map, "autoconnect-priority");
         let metered = prop_cast(&map, "metered");
@@ -1265,7 +1266,7 @@ pub struct WifiSecuritySettings {
 }
 
 impl PropMapConvert for WifiSecuritySettings {
-    fn from_propmap(map: PropMap) -> Self {
+    fn from_propmap(map: &PropMap) -> Self {
         let authentication_algorithm_opt: Option<&String> = prop_cast(&map, "auth-alg");
         let authentication_algorithm =
             if let Some(authentication_algorithm_opt) = authentication_algorithm_opt {

@@ -1129,7 +1129,6 @@ pub struct ConnectionSettings {
     pub autoconnect: bool,
     pub autoconnect_priority: i32,
     pub metered: i32,
-    pub name: String,
     pub device_type: String,
     pub uuid: String,
     pub zone: Trust,
@@ -1153,12 +1152,6 @@ impl PropMapConvert for ConnectionSettings {
         } else {
             String::from("")
         };
-        let name_opt: Option<&String> = prop_cast(&map, "name");
-        let name = if let Some(name_opt) = name_opt {
-            name_opt.clone()
-        } else {
-            String::from("connection")
-        };
         let device_type_opt: Option<&String> = prop_cast(&map, "type");
         let device_type = if let Some(device_type_opt) = device_type_opt {
             device_type_opt.clone()
@@ -1169,7 +1162,6 @@ impl PropMapConvert for ConnectionSettings {
             autoconnect: *autoconnect.unwrap_or(&false),
             autoconnect_priority: *autoconnect_priority.unwrap_or(&-1),
             metered: *metered.unwrap_or(&0),
-            name,
             device_type,
             uuid,
             zone,
@@ -1184,7 +1176,6 @@ impl PropMapConvert for ConnectionSettings {
             Variant(Box::new(self.autoconnect_priority)),
         );
         map.insert("metered".into(), Variant(Box::new(self.metered)));
-        map.insert("name".into(), Variant(Box::new(self.name.clone())));
         map.insert(
             "device-type".into(),
             Variant(Box::new(self.device_type.clone())),

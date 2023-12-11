@@ -1237,7 +1237,6 @@ pub enum WEPKeyType {
     UNKNOWN,
     KEY,
     PASSPHRASE,
-    LAST,
 }
 
 impl Enum for WEPKeyType {
@@ -1245,8 +1244,7 @@ impl Enum for WEPKeyType {
         match num {
             0 => WEPKeyType::UNKNOWN,
             1 => WEPKeyType::KEY,
-            2 => WEPKeyType::PASSPHRASE,
-            _ => WEPKeyType::LAST,
+            _ => WEPKeyType::PASSPHRASE,
         }
     }
 
@@ -1255,7 +1253,6 @@ impl Enum for WEPKeyType {
             WEPKeyType::UNKNOWN => 0,
             WEPKeyType::KEY => 1,
             WEPKeyType::PASSPHRASE => 2,
-            WEPKeyType::LAST => 3,
         }
     }
 }
@@ -1432,14 +1429,18 @@ impl PropMapConvert for WifiSecuritySettings {
             "key-mgmt".into(),
             Variant(Box::new(self.key_management.to_string())),
         );
-        map.insert(
-            "leap-password".into(),
-            Variant(Box::new(self.leap_password.clone())),
-        );
+        if !self.leap_password.is_empty() {
+            map.insert(
+                "leap-password".into(),
+                Variant(Box::new(self.leap_password.clone())),
+            );
+        }
+
         map.insert(
             "leap-password-flags".into(),
             Variant(Box::new(self.leap_password_flags.to_i32())),
         );
+
         if !self.leap_username.is_empty() {
             map.insert(
                 "leap-username".into(),
@@ -1449,11 +1450,16 @@ impl PropMapConvert for WifiSecuritySettings {
 
         map.insert("pairwise".into(), Variant(Box::new(self.pairwise.clone())));
         map.insert("proto".into(), Variant(Box::new(self.proto.clone())));
-        map.insert("psk".into(), Variant(Box::new(self.psk.clone())));
-        map.insert(
-            "wep-key-type".into(),
-            Variant(Box::new(self.wep_key_type.to_i32())),
-        );
+        if !self.psk.is_empty() {
+            map.insert("psk".into(), Variant(Box::new(self.psk.clone())));
+        }
+        if self.wep_key_type.to_i32() == 0 {
+            map.insert(
+                "wep-key-type".into(),
+                Variant(Box::new(self.wep_key_type.to_i32())),
+            );
+        }
+
         if !self.wep_key0.is_empty() {
             map.insert("wep-key0".into(), Variant(Box::new(self.wep_key0.clone())));
         }

@@ -1279,6 +1279,18 @@ impl KeyManagement {
     }
 }
 
+impl ToString for KeyManagement {
+    fn to_string(&self) -> String {
+        match self {
+            KeyManagement::NONE => String::from("none"),
+            KeyManagement::IEEE8021X => String::from("ieee8021x"),
+            KeyManagement::WPANONE => String::from("wpa-none"),
+            KeyManagement::WPAPSK => String::from("wpa-psk"),
+            KeyManagement::WPAEAP => String::from("wpa-eap"),
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct WifiSecuritySettings {
     pub authentication_algorithm: String,
@@ -1409,7 +1421,7 @@ impl PropMapConvert for WifiSecuritySettings {
         map.insert("group".into(), Variant(Box::new(self.group.clone())));
         map.insert(
             "key-mgmt".into(),
-            Variant(Box::new(self.key_management.clone())),
+            Variant(Box::new(self.key_management.to_string())),
         );
         map.insert(
             "leap-password".into(),

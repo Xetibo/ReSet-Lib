@@ -1253,10 +1253,10 @@ pub struct WifiSecuritySettings {
     pub leap_password: String,
     pub leap_password_flags: SecretSettingsFlag,
     pub leap_username: String,
-    pub name: String,
     pub pairwise: Vec<String>,
     pub proto: Vec<String>,
     pub psk: String,
+    pub psk_flags: SecretSettingsFlag,
     pub wep_key_flags: SecretSettingsFlag,
     pub wep_key_type: WEPKeyType,
     pub wep_key0: String,
@@ -1301,12 +1301,6 @@ impl PropMapConvert for WifiSecuritySettings {
         } else {
             String::from("")
         };
-        let name_opt: Option<&String> = prop_cast(&map, "name");
-        let name = if let Some(name_opt) = name_opt {
-            name_opt.clone()
-        } else {
-            String::from("")
-        };
         let pairwise_opt: Option<&Vec<String>> = prop_cast(&map, "pairwise");
         let pairwise = if let Some(pairwise_opt) = pairwise_opt {
             pairwise_opt.clone()
@@ -1325,6 +1319,8 @@ impl PropMapConvert for WifiSecuritySettings {
         } else {
             String::from("")
         };
+        let _psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
+        let psk_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
         let _wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
         let wep_key_flags =
             SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
@@ -1361,10 +1357,10 @@ impl PropMapConvert for WifiSecuritySettings {
             leap_password,
             leap_password_flags,
             leap_username,
-            name,
             pairwise,
             proto,
             psk,
+            psk_flags,
             wep_key_flags,
             wep_key_type,
             wep_key0,
@@ -1397,7 +1393,6 @@ impl PropMapConvert for WifiSecuritySettings {
             "leap-username".into(),
             Variant(Box::new(self.leap_username.clone())),
         );
-        map.insert("name".into(), Variant(Box::new(self.name.clone())));
         map.insert("pairwise".into(), Variant(Box::new(self.pairwise.clone())));
         map.insert("proto".into(), Variant(Box::new(self.proto.clone())));
         map.insert("psk".into(), Variant(Box::new(self.psk.clone())));

@@ -1177,7 +1177,7 @@ impl PropMapConvert for ConnectionSettings {
         );
         map.insert("metered".into(), Variant(Box::new(self.metered)));
         map.insert(
-            "device-type".into(),
+            "type".into(),
             Variant(Box::new(self.device_type.clone())),
         );
         map.insert("uuid".into(), Variant(Box::new(self.uuid.clone())));

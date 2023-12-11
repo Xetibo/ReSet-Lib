@@ -91,13 +91,13 @@ impl Connection {
             TypeSettings::WIFI(wifi, wifisecurity) => {
                 map.insert("802-11-wireless".into(), wifi.to_propmap());
                 map.insert("802-11-wireless-security".into(), wifisecurity.to_propmap());
-            },
+            }
             TypeSettings::ETHERNET(ethernet) => {
                 map.insert("802-3-ethernet".into(), ethernet.to_propmap());
             }
             TypeSettings::VPN(vpn) => {
                 map.insert("vpn".into(), vpn.to_propmap());
-            },
+            }
             TypeSettings::None => (),
         };
         map.insert("ipv4".into(), self.ipv4.to_propmap());
@@ -1257,10 +1257,33 @@ impl Enum for WEPKeyType {
 }
 
 #[derive(Debug, Default, Clone)]
+pub enum KeyManagement {
+    NONE,
+    IEEE8021X,
+    WPANONE,
+    #[default]
+    WPAPSK,
+    WPAEAP,
+}
+
+impl KeyManagement {
+    fn from_str(s: &str) -> KeyManagement {
+        match s {
+            "none" => KeyManagement::NONE,
+            "ieee8021x" => KeyManagement::IEEE8021X,
+            "wpa-none" => KeyManagement::WPANONE,
+            "wpa-psk" => KeyManagement::WPAPSK,
+            "wpa-eap" => KeyManagement::WPAEAP,
+            _ => KeyManagement::WPAPSK,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
 pub struct WifiSecuritySettings {
     pub authentication_algorithm: String,
     pub group: Vec<String>,
-    pub key_management: String,
+    pub key_management: KeyManagement,
     pub leap_password: String,
     pub leap_password_flags: SecretSettingsFlag,
     pub leap_username: String,
@@ -1292,11 +1315,7 @@ impl PropMapConvert for WifiSecuritySettings {
             Vec::new()
         };
         let key_management_opt: Option<&String> = prop_cast(&map, "key-mgmt");
-        let key_management = if let Some(key_management_opt) = key_management_opt {
-            key_management_opt.clone()
-        } else {
-            String::from("")
-        };
+        let key_management = KeyManagement::from_str(key_management_opt.unwrap_or(&String::from("wpa-psk")));
         let leap_password_opt: Option<&String> = prop_cast(&map, "leap-password");
         let leap_password = if let Some(leap_password_opt) = leap_password_opt {
             leap_password_opt.clone()

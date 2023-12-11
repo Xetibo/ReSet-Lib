@@ -513,7 +513,7 @@ impl PropMapConvert for WifiSettings {
         let mut map = PropMap::new();
         map.insert("band".into(), Variant(Box::new(self.band.to_i32())));
         map.insert("channel".into(), Variant(Box::new(self.channel)));
-        map.insert("mode".into(), Variant(Box::new(self.mode.to_i32())));
+        map.insert("mode".into(), Variant(Box::new(self.mode.to_string())));
         map.insert("mtu".into(), Variant(Box::new(self.mtu)));
         map.insert("powersave".into(), Variant(Box::new(self.powersave)));
         map.insert("rate".into(), Variant(Box::new(self.rate)));

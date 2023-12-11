@@ -4,7 +4,7 @@ use dbus::arg::{self, prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: PropMap) -> Self;
-    fn to_propmap(&self, map: &mut PropMap);
+    fn to_propmap(&self) -> PropMap;
 }
 
 pub trait Enum: Sized {
@@ -84,17 +84,17 @@ impl Connection {
         })
     }
 
-    pub fn convert_to_propmap(&self) -> PropMap {
-        let mut map = PropMap::new();
-        self.settings.to_propmap(&mut map);
+    pub fn convert_to_propmap(&self) -> HashMap<String, PropMap> {
+        let mut map = HashMap::new();
+        map.insert("connection".into(), self.settings.to_propmap());
         match &self.device {
-            TypeSettings::WIFI(wifi) => wifi.to_propmap(&mut map),
-            TypeSettings::ETHERNET(ethernet) => ethernet.to_propmap(&mut map),
-            TypeSettings::VPN(vpn) => vpn.to_propmap(&mut map),
-            TypeSettings::None => (),
-        }
-        self.ipv4.to_propmap(&mut map);
-        self.ipv6.to_propmap(&mut map);
+            TypeSettings::WIFI(wifi) => map.insert("802-11-wireless".into(), wifi.to_propmap()),
+            TypeSettings::ETHERNET(ethernet) => map.insert("802-3-ethernet".into(), ethernet.to_propmap()),
+            TypeSettings::VPN(vpn) => map.insert("vpn".into(), vpn.to_propmap()),
+            TypeSettings::None => None,
+        };
+        map.insert("ipv4".into(), self.ipv4.to_propmap());
+        map.insert("ipv6".into(), self.ipv6.to_propmap());
         map
     }
 }
@@ -354,7 +354,8 @@ impl PropMapConvert for EthernetSettings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         map.insert(
             "auto-negotiate".into(),
             Variant(Box::new(self.auto_negotiate)),
@@ -363,6 +364,7 @@ impl PropMapConvert for EthernetSettings {
         map.insert("mtu".into(), Variant(Box::new(self.mtu)));
         map.insert("name".into(), Variant(Box::new(self.name.clone())));
         map.insert("speed".into(), Variant(Box::new(self.speed)));
+        map
     }
 }
 
@@ -422,7 +424,8 @@ impl PropMapConvert for VPNSettings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         map.insert("data".into(), Variant(Box::new(self.data.clone())));
         map.insert("name".into(), Variant(Box::new(self.name.clone())));
         map.insert("persistent".into(), Variant(Box::new(self.persistent)));
@@ -436,6 +439,7 @@ impl PropMapConvert for VPNSettings {
             "user-name".into(),
             Variant(Box::new(self.user_name.clone())),
         );
+        map
     }
 }
 
@@ -501,7 +505,8 @@ impl PropMapConvert for WifiSettings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         map.insert("band".into(), Variant(Box::new(self.band.to_i32())));
         map.insert("channel".into(), Variant(Box::new(self.channel)));
         map.insert("mode".into(), Variant(Box::new(self.mode.to_i32())));
@@ -509,7 +514,8 @@ impl PropMapConvert for WifiSettings {
         map.insert("powersave".into(), Variant(Box::new(self.powersave)));
         map.insert("rate".into(), Variant(Box::new(self.rate)));
         map.insert("ssid".into(), Variant(Box::new(self.ssid.clone())));
-        self.security_settings.to_propmap(map);
+        map.extend(self.security_settings.to_propmap());
+        map
     }
 }
 
@@ -853,7 +859,8 @@ impl PropMapConvert for IPV4Settings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         let mut addresses = Vec::new();
         for address in self.address_data.iter() {
             addresses.push(address.to_map());
@@ -892,6 +899,7 @@ impl PropMapConvert for IPV4Settings {
             data.push(address.to_map());
         }
         map.insert("route-data".into(), Variant(Box::new(data)));
+        map
     }
 }
 
@@ -1023,7 +1031,8 @@ impl PropMapConvert for IPV6Settings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         let mut addresses = Vec::new();
         for address in self.address_data.iter() {
             addresses.push(address.to_map());
@@ -1066,6 +1075,7 @@ impl PropMapConvert for IPV6Settings {
             data.push(address.to_map());
         }
         map.insert("route-data".into(), Variant(Box::new(data)));
+        map
     }
 }
 
@@ -1164,7 +1174,8 @@ impl PropMapConvert for ConnectionSettings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         map.insert("autoconnect".into(), Variant(Box::new(self.autoconnect)));
         map.insert(
             "autoconnect-priority".into(),
@@ -1178,6 +1189,7 @@ impl PropMapConvert for ConnectionSettings {
         );
         map.insert("uuid".into(), Variant(Box::new(self.uuid.clone())));
         map.insert("zone".into(), Variant(Box::new(self.zone.to_i32())));
+        map
     }
 }
 
@@ -1375,7 +1387,8 @@ impl PropMapConvert for WifiSecuritySettings {
         }
     }
 
-    fn to_propmap(&self, map: &mut PropMap) {
+    fn to_propmap(&self) -> PropMap {
+        let mut map = PropMap::new();
         map.insert(
             "auth-alg".into(),
             Variant(Box::new(self.authentication_algorithm.clone())),
@@ -1417,5 +1430,6 @@ impl PropMapConvert for WifiSecuritySettings {
             "wep-tx-keyidx".into(),
             Variant(Box::new(self.wep_tx_keyidx)),
         );
+        map
     }
 }

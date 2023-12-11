@@ -799,7 +799,7 @@ pub struct IPV4Settings {
     pub dns_search: Vec<String>,
     pub gateway: String,
     pub ignore_auto_dns: bool,
-    pub ignore_auto_dns_routes: bool,
+    pub ignore_auto_routes: bool,
     pub may_fail: bool,
     pub method: DNSMethod4,
     pub never_default: bool,
@@ -853,7 +853,7 @@ impl PropMapConvert for IPV4Settings {
             dns_search,
             gateway,
             ignore_auto_dns,
-            ignore_auto_dns_routes,
+            ignore_auto_routes: ignore_auto_dns_routes,
             may_fail,
             method: dns_method,
             never_default,
@@ -884,8 +884,8 @@ impl PropMapConvert for IPV4Settings {
             Variant(Box::new(self.ignore_auto_dns)),
         );
         map.insert(
-            "ignore-auto-dns-routes".into(),
-            Variant(Box::new(self.ignore_auto_dns_routes)),
+            "ignore-auto-routes".into(),
+            Variant(Box::new(self.ignore_auto_routes)),
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
         map.insert(

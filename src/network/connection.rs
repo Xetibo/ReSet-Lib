@@ -454,11 +454,6 @@ pub struct WifiSettings {
 
 impl PropMapConvert for WifiSettings {
     fn from_propmap(map: PropMap) -> Self {
-        println!("wifi debug");
-        for (key, val) in map.iter() {
-            dbg!(key);
-            dbg!(val);
-        }
         let mode_opt: Option<&String> = prop_cast(&map, "mode");
         let mode = if let Some(mode_opt) = mode_opt {
             Mode::from_str(mode_opt.as_str()).ok().unwrap()
@@ -535,11 +530,6 @@ pub struct X802Settings {
 
 // impl PropMapConvert for X802Settings {
 //     fn from_propmap(map: PropMap) -> Self {
-//         println!("x802 debug");
-//         for (key, val) in map.iter() {
-//             dbg!(key);
-//             dbg!(val);
-//         }
 //         let ca_cert: Vec<u8>;
 //         let ca_cert_string: String;
 //         let client_cert: Vec<u8>;
@@ -810,11 +800,6 @@ pub struct IPV4Settings {
 
 impl PropMapConvert for IPV4Settings {
     fn from_propmap(map: PropMap) -> Self {
-        println!("ipv4 debug");
-        for (key, val) in map.iter() {
-            dbg!(key);
-            dbg!(val);
-        }
         let address_data = get_addresses(&map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
@@ -982,11 +967,6 @@ pub struct IPV6Settings {
 
 impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: PropMap) -> Self {
-        println!("ipv6 debug");
-        for (key, val) in map.iter() {
-            dbg!(key);
-            dbg!(val);
-        }
         let address_data = get_addresses(&map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
@@ -1145,11 +1125,6 @@ pub struct ConnectionSettings {
 
 impl PropMapConvert for ConnectionSettings {
     fn from_propmap(map: PropMap) -> Self {
-        println!("settings debug");
-        for (key, val) in map.iter() {
-            dbg!(key);
-            dbg!(val);
-        }
         let autoconnect = prop_cast(&map, "autoconnect");
         let autoconnect_priority = prop_cast(&map, "autoconnect-priority");
         let metered = prop_cast(&map, "metered");
@@ -1181,7 +1156,7 @@ impl PropMapConvert for ConnectionSettings {
         Self {
             autoconnect: *autoconnect.unwrap_or(&false),
             autoconnect_priority: *autoconnect_priority.unwrap_or(&-1),
-            metered: *metered.unwrap_or(&-1),
+            metered: *metered.unwrap_or(&0),
             name,
             device_type,
             uuid,
@@ -1288,7 +1263,6 @@ pub struct WifiSecuritySettings {
 
 impl PropMapConvert for WifiSecuritySettings {
     fn from_propmap(map: PropMap) -> Self {
-        println!("secret settings debug");
         let authentication_algorithm_opt: Option<&String> = prop_cast(&map, "auth-alg");
         let authentication_algorithm =
             if let Some(authentication_algorithm_opt) = authentication_algorithm_opt {

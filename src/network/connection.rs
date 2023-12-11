@@ -895,7 +895,7 @@ impl PropMapConvert for IPV4Settings {
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
         map.insert(
             "method".into(),
-            Variant(Box::new(self.method.to_i32())),
+            Variant(Box::new(self.method.to_string())),
         );
         map.insert(
             "never-default".into(),

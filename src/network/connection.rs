@@ -1129,6 +1129,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
 pub struct ConnectionSettings {
     pub autoconnect: bool,
     pub autoconnect_priority: i32,
+    pub id: String,
     pub metered: i32,
     pub device_type: String,
     pub uuid: String,
@@ -1139,6 +1140,12 @@ impl PropMapConvert for ConnectionSettings {
     fn from_propmap(map: &PropMap) -> Self {
         let autoconnect = prop_cast(&map, "autoconnect");
         let autoconnect_priority = prop_cast(&map, "autoconnect-priority");
+        let id_opt: Option<&String> = prop_cast(&map, "id");
+        let id = if let Some(id_opt) = id_opt {
+            id_opt.clone()
+        } else {
+            String::from("")
+        };
         let metered = prop_cast(&map, "metered");
         let zone_opt: Option<&String> = prop_cast(&map, "trust");
         let zone = if let Some(zone_opt) = zone_opt {
@@ -1162,6 +1169,7 @@ impl PropMapConvert for ConnectionSettings {
         Self {
             autoconnect: *autoconnect.unwrap_or(&false),
             autoconnect_priority: *autoconnect_priority.unwrap_or(&-1),
+            id,
             metered: *metered.unwrap_or(&0),
             device_type,
             uuid,
@@ -1176,6 +1184,7 @@ impl PropMapConvert for ConnectionSettings {
             "autoconnect-priority".into(),
             Variant(Box::new(self.autoconnect_priority)),
         );
+        map.insert("id".into(), Variant(Box::new(self.id.clone())));
         map.insert("metered".into(), Variant(Box::new(self.metered)));
         map.insert(
             "type".into(),

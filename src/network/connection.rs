@@ -1055,7 +1055,9 @@ impl PropMapConvert for IPV6Settings {
             "dns-search".into(),
             Variant(Box::new(self.dns_search.clone())),
         );
-        map.insert("gateway".into(), Variant(Box::new(self.gateway.clone())));
+        if !self.address_data.is_empty() {
+            map.insert("gateway".into(), Variant(Box::new(self.gateway.clone())));
+        }
         map.insert(
             "ignore-auto-dns".into(),
             Variant(Box::new(self.ignore_auto_dns)),

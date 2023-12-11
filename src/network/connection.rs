@@ -1262,7 +1262,6 @@ pub struct WifiSecuritySettings {
     pub wep_key1: String,
     pub wep_key2: String,
     pub wep_key3: String,
-    pub wep_tx_keyidx: u32,
 }
 
 impl PropMapConvert for WifiSecuritySettings {
@@ -1354,7 +1353,6 @@ impl PropMapConvert for WifiSecuritySettings {
         } else {
             String::from("")
         };
-        let wep_tx_keyidx: Option<&u32> = prop_cast(&map, "wep-tx-keyidx");
         Self {
             authentication_algorithm,
             group,
@@ -1372,7 +1370,6 @@ impl PropMapConvert for WifiSecuritySettings {
             wep_key1,
             wep_key2,
             wep_key3,
-            wep_tx_keyidx: *wep_tx_keyidx.unwrap_or(&0),
         }
     }
 
@@ -1411,10 +1408,6 @@ impl PropMapConvert for WifiSecuritySettings {
         map.insert("wep-key1".into(), Variant(Box::new(self.wep_key1.clone())));
         map.insert("wep-key2".into(), Variant(Box::new(self.wep_key2.clone())));
         map.insert("wep-key3".into(), Variant(Box::new(self.wep_key3.clone())));
-        map.insert(
-            "wep-tx-keyidx".into(),
-            Variant(Box::new(self.wep_tx_keyidx)),
-        );
         map
     }
 }

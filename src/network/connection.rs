@@ -1431,10 +1431,13 @@ impl PropMapConvert for WifiSecuritySettings {
             "leap-password-flags".into(),
             Variant(Box::new(self.leap_password_flags.to_i32())),
         );
-        map.insert(
-            "leap-username".into(),
-            Variant(Box::new(self.leap_username.clone())),
-        );
+        if !self.leap_username.is_empty() {
+            map.insert(
+                "leap-username".into(),
+                Variant(Box::new(self.leap_username.clone())),
+            );
+        }
+
         map.insert("pairwise".into(), Variant(Box::new(self.pairwise.clone())));
         map.insert("proto".into(), Variant(Box::new(self.proto.clone())));
         map.insert("psk".into(), Variant(Box::new(self.psk.clone())));

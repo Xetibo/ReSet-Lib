@@ -1313,6 +1313,7 @@ pub struct WifiSecuritySettings {
     pub wep_key1: String,
     pub wep_key2: String,
     pub wep_key3: String,
+    pub wep_tx_keyidx: u32,
 }
 
 impl PropMapConvert for WifiSecuritySettings {
@@ -1396,6 +1397,7 @@ impl PropMapConvert for WifiSecuritySettings {
         } else {
             String::from("")
         };
+        let wep_tx_keyidx_opt: Option<&u32> = prop_cast(&map, "wep-tx-keyidx");
         Self {
             authentication_algorithm,
             group,
@@ -1413,6 +1415,7 @@ impl PropMapConvert for WifiSecuritySettings {
             wep_key1,
             wep_key2,
             wep_key3,
+            wep_tx_keyidx: *wep_tx_keyidx_opt.unwrap_or(&0),
         }
     }
 
@@ -1451,10 +1454,18 @@ impl PropMapConvert for WifiSecuritySettings {
             "wep-key-type".into(),
             Variant(Box::new(self.wep_key_type.to_i32())),
         );
-        map.insert("wep-key0".into(), Variant(Box::new(self.wep_key0.clone())));
-        map.insert("wep-key1".into(), Variant(Box::new(self.wep_key1.clone())));
-        map.insert("wep-key2".into(), Variant(Box::new(self.wep_key2.clone())));
-        map.insert("wep-key3".into(), Variant(Box::new(self.wep_key3.clone())));
+        if !self.wep_key0.is_empty() {
+            map.insert("wep-key0".into(), Variant(Box::new(self.wep_key0.clone())));
+        }
+        if !self.wep_key1.is_empty() {
+            map.insert("wep-key1".into(), Variant(Box::new(self.wep_key1.clone())));
+        }
+        if !self.wep_key2.is_empty() {
+            map.insert("wep-key2".into(), Variant(Box::new(self.wep_key2.clone())));
+        }
+        if !self.wep_key3.is_empty() {
+            map.insert("wep-key3".into(), Variant(Box::new(self.wep_key3.clone())));
+        }
         map
     }
 }

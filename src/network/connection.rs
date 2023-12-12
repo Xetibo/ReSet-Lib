@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
+use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: &PropMap) -> Self;
@@ -1096,7 +1096,16 @@ impl PropMapConvert for IPV6Settings {
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
     let test = map.get(address_type);
-    dbg!(test);
+    // dbg!(test);
+    let asdf = if let Some(test) = test {
+        let option = cast::<Vec<PropMap>>(test);
+        option
+    } else {
+        None
+    };
+
+    dbg!(asdf);
+
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {

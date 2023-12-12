@@ -1100,6 +1100,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let test = map.get(address_type);
     let test2 = &test.unwrap().0;
     dbg!(test2);
+    dbg!(test2.as_str());
 
 
     for x in test.iter() {

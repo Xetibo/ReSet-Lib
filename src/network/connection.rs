@@ -1098,14 +1098,14 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let test = map.get(address_type);
 
     let option1 = test.map(|x| {
-        let option = cast::<Vec<PropMap>>(x);
+        let option = cast::<Vec<HashMap<String, Variant<Box<dyn RefArg>>>>>(x);
         option
     });
 
     dbg!(option1);
 
     for x in test.iter() {
-        dbg!(x);
+        dbg!(&x.0);
     }
 
     // dbg!(test);

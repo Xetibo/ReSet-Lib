@@ -1036,10 +1036,13 @@ impl PropMapConvert for IPV6Settings {
 
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> {
     let mut address_data: Vec<AddressType> = Vec::new();
-    let test = map.get(address_type);
+    let test: Option<&Variant<Box<dyn RefArg>>> = map.get(address_type);
     if let Some(asdf) = test {
-        let option1 = cast::<Vec<VecDeque<Box<dyn RefArg>>>>(&asdf.0);
-        let option2 = cast::<Vec<AddressType>>(&asdf.0);
+        let any = asdf.0.as_any();
+        dbg!("Type: {:?}", any.type_id());
+
+        let option1: Option<&Vec<VecDeque<Box<dyn RefArg>>>> = cast::<Vec<VecDeque<Box<dyn RefArg>>>>(&asdf.0);
+        let option2: Option<&Vec<AddressType>> = cast::<Vec<AddressType>>(&asdf.0);
         dbg!(option1);
         dbg!(option2);
     }

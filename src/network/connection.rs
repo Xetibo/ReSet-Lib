@@ -1080,37 +1080,49 @@ impl PropMapConvert for IPV6Settings {
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
 
+    dbg!(map);
     let test = map.get(address_type);
-    for t in test.unwrap().0.as_iter().unwrap() {
-        let mut address = Address {
-            address: String::from(""),
-            prefix: 0,
-            gateway: None,
-            metric: None,
-        };
+    dbg!(test);
+    
+    if let Some(test1) = test {
+        let test = test1.0.as_iter();
+        if let Some(test1) = test {
+            for t in test1 {
+                let mut address = Address {
+                    address: String::from(""),
+                    prefix: 0,
+                    gateway: None,
+                    metric: None,
+                };
 
-        t.as_iter().unwrap().for_each(|x| {
-            let mut prev = "";
-            if let Some(y) = x.as_str() {
-                if prev == "address" {
-                    address.address = String::from(y);
-                } else if prev == "gateway" {
-                    address.gateway = Some(String::from(y));
-                }
-                prev = y;
-            } else if let Some(z) = x.as_u64() {
-                if prev == "prefix" {
-                    address.prefix = z as u32;
-                } else if prev == "metric" {
-                    address.metric = Some(z as u32);
+                t.as_iter().unwrap().for_each(|x| {
+                    let mut prev = "";
+                    if let Some(y) = x.as_str() {
+                        if prev == "address" {
+                            address.address = String::from(y);
+                        } else if prev == "gateway" {
+                            address.gateway = Some(String::from(y));
+                        }
+                        prev = y;
+                        dbg!(y);
+                    } else if let Some(z) = x.as_u64() {
+                        if prev == "prefix" {
+                            address.prefix = z as u32;
+                        } else if prev == "metric" {
+                            address.metric = Some(z as u32);
+                        }
+                        dbg!(z);
+                    }
+                });
+
+                if !address.address.is_empty() {
+                    address_data.push(address);
                 }
             }
-        });
-
-        if !address.address.is_empty() {
-            address_data.push(address);
         }
     }
+    
+
     address_data
 }
 

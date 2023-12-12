@@ -64,7 +64,7 @@ impl Connection {
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
                 "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
-                "security" => security = Some(WifiSecuritySettings::from_propmap(&submap)),
+                "802-11-wireless-security" => security = Some(WifiSecuritySettings::from_propmap(&submap)),
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }

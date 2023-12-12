@@ -816,7 +816,7 @@ pub struct IPV4Settings {
 impl PropMapConvert for IPV4Settings {
     fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
-        dbg!(&address_data);
+        dbg!(&map);
         let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()

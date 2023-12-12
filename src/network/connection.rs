@@ -47,24 +47,20 @@ impl Connection {
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
-                    device = Some(TypeSettings::WIFI(
-                        WifiSettings::from_propmap(&submap),
-                    ));
+                    device = Some(TypeSettings::WIFI(WifiSettings::from_propmap(&submap)));
                 }
                 "802-3-ethernet" => {
-                    device = Some(TypeSettings::ETHERNET(
-                        EthernetSettings::from_propmap(&submap),
-                    ))
-                }
-                "vpn" => {
-                    device = Some(TypeSettings::VPN(VPNSettings::from_propmap(
+                    device = Some(TypeSettings::ETHERNET(EthernetSettings::from_propmap(
                         &submap,
                     )))
                 }
+                "vpn" => device = Some(TypeSettings::VPN(VPNSettings::from_propmap(&submap))),
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
                 "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
-                "802-11-wireless-security" => security = Some(WifiSecuritySettings::from_propmap(&submap)),
+                "802-11-wireless-security" => {
+                    security = Some(WifiSecuritySettings::from_propmap(&submap))
+                }
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
@@ -107,7 +103,10 @@ impl Connection {
         };
         map.insert("ipv4".into(), self.ipv4.to_propmap());
         map.insert("ipv6".into(), self.ipv6.to_propmap());
-        map.insert("802-11-wireless-security".into(), self.security.to_propmap());
+        map.insert(
+            "802-11-wireless-security".into(),
+            self.security.to_propmap(),
+        );
         map
     }
 }
@@ -1082,7 +1081,11 @@ impl PropMapConvert for IPV6Settings {
 
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
-    let address_alias = if address_type == "route-data" { "dest" } else { "address" };
+    let address_alias = if address_type == "route-data" {
+        "dest"
+    } else {
+        "address"
+    };
 
     let test = map.get(address_type);
     if let Some(test1) = test {
@@ -1121,7 +1124,6 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
             }
         }
     }
-    
 
     address_data
 }

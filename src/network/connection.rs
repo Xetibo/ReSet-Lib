@@ -47,6 +47,7 @@ impl Connection {
                     device = Some(TypeSettings::WIFI(Box::new(WifiSettings::from_propmap(
                         &submap,
                     )), Box::new(WifiSecuritySettings::from_propmap(&submap))));
+                    dbg!(submap);
                 }
                 "802-3-ethernet" => {
                     device = Some(TypeSettings::ETHERNET(Box::new(
@@ -60,7 +61,10 @@ impl Connection {
                 }
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
-                "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
+                "connection" => settings = {
+                    dbg!(&submap);
+                    Some(ConnectionSettings::from_propmap(&submap))
+                },
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
@@ -70,6 +74,7 @@ impl Connection {
                 message: "could not convert propmap",
             });
         }
+
         let settings = settings.unwrap();
         // let x802 = x802.unwrap();
         let device = device.unwrap();

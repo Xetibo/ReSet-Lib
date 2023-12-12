@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use dbus::arg::{self, prop_cast, PropMap, RefArg, Variant};
+use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: PropMap) -> Self;
@@ -888,10 +888,7 @@ impl PropMapConvert for IPV4Settings {
             Variant(Box::new(self.ignore_auto_dns_routes)),
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
-        map.insert(
-            "method".into(),
-            Variant(Box::new(self.method.to_i32())),
-        );
+        map.insert("method".into(), Variant(Box::new(self.method.to_i32())));
         map.insert(
             "never-default".into(),
             Variant(Box::new(self.never_default)),
@@ -1064,10 +1061,7 @@ impl PropMapConvert for IPV6Settings {
             Variant(Box::new(self.ip6_privacy.to_i32())),
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
-        map.insert(
-            "method".into(),
-            Variant(Box::new(self.method.to_i32())),
-        );
+        map.insert("method".into(), Variant(Box::new(self.method.to_i32())));
         map.insert(
             "never-default".into(),
             Variant(Box::new(self.never_default)),
@@ -1086,33 +1080,22 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {
-            let address_opt = entry.get("address");
-            let prefix_length_opt = entry.get("prefix");
-            let gateway_opt = entry.get("gateway");
-            let metric_opt = entry.get("metric");
-            let address = if address_data_opt.is_none() {
-                String::from("")
+            let address_opt: Option<&String> = prop_cast(entry, "address");
+            let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefic");
+            let gateway_opt: Option<&String> = prop_cast(entry, "gateway");
+            let metric_opt: Option<&u32> = prop_cast(entry, "metric");
+            let address = if let Some(address_opt) = address_opt {
+                address_opt.clone()
             } else {
-                arg::cast::<String>(address_opt.unwrap()).unwrap().clone()
+                String::from("")
             };
             let prefix_length = if let Some(prefix_length_opt) = prefix_length_opt {
-                *arg::cast::<u32>(prefix_length_opt).unwrap()
+                *prefix_length_opt
             } else {
                 0
             };
-            let gateway = if gateway_opt.is_none() {
-                None
-            } else {
-                arg::cast::<Option<String>>(address_opt.unwrap())
-                    .unwrap()
-                    .clone()
-            };
-            let metric = if metric_opt.is_none() {
-                None
-            } else {
-                *arg::cast::<Option<u32>>(gateway_opt.unwrap()).unwrap()
-            };
-
+            let gateway = gateway_opt.cloned();
+            let metric = metric_opt.cloned();
             address_data.push(Address {
                 address,
                 prefix_length,
@@ -1176,10 +1159,7 @@ impl PropMapConvert for ConnectionSettings {
             Variant(Box::new(self.autoconnect_priority)),
         );
         map.insert("metered".into(), Variant(Box::new(self.metered)));
-        map.insert(
-            "type".into(),
-            Variant(Box::new(self.device_type.clone())),
-        );
+        map.insert("type".into(), Variant(Box::new(self.device_type.clone())));
         map.insert("uuid".into(), Variant(Box::new(self.uuid.clone())));
         map.insert("zone".into(), Variant(Box::new(self.zone.to_i32())));
         map

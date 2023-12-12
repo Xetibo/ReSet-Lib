@@ -1038,7 +1038,9 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> 
     let mut address_data: Vec<AddressType> = Vec::new();
     let test = map.get(address_type);
     if let Some(asdf) = test {
+        let option1 = cast::<Vec<VecDeque<Box<dyn RefArg>>>>(&asdf.0);
         let option2 = cast::<Vec<AddressType>>(&asdf.0);
+        dbg!(option1);
         dbg!(option2);
     }
 

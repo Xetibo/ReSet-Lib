@@ -1,7 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
 use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
-use std::collections::VecDeque;
 
 
 pub trait PropMapConvert: Sized {

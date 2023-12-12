@@ -39,7 +39,7 @@ impl GetVal<(BluetoothDevice,)> for BluetoothDeviceAdded {
 
 impl dbus::message::SignalArgs for BluetoothDeviceAdded {
     const NAME: &'static str = "BluetoothDeviceAdded";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetBluetooth";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Bluetooth";
 }
 
 #[derive(Debug)]
@@ -69,7 +69,7 @@ impl GetVal<(BluetoothDevice,)> for BluetoothDeviceChanged {
 
 impl dbus::message::SignalArgs for BluetoothDeviceChanged {
     const NAME: &'static str = "BluetoothDeviceChanged";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetBluetooth";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Bluetooth";
 }
 
 #[derive(Debug)]
@@ -93,7 +93,7 @@ impl arg::ReadAll for BluetoothDeviceRemoved {
 
 impl dbus::message::SignalArgs for BluetoothDeviceRemoved {
     const NAME: &'static str = "BluetoothDeviceRemoved";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetBluetooth";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Bluetooth";
 }
 
 impl GetVal<(Path<'static>,)> for BluetoothDeviceRemoved {
@@ -123,7 +123,7 @@ impl arg::ReadAll for AccessPointAdded {
 
 impl dbus::message::SignalArgs for AccessPointAdded {
     const NAME: &'static str = "AccessPointAdded";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Wireless";
 }
 
 impl GetVal<(AccessPoint,)> for AccessPointAdded {
@@ -153,7 +153,7 @@ impl arg::ReadAll for AccessPointChanged {
 
 impl dbus::message::SignalArgs for AccessPointChanged {
     const NAME: &'static str = "AccessPointChanged";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Wireless";
 }
 
 impl GetVal<(AccessPoint,)> for AccessPointChanged {
@@ -183,7 +183,7 @@ impl arg::ReadAll for AccessPointRemoved {
 
 impl dbus::message::SignalArgs for AccessPointRemoved {
     const NAME: &'static str = "AccessPointRemoved";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Wireless";
 }
 
 impl GetVal<(Path<'static>,)> for AccessPointRemoved {
@@ -213,7 +213,7 @@ impl arg::ReadAll for WifiDeviceChanged {
 
 impl dbus::message::SignalArgs for WifiDeviceChanged {
     const NAME: &'static str = "WifiDeviceChanged";
-    const INTERFACE: &'static str = "org.Xetibo.ReSetWireless";
+    const INTERFACE: &'static str = "org.Xetibo.ReSet.Wireless";
 }
 
 impl GetVal<(WifiDevice,)> for WifiDeviceChanged {

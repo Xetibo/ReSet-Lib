@@ -75,8 +75,8 @@ pub fn call_reset_dbus_method<
 ) -> Result<O, dbus::Error> {
     let conn = Connection::new_session().unwrap();
     let proxy = conn.with_proxy(
-        "org.Xetibo.ReSetDaemon",
-        "/org/Xetibo/ResetDaemon",
+        "org.Xetibo.ReSet.Daemon",
+        "/org/Xetibo/Reset/Daemon",
         Duration::from_millis(1000),
     );
     let result: Result<O, dbus::Error> = proxy.method_call(

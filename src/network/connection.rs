@@ -25,6 +25,7 @@ pub struct Connection {
     pub device: TypeSettings,
     pub ipv4: IPV4Settings,
     pub ipv6: IPV6Settings,
+    pub security: WifiSecuritySettings,
     // TODO check if x802 is actually even necessary?
     // TODO implement wifi security settings
 }
@@ -41,13 +42,13 @@ impl Connection {
         let mut device: Option<TypeSettings> = None;
         let mut ipv4: Option<IPV4Settings> = None;
         let mut ipv6: Option<IPV6Settings> = None;
+        let mut security: Option<WifiSecuritySettings> = None;
         dbg!(&map);
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
                     device = Some(TypeSettings::WIFI(
                         WifiSettings::from_propmap(&submap),
-                        WifiSecuritySettings::from_propmap(&submap),
                     ));
                 }
                 "802-3-ethernet" => {
@@ -63,6 +64,7 @@ impl Connection {
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
                 "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
+                "security" => security = Some(WifiSecuritySettings::from_propmap(&submap)),
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
@@ -84,6 +86,7 @@ impl Connection {
             device,
             ipv4,
             ipv6,
+            security: security.unwrap_or_default(),
         })
     }
 
@@ -91,9 +94,8 @@ impl Connection {
         let mut map = HashMap::new();
         map.insert("connection".into(), self.settings.to_propmap());
         match &self.device {
-            TypeSettings::WIFI(wifi, wifisecurity) => {
+            TypeSettings::WIFI(wifi) => {
                 map.insert("802-11-wireless".into(), wifi.to_propmap());
-                map.insert("802-11-wireless-security".into(), wifisecurity.to_propmap());
             }
             TypeSettings::ETHERNET(ethernet) => {
                 map.insert("802-3-ethernet".into(), ethernet.to_propmap());
@@ -105,6 +107,7 @@ impl Connection {
         };
         map.insert("ipv4".into(), self.ipv4.to_propmap());
         map.insert("ipv6".into(), self.ipv6.to_propmap());
+        map.insert("802-11-wireless-security".into(), self.security.to_propmap());
         map
     }
 }
@@ -303,7 +306,7 @@ impl Enum for Duplex {
 
 #[derive(Debug, Default)]
 pub enum TypeSettings {
-    WIFI(WifiSettings, WifiSecuritySettings),
+    WIFI(WifiSettings),
     ETHERNET(EthernetSettings),
     VPN(VPNSettings),
     #[default]
@@ -313,7 +316,7 @@ pub enum TypeSettings {
 impl ToString for TypeSettings {
     fn to_string(&self) -> String {
         match self {
-            TypeSettings::WIFI(_, _) => String::from("wifi"),
+            TypeSettings::WIFI(_) => String::from("wifi"),
             TypeSettings::ETHERNET(_) => String::from("ethernet"),
             TypeSettings::VPN(_) => String::from("vpn"),
             TypeSettings::None => String::from(""),

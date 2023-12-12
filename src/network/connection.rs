@@ -46,23 +46,23 @@ impl Connection {
             match category.as_str() {
                 "802-11-wireless" => {
                     device = Some(TypeSettings::WIFI(
-                        Box::new(WifiSettings::from_propmap(&submap)),
-                        Box::new(WifiSecuritySettings::from_propmap(&submap)),
+                        WifiSettings::from_propmap(&submap),
+                        WifiSecuritySettings::from_propmap(&submap),
                     ));
                 }
                 "802-3-ethernet" => {
-                    device = Some(TypeSettings::ETHERNET(Box::new(
+                    device = Some(TypeSettings::ETHERNET(
                         EthernetSettings::from_propmap(&submap),
-                    )))
+                    ))
                 }
                 "vpn" => {
-                    device = Some(TypeSettings::VPN(Box::new(VPNSettings::from_propmap(
+                    device = Some(TypeSettings::VPN(VPNSettings::from_propmap(
                         &submap,
-                    ))))
+                    )))
                 }
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
-                "connection" => settings = { Some(ConnectionSettings::from_propmap(&submap)) },
+                "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
@@ -303,9 +303,9 @@ impl Enum for Duplex {
 
 #[derive(Debug, Default)]
 pub enum TypeSettings {
-    WIFI(Box<WifiSettings>, Box<WifiSecuritySettings>),
-    ETHERNET(Box<EthernetSettings>),
-    VPN(Box<VPNSettings>),
+    WIFI(WifiSettings, WifiSecuritySettings),
+    ETHERNET(EthernetSettings),
+    VPN(VPNSettings),
     #[default]
     None,
 }

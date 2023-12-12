@@ -1,7 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
-use std::any::Any;
 
-use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
+use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: &PropMap) -> Self;
@@ -1083,12 +1082,9 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let test = map.get(address_type);
 
     for t in test.unwrap().0.as_iter().unwrap() {
-        dbg!(t);
         t.as_iter().unwrap().for_each(|x| {
             if let Some(y) = x.as_str() {
-                if y != "address" && y  != "prefix" {
-                    dbg!(y);
-                }
+                dbg!(y);
             } else if let Some(z) = x.as_u64() {
                 dbg!(z);
             }

@@ -1097,9 +1097,8 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
                     gateway: None,
                     metric: None,
                 };
-
+                let mut prev = "";
                 t.as_iter().unwrap().for_each(|x| {
-                    let mut prev = "";
                     if let Some(y) = x.as_str() {
                         if prev == "address" {
                             address.address = String::from(y);

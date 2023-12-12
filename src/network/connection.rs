@@ -1117,7 +1117,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         None
     };
 
-    // dbg!(asdf);
+    dbg!(asdf);
 
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {

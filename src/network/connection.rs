@@ -1084,8 +1084,8 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
 
     for t in test.unwrap().0.as_iter().unwrap() {
         dbg!(t);
-
         let a = &*t.box_clone();
+        dbg!(a);
         let option2 = cast::<HashMap<String, Variant<Box<dyn RefArg>>>>(a);
         dbg!(option2);
     }
@@ -1100,10 +1100,6 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     //     let x2 = x.as_any();
     //     dbg!(x2);
     // });
-
-    let test = map.get(address_type).unwrap();
-    let option1 = cast::<Vec<PropMap>>(test);
-    dbg!(option1);
 
 
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);

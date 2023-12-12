@@ -1114,7 +1114,16 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         dbg!(option2);
     }
 
-    let address_data_opt: Option<&VecDeque<PropMap>> = prop_cast(map, address_type);
+    let asdffd: Option<&Vec<Box<dyn RefArg>>> = prop_cast(map, address_type);
+    for x in asdffd.unwrap() {
+        let option = cast::<PropMap>(x);
+        dbg!(option);
+    }
+
+
+
+
+    let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {
             let address_opt: Option<&String> = prop_cast(entry, "address");

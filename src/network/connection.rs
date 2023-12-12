@@ -1082,11 +1082,9 @@ impl PropMapConvert for IPV6Settings {
 
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
+    let address_alias = if address_type == "route-data" { "dest" } else { "address" };
 
-    dbg!(map);
     let test = map.get(address_type);
-    dbg!(test);
-    
     if let Some(test1) = test {
         let test = test1.0.as_iter();
         if let Some(test1) = test {
@@ -1100,7 +1098,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
                 let mut prev = "";
                 t.as_iter().unwrap().for_each(|x| {
                     if let Some(y) = x.as_str() {
-                        if prev == "address" {
+                        if prev == address_alias {
                             address.address = String::from(y);
                         } else if prev == "gateway" {
                             address.gateway = Some(String::from(y));

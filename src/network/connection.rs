@@ -1101,7 +1101,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {
             let address_opt: Option<&String> = prop_cast(entry, "address");
-            let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefic");
+            let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefix");
             let gateway_opt: Option<&String> = prop_cast(entry, "gateway");
             let metric_opt: Option<&u32> = prop_cast(entry, "metric");
             let address = if let Some(address_opt) = address_opt {

@@ -1,5 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 use std::collections::VecDeque;
+use dbus::arg;
 
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
@@ -1037,7 +1038,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> 
     let mut address_data: Vec<AddressType> = Vec::new();
     let test = map.get(address_type);
     if let Some(asdf) = test {
-        let option2 = cast::<Vec<AddressType>>(asdf);
+        let option2 = cast::<Vec<AddressType>>(&asdf.0);
         dbg!(option2);
     }
 

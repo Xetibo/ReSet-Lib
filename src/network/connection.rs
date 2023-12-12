@@ -1085,8 +1085,8 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     for t in test.unwrap().0.as_iter().unwrap() {
         dbg!(t);
         let a = &*t.box_clone();
-        dbg!(a);
-        let option2 = cast::<HashMap<String, PropMap>>(a);
+        dbg!(a.as_static_inner(0));
+        let option2 = cast::<HashMap<String, PropMap>>(a.as_static_inner(0).unwrap());
         dbg!(option2);
     }
 

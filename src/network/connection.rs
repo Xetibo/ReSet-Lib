@@ -1106,7 +1106,10 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         dbg!(arg_type);
 
         let option2 = x.as_iter().unwrap();
-        // option2.signature();
+        option2.for_each(|x| {
+            let x2 = x.as_any();
+            dbg!(x2);
+        });
 
 
         let x2 = x.as_f64();

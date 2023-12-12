@@ -1098,6 +1098,9 @@ impl PropMapConvert for IPV6Settings {
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
     let test = map.get(address_type);
+    let test2 = &test.unwrap().0;
+    dbg!(test2);
+
 
     for x in test.iter() {
         let a = &x.0;

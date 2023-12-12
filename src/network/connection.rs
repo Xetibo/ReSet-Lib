@@ -1,9 +1,9 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, rc::Rc, str::FromStr};
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
-    fn from_propmap(map: &PropMap) -> Self;
+    fn from_propmap(map: Rc<PropMap>) -> Self;
     fn to_propmap(&self) -> PropMap;
 }
 
@@ -43,26 +43,29 @@ impl Connection {
         let mut ipv6: Option<IPV6Settings> = None;
         dbg!(&map);
         for (category, submap) in map {
+            let submap_ref = Rc::new(submap);
             match category.as_str() {
                 "802-11-wireless" => {
                     device = Some(TypeSettings::WIFI(
-                        Box::new(WifiSettings::from_propmap(&submap)),
-                        Box::new(WifiSecuritySettings::from_propmap(&submap)),
+                        Box::new(WifiSettings::from_propmap(submap_ref.clone())),
+                        Box::new(WifiSecuritySettings::from_propmap(submap_ref.clone())),
                     ));
                 }
                 "802-3-ethernet" => {
                     device = Some(TypeSettings::ETHERNET(Box::new(
-                        EthernetSettings::from_propmap(&submap),
+                        EthernetSettings::from_propmap(submap_ref.clone()),
                     )))
                 }
                 "vpn" => {
                     device = Some(TypeSettings::VPN(Box::new(VPNSettings::from_propmap(
-                        &submap,
+                        submap_ref.clone(),
                     ))))
                 }
-                "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
-                "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
-                "connection" => settings = { Some(ConnectionSettings::from_propmap(&submap)) },
+                "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(submap_ref.clone())),
+                "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(submap_ref.clone())),
+                "connection" => {
+                    settings = Some(ConnectionSettings::from_propmap(submap_ref.clone()))
+                }
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
@@ -332,28 +335,28 @@ pub struct EthernetSettings {
 }
 
 impl PropMapConvert for EthernetSettings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let auto_negotiate: Option<&bool> = prop_cast(map, "auto-negotiate");
-        let cloned_address_opt: Option<&String> = prop_cast(map, "cloned-mac-address");
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let auto_negotiate: Option<&bool> = prop_cast(&map, "auto-negotiate");
+        let cloned_address_opt: Option<&String> = prop_cast(&map, "cloned-mac-address");
         let cloned_mac_address = if let Some(cloned_address_opt) = cloned_address_opt {
             cloned_address_opt.clone()
         } else {
             String::from("")
         };
-        let duplex_opt: Option<&String> = prop_cast(map, "mode");
+        let duplex_opt: Option<&String> = prop_cast(&map, "mode");
         let duplex = if let Some(duplex_opt) = duplex_opt {
             Duplex::from_str(duplex_opt).ok().unwrap()
         } else {
             Duplex::FULL
         };
-        let mtu: Option<&u32> = prop_cast(map, "mtu");
-        let name_opt: Option<&String> = prop_cast(map, "name");
+        let mtu: Option<&u32> = prop_cast(&map, "mtu");
+        let name_opt: Option<&String> = prop_cast(&map, "name");
         let name = if let Some(name_opt) = name_opt {
             name_opt.clone()
         } else {
             String::from("")
         };
-        let speed: Option<&u32> = prop_cast(map, "speed");
+        let speed: Option<&u32> = prop_cast(&map, "speed");
         Self {
             auto_negotiate: *auto_negotiate.unwrap_or(&true),
             cloned_mac_address,
@@ -390,34 +393,34 @@ pub struct VPNSettings {
 }
 
 impl PropMapConvert for VPNSettings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let data_opt: Option<&HashMap<String, String>> = prop_cast(map, "data");
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let data_opt: Option<&HashMap<String, String>> = prop_cast(&map, "data");
         let data = if let Some(data_opt) = data_opt {
             data_opt.clone()
         } else {
             HashMap::new()
         };
-        let name_opt: Option<&String> = prop_cast(map, "name");
+        let name_opt: Option<&String> = prop_cast(&map, "name");
         let name = if let Some(name_opt) = name_opt {
             name_opt.clone()
         } else {
             String::from("vpn")
         };
-        let persistent: Option<&bool> = prop_cast(map, "persistent");
-        let secrets_opt: Option<&HashMap<String, String>> = prop_cast(map, "secrets");
+        let persistent: Option<&bool> = prop_cast(&map, "persistent");
+        let secrets_opt: Option<&HashMap<String, String>> = prop_cast(&map, "secrets");
         let secrets = if let Some(secrets_opt) = secrets_opt {
             secrets_opt.clone()
         } else {
             HashMap::new()
         };
-        let service_type_opt: Option<&String> = prop_cast(map, "service-type");
+        let service_type_opt: Option<&String> = prop_cast(&map, "service-type");
         let service_type = if let Some(service_type_opt) = service_type_opt {
             service_type_opt.clone()
         } else {
             String::from("")
         };
-        let timeout: Option<&u32> = prop_cast(map, "timeout");
-        let user_name_opt: Option<&String> = prop_cast(map, "user-name");
+        let timeout: Option<&u32> = prop_cast(&map, "timeout");
+        let user_name_opt: Option<&String> = prop_cast(&map, "user-name");
         let user_name = if let Some(user_name_opt) = user_name_opt {
             user_name_opt.clone()
         } else {
@@ -466,35 +469,35 @@ pub struct WifiSettings {
 }
 
 impl PropMapConvert for WifiSettings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let mode_opt: Option<&String> = prop_cast(map, "mode");
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let mode_opt: Option<&String> = prop_cast(&map, "mode");
         let mode = if let Some(mode_opt) = mode_opt {
             Mode::from_str(mode_opt.as_str()).ok().unwrap()
         } else {
             Mode::from_str("").ok().unwrap()
         };
-        let channel_opt: Option<&u32> = prop_cast(map, "channel");
+        let channel_opt: Option<&u32> = prop_cast(&map, "channel");
         let channel = *channel_opt.unwrap_or(&0);
-        let band_opt: Option<&String> = prop_cast(map, "band");
+        let band_opt: Option<&String> = prop_cast(&map, "band");
         let band = if let Some(band_opt) = band_opt {
             Band::from_str(band_opt.as_str()).ok().unwrap()
         } else {
             Band::from_str("").ok().unwrap()
         };
-        let cloned_address_opt: Option<&String> = prop_cast(map, "cloned-mac-address");
+        let cloned_address_opt: Option<&String> = prop_cast(&map, "cloned-mac-address");
         let cloned_mac_address = if let Some(cloned_address_opt) = cloned_address_opt {
             cloned_address_opt.clone()
         } else {
             String::from("")
         };
-        let mtu_opt: Option<&u32> = prop_cast(map, "mtu");
+        let mtu_opt: Option<&u32> = prop_cast(&map, "mtu");
         let mtu = *mtu_opt.unwrap_or(&0);
-        let powersave_opt: Option<&u32> = prop_cast(map, "powersave");
+        let powersave_opt: Option<&u32> = prop_cast(&map, "powersave");
         let powersave = *powersave_opt.unwrap_or(&0);
-        let rate_opt: Option<&u32> = prop_cast(map, "rate");
+        let rate_opt: Option<&u32> = prop_cast(&map, "rate");
         let rate = *rate_opt.unwrap_or(&0);
 
-        let ssid_opt: Option<&Vec<u8>> = prop_cast(map, "ssid");
+        let ssid_opt: Option<&Vec<u8>> = prop_cast(&map, "ssid");
         let ssid = if let Some(ssid_opt) = ssid_opt {
             ssid_opt.clone()
         } else {
@@ -543,7 +546,7 @@ pub struct X802Settings {
 }
 
 // impl PropMapConvert for X802Settings {
-//     fn from_propmap(map: &PropMap) -> Self {
+//     fn from_propmap(map: Rc<PropMap>) -> Self {
 //         let ca_cert: Vec<u8>;
 //         let ca_cert_string: String;
 //         let client_cert: Vec<u8>;
@@ -805,44 +808,44 @@ pub struct IPV4Settings {
 }
 
 impl PropMapConvert for IPV4Settings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let address_data = get_addresses(map, "address-data");
-        let dns_opt: Option<&Vec<u32>> = prop_cast(map, "dns");
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let address_data = get_addresses(map.clone(), "address-data");
+        let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {
             Vec::new()
         };
-        let dns_options_opt: Option<&Vec<String>> = prop_cast(map, "dns-options");
+        let dns_options_opt: Option<&Vec<String>> = prop_cast(&map, "dns-options");
         let dns_options = if let Some(dns_options_opt) = dns_options_opt {
             dns_options_opt.clone()
         } else {
             Vec::new()
         };
-        let dns_priority = *prop_cast(map, "dns-priority").unwrap_or(&0);
-        let dns_search_opt: Option<&Vec<String>> = prop_cast(map, "dns-search");
+        let dns_priority = *prop_cast(&map, "dns-priority").unwrap_or(&0);
+        let dns_search_opt: Option<&Vec<String>> = prop_cast(&map, "dns-search");
         let dns_search = if let Some(dns_search_opt) = dns_search_opt {
             dns_search_opt.clone()
         } else {
             Vec::new()
         };
-        let gateway_opt: Option<&String> = prop_cast(map, "gateway");
+        let gateway_opt: Option<&String> = prop_cast(&map, "gateway");
         let gateway = if let Some(gateway_opt) = gateway_opt {
             gateway_opt.clone()
         } else {
             String::from("")
         };
-        let ignore_auto_dns = *prop_cast(map, "ignore-auto-dns").unwrap_or(&false);
-        let ignore_auto_dns_routes = *prop_cast(map, "ignore-auto-routes").unwrap_or(&false);
-        let may_fail = *prop_cast(map, "may-fail").unwrap_or(&true);
-        let method_opt: Option<&String> = prop_cast(map, "method");
+        let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or(&false);
+        let ignore_auto_dns_routes = *prop_cast(&map, "ignore-auto-routes").unwrap_or(&false);
+        let may_fail = *prop_cast(&map, "may-fail").unwrap_or(&true);
+        let method_opt: Option<&String> = prop_cast(&map, "method");
         let dns_method = if let Some(method_opt) = method_opt {
             DNSMethod4::from_str(method_opt.as_str()).unwrap()
         } else {
             DNSMethod4::DISABLED
         };
-        let never_default = *prop_cast(map, "never-default").unwrap_or(&true);
-        let route_data = get_addresses(map, "route-data");
+        let never_default = *prop_cast(&map, "never-default").unwrap_or(&true);
+        let route_data = get_addresses(map.clone(), "route-data");
         Self {
             address_data,
             dns,
@@ -973,46 +976,46 @@ pub struct IPV6Settings {
 }
 
 impl PropMapConvert for IPV6Settings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let address_data = get_addresses(map, "address-data");
-        let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(map, "dns");
-        dbg!(map);
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let address_data = get_addresses(map.clone(), "address-data");
+        let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {
             Vec::new()
         };
-        let dns_options_opt: Option<&Vec<String>> = prop_cast(map, "dns-options");
+        let dns_options_opt: Option<&Vec<String>> = prop_cast(&map, "dns-options");
         let dns_options = if let Some(dns_options_opt) = dns_options_opt {
             dns_options_opt.clone()
         } else {
             Vec::new()
         };
-        let dns_priority = *prop_cast(map, "dns-priority").unwrap_or(&0);
-        let dns_search_opt: Option<&Vec<String>> = prop_cast(map, "dns-search");
+        let dns_priority = *prop_cast(&map, "dns-priority").unwrap_or(&0);
+        let dns_search_opt: Option<&Vec<String>> = prop_cast(&map, "dns-search");
         let dns_search = if let Some(dns_search_opt) = dns_search_opt {
             dns_search_opt.clone()
         } else {
             Vec::new()
         };
-        let gateway_opt: Option<&String> = prop_cast(map, "gateway");
+        let gateway_opt: Option<&String> = prop_cast(&map, "gateway");
         let gateway = if let Some(gateway_opt) = gateway_opt {
             gateway_opt.clone()
         } else {
             String::from("")
         };
-        let ignore_auto_dns = *prop_cast(map, "ignore-auto-dns").unwrap_or(&false);
-        let ignore_auto_routes = *prop_cast(map, "ignore-auto-routes").unwrap_or(&false);
-        let ipv6_privacy = IPV6PrivacyMode::from_i32(*prop_cast(map, "ip6-privacy").unwrap_or(&-1));
-        let may_fail = *prop_cast(map, "may-fail").unwrap_or(&true);
-        let method_opt: Option<&String> = prop_cast(map, "method");
+        let ignore_auto_dns = *prop_cast(&map, "ignore-auto-dns").unwrap_or(&false);
+        let ignore_auto_routes = *prop_cast(&map, "ignore-auto-routes").unwrap_or(&false);
+        let ipv6_privacy =
+            IPV6PrivacyMode::from_i32(*prop_cast(&map, "ip6-privacy").unwrap_or(&-1));
+        let may_fail = *prop_cast(&map, "may-fail").unwrap_or(&true);
+        let method_opt: Option<&String> = prop_cast(&map, "method");
         let dns_method = if let Some(method_opt) = method_opt {
             DNSMethod6::from_str(method_opt.as_str()).unwrap()
         } else {
             DNSMethod6::DISABLED
         };
-        let never_default = *prop_cast(map, "never-default").unwrap_or(&true);
-        let route_data = get_addresses(map, "route-data");
+        let never_default = *prop_cast(&map, "never-default").unwrap_or(&true);
+        let route_data = get_addresses(map.clone(), "route-data");
         Self {
             address_data,
             dns,
@@ -1077,45 +1080,49 @@ impl PropMapConvert for IPV6Settings {
     }
 }
 
-fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
-    let mut address_data: Vec<Address> = Vec::new();
-    let test: Option<&Variant<Box<dyn RefArg>>> = map.get(address_type);
-    dbg!(test);
-    let test = test.unwrap();
-    for entry in test.0.as_iter().unwrap() {
-        let entry = entry.box_clone();
-        let wat: Option<&PropMap> = cast(&entry);
-        dbg!(wat);
-    }
+fn get_addresses(map: Rc<PropMap>, address_type: &'static str) -> Vec<Address> {
+    let address_data: Vec<Address> = Vec::new();
+    unsafe {
+        let fuckmap: *const PropMap = &*map;
+        let test = (*fuckmap).get(address_type);
 
-    let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
-    if address_data_opt.is_some() {
-        for entry in address_data_opt.unwrap() {
-            let address_opt: Option<&String> = prop_cast(entry, "address");
-            let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefix");
-            let gateway_opt: Option<&String> = prop_cast(entry, "gateway");
-            let metric_opt: Option<&u32> = prop_cast(entry, "metric");
-            let address = if let Some(address_opt) = address_opt {
-                address_opt.clone()
-            } else {
-                String::from("")
-            };
-            let prefix_length = if let Some(prefix_length_opt) = prefix_length_opt {
-                *prefix_length_opt
-            } else {
-                0
-            };
-            let gateway = gateway_opt.cloned();
-            let metric = metric_opt.cloned();
-            address_data.push(Address {
-                address,
-                prefix: prefix_length,
-                gateway,
-                metric,
-            })
+        for entry in test.unwrap().as_iter().unwrap() {
+            let mut actual: &dyn RefArg = &entry;
+            (entry).clone_into(&mut actual);
+            let wat: Option<&HashMap<String, Variant<Box<dyn RefArg>>>> = cast(actual);
+            dbg!(wat);
         }
     }
     address_data
+
+    // let address_data_opt: Option<&Vec<PropMap>> = prop_cast(&*map, address_type);
+    // if address_data_opt.is_some() {
+    //     for entry in address_data_opt.unwrap() {
+    //         let address_opt: Option<&String> = prop_cast(entry, "address");
+    //         let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefix");
+    //         let gateway_opt: Option<&String> = prop_cast(entry, "gateway");
+    //         let metric_opt: Option<&u32> = prop_cast(entry, "metric");
+    //         let address = if let Some(address_opt) = address_opt {
+    //             address_opt.clone()
+    //         } else {
+    //             String::from("")
+    //         };
+    //         let prefix_length = if let Some(prefix_length_opt) = prefix_length_opt {
+    //             *prefix_length_opt
+    //         } else {
+    //             0
+    //         };
+    //         let gateway = gateway_opt.cloned();
+    //         let metric = metric_opt.cloned();
+    //         address_data.push(Address {
+    //             address,
+    //             prefix: prefix_length,
+    //             gateway,
+    //             metric,
+    //         })
+    //     }
+    // }
+    // address_data
 }
 
 #[derive(Debug, Default)]
@@ -1130,30 +1137,30 @@ pub struct ConnectionSettings {
 }
 
 impl PropMapConvert for ConnectionSettings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let autoconnect = prop_cast(map, "autoconnect");
-        let autoconnect_priority = prop_cast(map, "autoconnect-priority");
-        let id_opt: Option<&String> = prop_cast(map, "id");
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let autoconnect = prop_cast(&map, "autoconnect");
+        let autoconnect_priority = prop_cast(&map, "autoconnect-priority");
+        let id_opt: Option<&String> = prop_cast(&map, "id");
         let id = if let Some(id_opt) = id_opt {
             id_opt.clone()
         } else {
             String::from("")
         };
-        let metered = prop_cast(map, "metered");
-        let zone_opt: Option<&String> = prop_cast(map, "trust");
+        let metered = prop_cast(&map, "metered");
+        let zone_opt: Option<&String> = prop_cast(&map, "trust");
         let zone = if let Some(zone_opt) = zone_opt {
             Trust::from_str(zone_opt.as_str()).ok().unwrap()
         } else {
             Trust::from_str("").ok().unwrap()
         };
 
-        let uuid_opt: Option<&String> = prop_cast(map, "uuid");
+        let uuid_opt: Option<&String> = prop_cast(&map, "uuid");
         let uuid = if let Some(uuid_opt) = uuid_opt {
             uuid_opt.clone()
         } else {
             String::from("")
         };
-        let device_type_opt: Option<&String> = prop_cast(map, "type");
+        let device_type_opt: Option<&String> = prop_cast(&map, "type");
         let device_type = if let Some(device_type_opt) = device_type_opt {
             device_type_opt.clone()
         } else {
@@ -1298,87 +1305,87 @@ pub struct WifiSecuritySettings {
 }
 
 impl PropMapConvert for WifiSecuritySettings {
-    fn from_propmap(map: &PropMap) -> Self {
-        let authentication_algorithm_opt: Option<&String> = prop_cast(map, "auth-alg");
+    fn from_propmap(map: Rc<PropMap>) -> Self {
+        let authentication_algorithm_opt: Option<&String> = prop_cast(&map, "auth-alg");
         let authentication_algorithm =
             if let Some(authentication_algorithm_opt) = authentication_algorithm_opt {
                 authentication_algorithm_opt.clone()
             } else {
                 String::from("")
             };
-        let group_opt: Option<&Vec<String>> = prop_cast(map, "group");
+        let group_opt: Option<&Vec<String>> = prop_cast(&map, "group");
         let group = if let Some(group_opt) = group_opt {
             group_opt.clone()
         } else {
             Vec::new()
         };
-        let key_management_opt: Option<&String> = prop_cast(map, "key-mgmt");
+        let key_management_opt: Option<&String> = prop_cast(&map, "key-mgmt");
         let key_management =
             KeyManagement::from_str(key_management_opt.unwrap_or(&String::from("wpa-psk")));
-        let leap_password_opt: Option<&String> = prop_cast(map, "leap-password");
+        let leap_password_opt: Option<&String> = prop_cast(&map, "leap-password");
         let leap_password = if let Some(leap_password_opt) = leap_password_opt {
             leap_password_opt.clone()
         } else {
             String::from("")
         };
-        let leap_password_flags_opt: Option<&u32> = prop_cast(map, "leap-password-flags");
+        let leap_password_flags_opt: Option<&u32> = prop_cast(&map, "leap-password-flags");
         let leap_password_flags =
             SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
-        let leap_username_opt: Option<&String> = prop_cast(map, "leap-username");
+        let leap_username_opt: Option<&String> = prop_cast(&map, "leap-username");
         let leap_username = if let Some(leap_username_opt) = leap_username_opt {
             leap_username_opt.clone()
         } else {
             String::from("")
         };
-        let pairwise_opt: Option<&Vec<String>> = prop_cast(map, "pairwise");
+        let pairwise_opt: Option<&Vec<String>> = prop_cast(&map, "pairwise");
         let pairwise = if let Some(pairwise_opt) = pairwise_opt {
             pairwise_opt.clone()
         } else {
             Vec::new()
         };
-        let proto_opt: Option<&Vec<String>> = prop_cast(map, "proto");
+        let proto_opt: Option<&Vec<String>> = prop_cast(&map, "proto");
         let proto = if let Some(proto_opt) = proto_opt {
             proto_opt.clone()
         } else {
             Vec::new()
         };
-        let psk_opt: Option<&String> = prop_cast(map, "psk");
+        let psk_opt: Option<&String> = prop_cast(&map, "psk");
         let psk = if let Some(psk_opt) = psk_opt {
             psk_opt.clone()
         } else {
             String::from("")
         };
-        let _psk_flags_opt: Option<&u32> = prop_cast(map, "psk-flags");
+        let _psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
         let psk_flags = SecretSettingsFlag::from_i32(*_psk_flags_opt.unwrap_or(&0) as i32);
-        let _wep_key_flags_opt: Option<&u32> = prop_cast(map, "wep-key-flags");
+        let _wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
         let wep_key_flags = SecretSettingsFlag::from_i32(*_wep_key_flags_opt.unwrap_or(&0) as i32);
-        let wep_key_type_opt: Option<&u32> = prop_cast(map, "wep-key-type");
+        let wep_key_type_opt: Option<&u32> = prop_cast(&map, "wep-key-type");
         let wep_key_type = WEPKeyType::from_i32(*wep_key_type_opt.unwrap_or(&0) as i32);
-        let wep_key0_opt: Option<&String> = prop_cast(map, "wep-key0");
+        let wep_key0_opt: Option<&String> = prop_cast(&map, "wep-key0");
         let wep_key0 = if let Some(wep_key0_opt) = wep_key0_opt {
             wep_key0_opt.clone()
         } else {
             String::from("")
         };
-        let wep_key1_opt: Option<&String> = prop_cast(map, "wep-key1");
+        let wep_key1_opt: Option<&String> = prop_cast(&map, "wep-key1");
         let wep_key1 = if let Some(wep_key1_opt) = wep_key1_opt {
             wep_key1_opt.clone()
         } else {
             String::from("")
         };
-        let wep_key2_opt: Option<&String> = prop_cast(map, "wep-key2");
+        let wep_key2_opt: Option<&String> = prop_cast(&map, "wep-key2");
         let wep_key2 = if let Some(wep_key2_opt) = wep_key2_opt {
             wep_key2_opt.clone()
         } else {
             String::from("")
         };
-        let wep_key3_opt: Option<&String> = prop_cast(map, "wep-key3");
+        let wep_key3_opt: Option<&String> = prop_cast(&map, "wep-key3");
         let wep_key3 = if let Some(wep_key3_opt) = wep_key3_opt {
             wep_key3_opt.clone()
         } else {
             String::from("")
         };
-        let wep_tx_keyidx_opt: Option<&u32> = prop_cast(map, "wep-tx-keyidx");
+        let wep_tx_keyidx_opt: Option<&u32> = prop_cast(&map, "wep-tx-keyidx");
         Self {
             authentication_algorithm,
             group,

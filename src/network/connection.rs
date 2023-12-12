@@ -1,5 +1,5 @@
 use std::{collections::HashMap, str::FromStr};
-
+use std::collections::VecDeque;
 
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
@@ -1036,7 +1036,25 @@ impl PropMapConvert for IPV6Settings {
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> {
     let mut address_data: Vec<AddressType> = Vec::new();
 
-    let asdffd: Option<&Vec<AddressType>> = prop_cast(map, address_type);
+    let asdffd: Option<&Vec<Box<dyn RefArg>>> = prop_cast(map, address_type);
+    let asedf  = if let Some(qwer) = asdffd {
+        for x in qwer {
+            let option1 = cast::<VecDeque<Box<dyn RefArg>>>(x);
+            if option1.is_none() {
+                continue;
+            }
+            let option1 = option1.unwrap();
+            let address = cast::<String>(&option1[0]).unwrap().clone();
+            let prefix = *cast::<u32>(&option1[1]).unwrap();
+            let gateway = cast::<String>(&option1[2]).unwrap().clone();
+            let metric = *cast::<i64>(&option1[3]).unwrap();
+            address_data.push((address, prefix, gateway, metric));
+        }
+    } else {
+        return address_data;
+    };
+    dbg!(asedf);
+
     for x in asdffd.unwrap() {
         let option = cast::<PropMap>(x);
         dbg!(option);

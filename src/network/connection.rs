@@ -1086,10 +1086,8 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         dbg!(t);
 
         let a = &*t.box_clone();
-        let option2 = cast::<PropMap>(a);
+        let option2 = cast::<HashMap<String, Variant<Box<dyn RefArg>>>>(a);
         dbg!(option2);
-        // let option = t.next();
-        // option
     }
 
     // let x1 = test.unwrap().0.as_static_inner(0);

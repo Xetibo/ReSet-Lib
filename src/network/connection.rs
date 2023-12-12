@@ -45,9 +45,10 @@ impl Connection {
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
-                    device = Some(TypeSettings::WIFI(Box::new(WifiSettings::from_propmap(
-                        &submap,
-                    )), Box::new(WifiSecuritySettings::from_propmap(&submap))));
+                    device = Some(TypeSettings::WIFI(
+                        Box::new(WifiSettings::from_propmap(&submap)),
+                        Box::new(WifiSecuritySettings::from_propmap(&submap)),
+                    ));
                 }
                 "802-3-ethernet" => {
                     device = Some(TypeSettings::ETHERNET(Box::new(
@@ -61,9 +62,7 @@ impl Connection {
                 }
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
-                "connection" => settings = {
-                    Some(ConnectionSettings::from_propmap(&submap))
-                },
+                "connection" => settings = Some(ConnectionSettings::from_propmap(&submap)),
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),
                 _ => continue,
             }
@@ -624,57 +623,7 @@ pub struct X802Settings {
 //     }
 // }
 
-#[derive(Debug, Default)]
-pub struct Address {
-    pub address: String,
-    pub prefix: u32,
-    pub gateway: Option<String>,
-    pub metric: Option<u32>,
-}
-
-impl Address {
-    pub fn new(
-        address: String,
-        prefix: u32,
-        gateway: Option<String>,
-        metric: Option<u32>,
-    ) -> Self {
-        Address {
-            address,
-            prefix,
-            gateway,
-            metric,
-        }
-    }
-
-    pub fn new_no_options(address: String, prefix: u32) -> Self {
-        Address {
-            address,
-            prefix,
-            gateway: None,
-            metric: None,
-        }
-    }
-
-    pub fn to_map(&self) -> PropMap {
-        let mut map = PropMap::new();
-        map.insert("address".into(), Variant(Box::new(self.address.clone())));
-        map.insert(
-            "prefix".into(),
-            Variant(Box::new(self.prefix)),
-        );
-        if self.gateway.is_some() {
-            map.insert(
-                "gateway".into(),
-                Variant(Box::new(self.gateway.clone().unwrap())),
-            );
-        }
-        if self.metric.is_some() {
-            map.insert("metric".into(), Variant(Box::new(self.metric.unwrap())));
-        }
-        map
-    }
-}
+type AddressType = (String, u32, String, u32);
 
 #[derive(Debug, Default)]
 pub enum DNSMethod4 {
@@ -799,7 +748,7 @@ impl Enum for DNSMethod6 {
 
 #[derive(Debug, Default)]
 pub struct IPV4Settings {
-    pub address_data: Vec<Address>,
+    pub address_data: Vec<AddressType>,
     pub dns: Vec<u32>,
     pub dns_options: Vec<String>,
     pub dns_priority: i32,
@@ -810,7 +759,7 @@ pub struct IPV4Settings {
     pub may_fail: bool,
     pub method: DNSMethod4,
     pub never_default: bool,
-    pub route_data: Vec<Address>,
+    pub route_data: Vec<AddressType>,
 }
 
 impl PropMapConvert for IPV4Settings {
@@ -870,11 +819,10 @@ impl PropMapConvert for IPV4Settings {
 
     fn to_propmap(&self) -> PropMap {
         let mut map = PropMap::new();
-        let mut addresses = Vec::new();
-        for address in self.address_data.iter() {
-            addresses.push(address.to_map());
-        }
-        map.insert("address-data".into(), Variant(Box::new(addresses)));
+        map.insert(
+            "address-data".into(),
+            Variant(Box::new(self.address_data.clone())),
+        );
         map.insert("dns".into(), Variant(Box::new(self.dns.clone())));
         map.insert(
             "dns-options".into(),
@@ -897,19 +845,15 @@ impl PropMapConvert for IPV4Settings {
             Variant(Box::new(self.ignore_auto_routes)),
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
-        map.insert(
-            "method".into(),
-            Variant(Box::new(self.method.to_string())),
-        );
+        map.insert("method".into(), Variant(Box::new(self.method.to_string())));
         map.insert(
             "never-default".into(),
             Variant(Box::new(self.never_default)),
         );
-        let mut data = Vec::new();
-        for address in self.route_data.iter() {
-            data.push(address.to_map());
-        }
-        map.insert("route-data".into(), Variant(Box::new(data)));
+        map.insert(
+            "route-data".into(),
+            Variant(Box::new(self.route_data.clone())),
+        );
         map
     }
 }
@@ -969,7 +913,7 @@ impl Enum for IPV6PrivacyMode {
 
 #[derive(Debug, Default)]
 pub struct IPV6Settings {
-    pub address_data: Vec<Address>,
+    pub address_data: Vec<AddressType>,
     pub dns: Vec<Vec<u8>>,
     pub dns_options: Vec<String>,
     pub dns_priority: i32,
@@ -981,7 +925,7 @@ pub struct IPV6Settings {
     pub may_fail: bool,
     pub method: DNSMethod6,
     pub never_default: bool,
-    pub route_data: Vec<Address>,
+    pub route_data: Vec<AddressType>,
 }
 
 impl PropMapConvert for IPV6Settings {
@@ -1015,8 +959,7 @@ impl PropMapConvert for IPV6Settings {
         };
         let ignore_auto_dns = *prop_cast(map, "ignore-auto-dns").unwrap_or(&false);
         let ignore_auto_routes = *prop_cast(map, "ignore-auto-routes").unwrap_or(&false);
-        let ipv6_privacy =
-            IPV6PrivacyMode::from_i32(*prop_cast(map, "ip6-privacy").unwrap_or(&-1));
+        let ipv6_privacy = IPV6PrivacyMode::from_i32(*prop_cast(map, "ip6-privacy").unwrap_or(&-1));
         let may_fail = *prop_cast(map, "may-fail").unwrap_or(&true);
         let method_opt: Option<&String> = prop_cast(map, "method");
         let dns_method = if let Some(method_opt) = method_opt {
@@ -1045,11 +988,10 @@ impl PropMapConvert for IPV6Settings {
 
     fn to_propmap(&self) -> PropMap {
         let mut map = PropMap::new();
-        let mut addresses = Vec::new();
-        for address in self.address_data.iter() {
-            addresses.push(address.to_map());
-        }
-        map.insert("address-data".into(), Variant(Box::new(addresses)));
+        map.insert(
+            "address-data".into(),
+            Variant(Box::new(self.address_data.clone())),
+        );
         map.insert("dns".into(), Variant(Box::new(self.dns.clone())));
         map.insert(
             "dns-options".into(),
@@ -1076,25 +1018,21 @@ impl PropMapConvert for IPV6Settings {
             Variant(Box::new(self.ip6_privacy.to_i32())),
         );
         map.insert("may-fail".into(), Variant(Box::new(self.may_fail)));
-        map.insert(
-            "method".into(),
-            Variant(Box::new(self.method.to_string())),
-        );
+        map.insert("method".into(), Variant(Box::new(self.method.to_string())));
         map.insert(
             "never-default".into(),
             Variant(Box::new(self.never_default)),
         );
-        let mut data = Vec::new();
-        for address in self.route_data.iter() {
-            data.push(address.to_map());
-        }
-        map.insert("route-data".into(), Variant(Box::new(data)));
+        map.insert(
+            "route-data".into(),
+            Variant(Box::new(self.route_data.clone())),
+        );
         map
     }
 }
 
-fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
-    let mut address_data: Vec<Address> = Vec::new();
+fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> {
+    let mut address_data: Vec<AddressType> = Vec::new();
     let test = map.get(address_type);
     dbg!(test);
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
@@ -1109,19 +1047,14 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
             } else {
                 String::from("")
             };
-            let prefix_length = if let Some(prefix_length_opt) = prefix_length_opt {
+            let prefix = if let Some(prefix_length_opt) = prefix_length_opt {
                 *prefix_length_opt
             } else {
                 0
             };
-            let gateway = gateway_opt.cloned();
-            let metric = metric_opt.cloned();
-            address_data.push(Address {
-                address,
-                prefix: prefix_length,
-                gateway,
-                metric,
-            })
+            let gateway = gateway_opt.cloned().unwrap_or(String::from(""));
+            let metric = metric_opt.cloned().unwrap_or(0);
+            address_data.push((address, prefix, gateway, metric))
         }
     }
     address_data
@@ -1322,7 +1255,8 @@ impl PropMapConvert for WifiSecuritySettings {
             Vec::new()
         };
         let key_management_opt: Option<&String> = prop_cast(map, "key-mgmt");
-        let key_management = KeyManagement::from_str(key_management_opt.unwrap_or(&String::from("wpa-psk")));
+        let key_management =
+            KeyManagement::from_str(key_management_opt.unwrap_or(&String::from("wpa-psk")));
         let leap_password_opt: Option<&String> = prop_cast(map, "leap-password");
         let leap_password = if let Some(leap_password_opt) = leap_password_opt {
             leap_password_opt.clone()
@@ -1359,8 +1293,7 @@ impl PropMapConvert for WifiSecuritySettings {
         let _psk_flags_opt: Option<&u32> = prop_cast(map, "psk-flags");
         let psk_flags = SecretSettingsFlag::from_i32(*_psk_flags_opt.unwrap_or(&0) as i32);
         let _wep_key_flags_opt: Option<&u32> = prop_cast(map, "wep-key-flags");
-        let wep_key_flags =
-            SecretSettingsFlag::from_i32(*_wep_key_flags_opt.unwrap_or(&0) as i32);
+        let wep_key_flags = SecretSettingsFlag::from_i32(*_wep_key_flags_opt.unwrap_or(&0) as i32);
         let wep_key_type_opt: Option<&u32> = prop_cast(map, "wep-key-type");
         let wep_key_type = WEPKeyType::from_i32(*wep_key_type_opt.unwrap_or(&0) as i32);
         let wep_key0_opt: Option<&String> = prop_cast(map, "wep-key0");

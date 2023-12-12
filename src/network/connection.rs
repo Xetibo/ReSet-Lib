@@ -627,7 +627,7 @@ pub struct X802Settings {
 #[derive(Debug, Default)]
 pub struct Address {
     pub address: String,
-    pub prefix_length: u32,
+    pub prefix: u32,
     pub gateway: Option<String>,
     pub metric: Option<u32>,
 }
@@ -635,22 +635,22 @@ pub struct Address {
 impl Address {
     pub fn new(
         address: String,
-        prefix_length: u32,
+        prefix: u32,
         gateway: Option<String>,
         metric: Option<u32>,
     ) -> Self {
         Address {
             address,
-            prefix_length,
+            prefix,
             gateway,
             metric,
         }
     }
 
-    pub fn new_no_options(address: String, prefix_length: u32) -> Self {
+    pub fn new_no_options(address: String, prefix: u32) -> Self {
         Address {
             address,
-            prefix_length,
+            prefix,
             gateway: None,
             metric: None,
         }
@@ -660,8 +660,8 @@ impl Address {
         let mut map = PropMap::new();
         map.insert("address".into(), Variant(Box::new(self.address.clone())));
         map.insert(
-            "prefix-length".into(),
-            Variant(Box::new(self.prefix_length)),
+            "prefix".into(),
+            Variant(Box::new(self.prefix)),
         );
         if self.gateway.is_some() {
             map.insert(
@@ -1126,7 +1126,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
 
             address_data.push(Address {
                 address,
-                prefix_length,
+                prefix: prefix_length,
                 gateway,
                 metric,
             })

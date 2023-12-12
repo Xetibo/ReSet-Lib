@@ -41,7 +41,7 @@ impl Connection {
         let mut device: Option<TypeSettings> = None;
         let mut ipv4: Option<IPV4Settings> = None;
         let mut ipv6: Option<IPV6Settings> = None;
-        // dbg!(&map);
+        dbg!(&map);
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
@@ -816,7 +816,6 @@ pub struct IPV4Settings {
 impl PropMapConvert for IPV4Settings {
     fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
-        dbg!(&map);
         let dns_opt: Option<&Vec<u32>> = prop_cast(&map, "dns");
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()

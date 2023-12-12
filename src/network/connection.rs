@@ -41,7 +41,7 @@ impl Connection {
         let mut device: Option<TypeSettings> = None;
         let mut ipv4: Option<IPV4Settings> = None;
         let mut ipv6: Option<IPV6Settings> = None;
-        dbg!(&map);
+        // dbg!(&map);
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
@@ -1105,12 +1105,13 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     dbg!(option1);
 
     for x in test.iter() {
-        dbg!(&x.0);
+        let option2 = cast::<Vec<HashMap<String, Variant<Box<dyn RefArg>>>>>(&x.0);
+        dbg!(option2);
     }
 
     // dbg!(test);
     let asdf = if let Some(test) = test {
-        let option = cast::<Vec<PropMap>>(test);
+        let option = cast::<Vec<PropMap>>(&test.0);
         option
     } else {
         None

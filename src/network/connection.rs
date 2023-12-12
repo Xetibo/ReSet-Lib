@@ -41,13 +41,13 @@ impl Connection {
         let mut device: Option<TypeSettings> = None;
         let mut ipv4: Option<IPV4Settings> = None;
         let mut ipv6: Option<IPV6Settings> = None;
+        dbg!(&map);
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
                     device = Some(TypeSettings::WIFI(Box::new(WifiSettings::from_propmap(
                         &submap,
                     )), Box::new(WifiSecuritySettings::from_propmap(&submap))));
-                    dbg!(submap);
                 }
                 "802-3-ethernet" => {
                     device = Some(TypeSettings::ETHERNET(Box::new(
@@ -62,7 +62,6 @@ impl Connection {
                 "ipv6" => ipv6 = Some(IPV6Settings::from_propmap(&submap)),
                 "ipv4" => ipv4 = Some(IPV4Settings::from_propmap(&submap)),
                 "connection" => settings = {
-                    dbg!(&submap);
                     Some(ConnectionSettings::from_propmap(&submap))
                 },
                 // "802-1x" => x802 = Some(X802Settings::from_propmap(&submap)),

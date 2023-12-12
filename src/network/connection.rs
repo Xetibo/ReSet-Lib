@@ -1083,6 +1083,10 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let test = map.get(address_type);
     dbg!(test);
 
+    let option = test.unwrap().0.as_iter().unwrap();
+    for x in option {
+        dbg!(x);
+    }
 
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
-use std::collections::VecDeque;
-use std::ops::Deref;
+
+
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
 
@@ -625,7 +625,7 @@ pub struct X802Settings {
 //     }
 // }
 
-type AddressType = (String, u32, String, u32);
+pub type AddressType = (String, u32, String, u32);
 
 #[derive(Debug, Default)]
 pub enum DNSMethod4 {

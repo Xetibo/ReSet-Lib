@@ -1364,10 +1364,10 @@ impl PropMapConvert for WifiSecuritySettings {
             String::from("")
         };
         let _psk_flags_opt: Option<&u32> = prop_cast(&map, "psk-flags");
-        let psk_flags = SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+        let psk_flags = SecretSettingsFlag::from_i32(*_psk_flags_opt.unwrap_or(&0) as i32);
         let _wep_key_flags_opt: Option<&u32> = prop_cast(&map, "wep-key-flags");
         let wep_key_flags =
-            SecretSettingsFlag::from_i32(*leap_password_flags_opt.unwrap_or(&0) as i32);
+            SecretSettingsFlag::from_i32(*_wep_key_flags_opt.unwrap_or(&0) as i32);
         let wep_key_type_opt: Option<&u32> = prop_cast(&map, "wep-key-type");
         let wep_key_type = WEPKeyType::from_i32(*wep_key_type_opt.unwrap_or(&0) as i32);
         let wep_key0_opt: Option<&String> = prop_cast(&map, "wep-key0");

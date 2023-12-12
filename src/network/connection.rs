@@ -1083,35 +1083,25 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let test = map.get(address_type);
     dbg!(test.unwrap().signature());
 
-    let x1 = test.unwrap().0.as_static_inner(0);
-    if let Some(sfd) = x1 {
-        dbg!(sfd);
-    }
+    // let x1 = test.unwrap().0.as_static_inner(0);
+    // if let Some(sfd) = x1 {
+    //     dbg!(sfd);
+    // }
 
+    // let test = test.unwrap().as_iter().unwrap();
+    // let option2 = test.for_each(|x| {
+    //     let x2 = x.as_any();
+    //     dbg!(x2);
+    // });
 
     let option = test.unwrap().as_iter().unwrap();
     for x in option {
-        // let x1 = x.as_iter().unwrap();
-        // for y in x1 {
-        //     let x2 = y.box_clone();
-        //     let option2 = cast::<PropMap>(&x2);
-        //     dbg!(y.as_str());
-        //     dbg!("sdf");
-        // }
-
-        // let x2 = x.as_any();
-        // dbg!(x2);
-
-        let arg_type = x.arg_type();
-        dbg!(arg_type);
-
-        let option2 = x.as_iter().unwrap();
-        option2.for_each(|x| {
-            let x2 = x.as_any();
-            dbg!(x2);
-        });
-
-
+        let x1 = x.as_iter().unwrap();
+        for y in x1 {
+            let x2 = y.box_clone();
+            let option2 = cast::<PropMap>(&x2);
+            dbg!(y);
+        }
         let x2 = x.as_f64();
         dbg!(x2);
         let x2 = x.as_i64();

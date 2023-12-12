@@ -1,4 +1,5 @@
 use std::{collections::HashMap, str::FromStr};
+use std::ops::Deref;
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
 
@@ -1097,27 +1098,20 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
     let test = map.get(address_type);
 
-    let option1 = test.map(|x| {
-        let option = cast::<Vec<HashMap<String, Variant<Box<dyn RefArg>>>>>(x);
-        option
-    });
-
-    dbg!(option1);
-
     for x in test.iter() {
-        let option2 = cast::<Vec<HashMap<String, Variant<Box<dyn RefArg>>>>>(&x.0);
+        let a = &x.0;
+        let option2 = cast::<Vec<PropMap>>(a);
+        let option3 = a.as_any().downcast_ref::<Vec<PropMap>>();
         dbg!(option2);
+        dbg!(option3);
     }
 
-    // dbg!(test);
-    let asdf = if let Some(test) = test {
-        let option = cast::<Vec<PropMap>>(&test.0);
-        option
-    } else {
-        None
-    };
-
-    dbg!(asdf);
+    let x1 = cast::<Vec<PropMap>>(&test.unwrap().0);
+    dbg!(x1);
+    for q in x1 {
+        let option2 = cast::<PropMap>(q);
+        dbg!(option2);
+    }
 
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {

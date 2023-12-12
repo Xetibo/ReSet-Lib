@@ -1,4 +1,5 @@
 use std::{collections::HashMap, str::FromStr};
+use std::collections::VecDeque;
 use std::ops::Deref;
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
@@ -989,7 +990,7 @@ impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(map, "dns");
-        dbg!(map);
+        // dbg!(map);
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {
@@ -1113,7 +1114,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         dbg!(option2);
     }
 
-    let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
+    let address_data_opt: Option<&VecDeque<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {
             let address_opt: Option<&String> = prop_cast(entry, "address");

@@ -625,7 +625,7 @@ pub struct X802Settings {
 //     }
 // }
 
-pub type AddressType = (String, u32, String, u32);
+pub type AddressType = (String, u32, String, i64);
 
 #[derive(Debug, Default)]
 pub enum DNSMethod4 {
@@ -1071,7 +1071,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> 
             let address_opt: Option<&String> = prop_cast(entry, "address");
             let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefix");
             let gateway_opt: Option<&String> = prop_cast(entry, "gateway");
-            let metric_opt: Option<&u32> = prop_cast(entry, "metric");
+            let metric_opt: Option<&i64> = prop_cast(entry, "metric");
             let address = if let Some(address_opt) = address_opt {
                 address_opt.clone()
             } else {
@@ -1083,7 +1083,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> 
                 0
             };
             let gateway = gateway_opt.cloned().unwrap_or(String::from(""));
-            let metric = metric_opt.cloned().unwrap_or(0);
+            let metric = metric_opt.cloned().unwrap_or(-1);
             address_data.push((address, prefix, gateway, metric))
         }
     }

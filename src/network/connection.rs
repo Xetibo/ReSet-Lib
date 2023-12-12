@@ -1082,7 +1082,7 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
     let test = map.get(address_type);
 
-    for t in test.unwrap().as_iter().unwrap() {
+    for t in test.unwrap().0.as_iter().unwrap() {
         dbg!(t);
 
         let a = &*t.box_clone();

@@ -1,6 +1,8 @@
 use std::{collections::HashMap, str::FromStr};
 
 use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
+use std::collections::VecDeque;
+
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: &PropMap) -> Self;
@@ -1081,6 +1083,8 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let mut address_data: Vec<Address> = Vec::new();
     let test = map.get(address_type);
     dbg!(test);
+
+
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {

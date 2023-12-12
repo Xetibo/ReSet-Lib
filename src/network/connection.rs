@@ -1083,11 +1083,10 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
     let test = map.get(address_type);
     dbg!(test);
 
-    let x1 = test.unwrap().0.as_static_inner(0).unwrap();
-    dbg!(x1);
-
-    let option3 = cast::<Vec<PropMap>>(x1);
-    dbg!(option3);
+    let x1 = test.unwrap().0.as_static_inner(0);
+    if let Some(sfd) = x1 {
+        dbg!(sfd);
+    }
 
 
     let option = test.unwrap().as_iter().unwrap();

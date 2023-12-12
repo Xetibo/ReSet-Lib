@@ -989,6 +989,7 @@ impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(&map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(&map, "dns");
+        dbg!(map);
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {

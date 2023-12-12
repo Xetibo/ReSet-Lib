@@ -1099,8 +1099,6 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         let arg_type = x.arg_type();
         dbg!(arg_type);
 
-        let id = x.type_id();
-        dbg!(id);
 
         let x2 = x.as_f64();
         dbg!(x2);

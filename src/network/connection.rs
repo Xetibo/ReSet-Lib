@@ -1,6 +1,8 @@
 use std::{collections::HashMap, str::FromStr};
+use std::collections::VecDeque;
+use std::ops::Deref;
 
-use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
+use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
 
 pub trait PropMapConvert: Sized {
     fn from_propmap(map: &PropMap) -> Self;
@@ -41,7 +43,7 @@ impl Connection {
         let mut device: Option<TypeSettings> = None;
         let mut ipv4: Option<IPV4Settings> = None;
         let mut ipv6: Option<IPV6Settings> = None;
-        dbg!(&map);
+        // dbg!(&map);
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
@@ -932,7 +934,7 @@ impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(map, "dns");
-        dbg!(map);
+        // dbg!(map);
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {
@@ -1034,12 +1036,40 @@ impl PropMapConvert for IPV6Settings {
 fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<AddressType> {
     let mut address_data: Vec<AddressType> = Vec::new();
     let test = map.get(address_type);
-    dbg!(test);
+    let test2 = &test.unwrap().0;
+    dbg!(test2);
+    dbg!(test2.as_str());
+
+
+    for x in test.iter() {
+        let a = &x.0;
+        let option2 = cast::<Vec<PropMap>>(a);
+        let option3 = a.as_any().downcast_ref::<Vec<PropMap>>();
+        dbg!(option2);
+        dbg!(option3);
+    }
+
+    let x1 = cast::<Vec<PropMap>>(&test.unwrap().0);
+    dbg!(x1);
+    for q in x1 {
+        let option2 = cast::<PropMap>(q);
+        dbg!(option2);
+    }
+
+    let asdffd: Option<&Vec<Box<dyn RefArg>>> = prop_cast(map, address_type);
+    for x in asdffd.unwrap() {
+        let option = cast::<PropMap>(x);
+        dbg!(option);
+    }
+
+
+
+
     let address_data_opt: Option<&Vec<PropMap>> = prop_cast(map, address_type);
     if address_data_opt.is_some() {
         for entry in address_data_opt.unwrap() {
             let address_opt: Option<&String> = prop_cast(entry, "address");
-            let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefic");
+            let prefix_length_opt: Option<&u32> = prop_cast(entry, "prefix");
             let gateway_opt: Option<&String> = prop_cast(entry, "gateway");
             let metric_opt: Option<&u32> = prop_cast(entry, "metric");
             let address = if let Some(address_opt) = address_opt {

@@ -1087,6 +1087,8 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         t.as_iter().unwrap().for_each(|x| {
             if let Some(y) = x.as_str() {
                 dbg!(y);
+            } else if let Some(z) = x.as_u64() {
+                dbg!(z);
             }
         });
         //

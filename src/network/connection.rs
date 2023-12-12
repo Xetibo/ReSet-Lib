@@ -1086,16 +1086,13 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         dbg!(t);
         t.as_iter().unwrap().for_each(|x| {
             if let Some(y) = x.as_str() {
-                dbg!(y);
+                if y != "address" || y  != "prefix" {
+                    dbg!(y);
+                }
             } else if let Some(z) = x.as_u64() {
                 dbg!(z);
             }
         });
-        //
-        // let a = t.box_clone();
-        // dbg!(&a);
-        // let option2 = cast::<PropMap>(&a);
-        // dbg!(option2);
     }
 
     // let x1 = test.unwrap().0.as_static_inner(0);

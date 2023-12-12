@@ -1,4 +1,5 @@
 use std::{collections::HashMap, str::FromStr};
+use std::any::Any;
 
 use dbus::arg::{cast, prop_cast, PropMap, RefArg, Variant};
 
@@ -1092,12 +1093,22 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
         //     dbg!("sdf");
         // }
 
-        let x1 = x.box_clone();
+        // let x2 = x.as_any();
+        // dbg!(x2);
 
-        let option1 = cast::<PropMap>(&*x1);
-        dbg!(option1);
+        let arg_type = x.arg_type();
+        dbg!(arg_type);
 
-        // let x2 = x.as_static_inner(0).unwrap();
+        let id = x.type_id();
+        dbg!(id);
+
+        let x2 = x.as_f64();
+        dbg!(x2);
+        let x2 = x.as_i64();
+        dbg!(x2);
+        let x2 = x.as_u64();
+        dbg!(x2);
+
     }
 
     let test = map.get(address_type).unwrap();

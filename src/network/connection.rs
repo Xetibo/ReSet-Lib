@@ -1084,14 +1084,21 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
 
     let option = test.unwrap().as_iter().unwrap();
     for x in option {
-        let x1 = x.as_iter().unwrap();
-        for y in x1 {
-            let x2 = y.box_clone();
-            let option2 = cast::<PropMap>(&x2);
-            dbg!(y.as_str());
-        }
-        // let option1 = cast::<PropMap>(x);
-        // dbg!(option1);
+        // let x1 = x.as_iter().unwrap();
+        // for y in x1 {
+        //     let x2 = y.box_clone();
+        //     let option2 = cast::<PropMap>(&x2);
+        //     dbg!(y.as_str());
+        //     dbg!("sdf");
+        // }
+
+        let x1 = x.box_clone();
+
+        let option1 = cast::<PropMap>(&*x1);
+        dbg!(option1);
+
+        let x2 = x.as_static_inner(0).unwrap();
+        dbg!(x2);
     }
 
     let test = map.get(address_type).unwrap();

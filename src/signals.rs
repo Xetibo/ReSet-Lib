@@ -223,6 +223,54 @@ impl GetVal<(WifiDevice,)> for WifiDeviceChanged {
 }
 
 #[derive(Debug)]
+pub struct WifiDeviceRemoved {
+    pub path: dbus::Path<'static>,
+}
+
+impl arg::AppendAll for WifiDeviceRemoved {
+    fn append(&self, i: &mut arg::IterAppend) {
+        arg::RefArg::append(&self.path, i);
+    }
+}
+
+impl arg::ReadAll for WifiDeviceRemoved {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(WifiDeviceRemoved {
+            path: i.read()?,
+        })
+    }
+}
+
+impl dbus::message::SignalArgs for WifiDeviceRemoved {
+    const NAME: &'static str = "WifiDeviceRemoved";
+    const INTERFACE: &'static str = "org.freedesktop.NetworkManager.Device.Wireless";
+}
+
+#[derive(Debug)]
+pub struct WifiDeviceAdded {
+    pub path: dbus::Path<'static>,
+}
+
+impl arg::AppendAll for WifiDeviceAdded {
+    fn append(&self, i: &mut arg::IterAppend) {
+        arg::RefArg::append(&self.path, i);
+    }
+}
+
+impl arg::ReadAll for WifiDeviceAdded {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(WifiDeviceAdded {
+            path: i.read()?,
+        })
+    }
+}
+
+impl dbus::message::SignalArgs for WifiDeviceAdded {
+    const NAME: &'static str = "WifiDeviceAdded";
+    const INTERFACE: &'static str = "org.freedesktop.NetworkManager.Device.Wireless";
+}
+
+#[derive(Debug)]
 pub struct PropertiesChanged {
     pub interface: String,
     pub map: PropMap,

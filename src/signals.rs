@@ -248,18 +248,18 @@ impl dbus::message::SignalArgs for WifiDeviceRemoved {
 
 #[derive(Debug)]
 pub struct WifiDeviceAdded {
-    pub path: dbus::Path<'static>,
+    pub device: WifiDevice,
 }
 
 impl arg::AppendAll for WifiDeviceAdded {
     fn append(&self, i: &mut arg::IterAppend) {
-        arg::RefArg::append(&self.path, i);
+        arg::RefArg::append(&self.device, i);
     }
 }
 
 impl arg::ReadAll for WifiDeviceAdded {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
-        Ok(WifiDeviceAdded { path: i.read()? })
+        Ok(WifiDeviceAdded { device: i.read()? })
     }
 }
 
@@ -270,18 +270,18 @@ impl dbus::message::SignalArgs for WifiDeviceAdded {
 
 #[derive(Debug)]
 pub struct WifiDeviceReset {
-    pub path: dbus::Path<'static>,
+    pub devices: Vec<WifiDevice>,
 }
 
 impl arg::AppendAll for WifiDeviceReset {
     fn append(&self, i: &mut arg::IterAppend) {
-        arg::RefArg::append(&self.path, i);
+        arg::RefArg::append(&self.devices, i);
     }
 }
 
 impl arg::ReadAll for WifiDeviceReset {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
-        Ok(WifiDeviceReset { path: i.read()? })
+        Ok(WifiDeviceReset { devices: i.read()? })
     }
 }
 

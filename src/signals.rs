@@ -1,11 +1,13 @@
 use dbus::{
-    arg::{self, PropMap},
+    arg::{self, Append, PropMap},
     Path,
 };
 
 use crate::{
+    audio::audio_structures::{InputStream, OutputStream, Sink, Source},
     bluetooth::bluetooth_structures::BluetoothDevice,
-    network::network_structures::{AccessPoint, WifiDevice}, utils::{BLUETOOTH, WIRELESS},
+    network::network_structures::{AccessPoint, WifiDevice},
+    utils::{AUDIO, BLUETOOTH, WIRELESS},
 };
 
 pub trait GetVal<T> {
@@ -235,15 +237,13 @@ impl arg::AppendAll for WifiDeviceRemoved {
 
 impl arg::ReadAll for WifiDeviceRemoved {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
-        Ok(WifiDeviceRemoved {
-            path: i.read()?,
-        })
+        Ok(WifiDeviceRemoved { path: i.read()? })
     }
 }
 
 impl dbus::message::SignalArgs for WifiDeviceRemoved {
     const NAME: &'static str = "WifiDeviceRemoved";
-    const INTERFACE: &'static str = "org.freedesktop.NetworkManager.Device.Wireless";
+    const INTERFACE: &'static str = WIRELESS;
 }
 
 #[derive(Debug)]
@@ -259,15 +259,359 @@ impl arg::AppendAll for WifiDeviceAdded {
 
 impl arg::ReadAll for WifiDeviceAdded {
     fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
-        Ok(WifiDeviceAdded {
-            path: i.read()?,
-        })
+        Ok(WifiDeviceAdded { path: i.read()? })
     }
 }
 
 impl dbus::message::SignalArgs for WifiDeviceAdded {
     const NAME: &'static str = "WifiDeviceAdded";
-    const INTERFACE: &'static str = "org.freedesktop.NetworkManager.Device.Wireless";
+    const INTERFACE: &'static str = WIRELESS;
+}
+
+#[derive(Debug)]
+pub struct WifiDeviceReset {
+    pub path: dbus::Path<'static>,
+}
+
+impl arg::AppendAll for WifiDeviceReset {
+    fn append(&self, i: &mut arg::IterAppend) {
+        arg::RefArg::append(&self.path, i);
+    }
+}
+
+impl arg::ReadAll for WifiDeviceReset {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(WifiDeviceReset { path: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for WifiDeviceReset {
+    const NAME: &'static str = "WifiDeviceReset";
+    const INTERFACE: &'static str = WIRELESS;
+}
+
+#[derive(Debug)]
+pub struct SinkAdded {
+    pub sink: Sink,
+}
+
+impl arg::AppendAll for SinkAdded {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.sink.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for SinkAdded {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(SinkAdded { sink: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for SinkAdded {
+    const NAME: &'static str = "SinkAdded";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(Sink,)> for SinkAdded {
+    fn get_value(&self) -> (Sink,) {
+        (self.sink.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct SinkChanged {
+    pub sink: Sink,
+}
+
+impl arg::AppendAll for SinkChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.sink.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for SinkChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(SinkChanged { sink: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for SinkChanged {
+    const NAME: &'static str = "SinkChanged";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(Sink,)> for SinkChanged {
+    fn get_value(&self) -> (Sink,) {
+        (self.sink.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct SinkRemoved {
+    pub index: u32,
+}
+
+impl arg::AppendAll for SinkRemoved {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.index.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for SinkRemoved {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(SinkRemoved { index: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for SinkRemoved {
+    const NAME: &'static str = "SinkRemoved";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(u32,)> for SinkRemoved {
+    fn get_value(&self) -> (u32,) {
+        (self.index,)
+    }
+}
+
+#[derive(Debug)]
+pub struct InputStreamAdded {
+    pub stream: InputStream,
+}
+
+impl arg::AppendAll for InputStreamAdded {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.stream.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for InputStreamAdded {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(InputStreamAdded { stream: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for InputStreamAdded {
+    const NAME: &'static str = "InputStreamAdded";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(InputStream,)> for InputStreamAdded {
+    fn get_value(&self) -> (InputStream,) {
+        (self.stream.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct InputStreamChanged {
+    pub stream: InputStream,
+}
+
+impl arg::AppendAll for InputStreamChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.stream.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for InputStreamChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(InputStreamChanged { stream: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for InputStreamChanged {
+    const NAME: &'static str = "InputStreamChanged";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+#[derive(Debug)]
+pub struct InputStreamRemoved {
+    pub index: u32,
+}
+
+impl arg::AppendAll for InputStreamRemoved {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.index.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for InputStreamRemoved {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(InputStreamRemoved { index: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for InputStreamRemoved {
+    const NAME: &'static str = "InputStreamRemoved";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(u32,)> for InputStreamRemoved {
+    fn get_value(&self) -> (u32,) {
+        (self.index,)
+    }
+}
+
+#[derive(Debug)]
+pub struct SourceAdded {
+    pub source: Source,
+}
+
+impl arg::AppendAll for SourceAdded {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.source.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for SourceAdded {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(SourceAdded { source: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for SourceAdded {
+    const NAME: &'static str = "SourceAdded";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(Source,)> for SourceAdded {
+    fn get_value(&self) -> (Source,) {
+        (self.source.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct SourceChanged {
+    pub source: Source,
+}
+
+impl arg::AppendAll for SourceChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.source.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for SourceChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(SourceChanged { source: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for SourceChanged {
+    const NAME: &'static str = "SourceChanged";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(Source,)> for SourceChanged {
+    fn get_value(&self) -> (Source,) {
+        (self.source.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct SourceRemoved {
+    pub index: u32,
+}
+
+impl arg::AppendAll for SourceRemoved {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.index.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for SourceRemoved {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(SourceRemoved { index: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for SourceRemoved {
+    const NAME: &'static str = "SourceRemoved";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(u32,)> for SourceRemoved {
+    fn get_value(&self) -> (u32,) {
+        (self.index,)
+    }
+}
+
+#[derive(Debug)]
+pub struct OutputStreamAdded {
+    pub stream: OutputStream,
+}
+
+impl arg::AppendAll for OutputStreamAdded {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.stream.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for OutputStreamAdded {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(OutputStreamAdded { stream: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for OutputStreamAdded {
+    const NAME: &'static str = "OutputStreamAdded";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(OutputStream,)> for OutputStreamAdded {
+    fn get_value(&self) -> (OutputStream,) {
+        (self.stream.clone(),)
+    }
+}
+
+#[derive(Debug)]
+pub struct OutputStreamChanged {
+    pub stream: OutputStream,
+}
+
+impl arg::AppendAll for OutputStreamChanged {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.stream.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for OutputStreamChanged {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(OutputStreamChanged { stream: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for OutputStreamChanged {
+    const NAME: &'static str = "OutputStreamChanged";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+#[derive(Debug)]
+pub struct OutputStreamRemoved {
+    pub index: u32,
+}
+
+impl arg::AppendAll for OutputStreamRemoved {
+    fn append(&self, i: &mut arg::IterAppend) {
+        self.index.append_by_ref(i);
+    }
+}
+
+impl arg::ReadAll for OutputStreamRemoved {
+    fn read(i: &mut arg::Iter) -> Result<Self, arg::TypeMismatchError> {
+        Ok(OutputStreamRemoved { index: i.read()? })
+    }
+}
+
+impl dbus::message::SignalArgs for OutputStreamRemoved {
+    const NAME: &'static str = "OutputStreamRemoved";
+    const INTERFACE: &'static str = AUDIO;
+}
+
+impl GetVal<(u32,)> for OutputStreamRemoved {
+    fn get_value(&self) -> (u32,) {
+        (self.index,)
+    }
 }
 
 #[derive(Debug)]

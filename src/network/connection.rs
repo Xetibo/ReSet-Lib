@@ -43,7 +43,6 @@ impl Connection {
         let mut ipv4: Option<IPV4Settings> = None;
         let mut ipv6: Option<IPV6Settings> = None;
         let mut security: Option<WifiSecuritySettings> = None;
-        dbg!(&map);
         for (category, submap) in map {
             match category.as_str() {
                 "802-11-wireless" => {
@@ -978,7 +977,6 @@ impl PropMapConvert for IPV6Settings {
     fn from_propmap(map: &PropMap) -> Self {
         let address_data = get_addresses(map, "address-data");
         let dns_opt: Option<&Vec<Vec<u8>>> = prop_cast(map, "dns");
-        // dbg!(map);
         let dns = if let Some(dns_opt) = dns_opt {
             dns_opt.clone()
         } else {
@@ -1107,14 +1105,12 @@ fn get_addresses(map: &PropMap, address_type: &'static str) -> Vec<Address> {
                             address.gateway = Some(String::from(y));
                         }
                         prev = y;
-                        dbg!(y);
                     } else if let Some(z) = x.as_u64() {
                         if prev == "prefix" {
                             address.prefix = z as u32;
                         } else if prev == "metric" {
                             address.metric = Some(z as u32);
                         }
-                        dbg!(z);
                     }
                 });
 

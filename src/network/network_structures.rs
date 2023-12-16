@@ -166,7 +166,7 @@ impl RefArg for AccessPoint {
 pub struct WifiDevice {
     pub path: Path<'static>,
     pub name: String,
-    pub active_access_point: Path<'static>,
+    pub active_access_point: Vec<u8>, 
 }
 
 unsafe impl Send for WifiDevice {}
@@ -184,7 +184,7 @@ impl Append for WifiDevice {
 
 impl<'a> Get<'a> for WifiDevice {
     fn get(i: &mut arg::Iter<'a>) -> Option<Self> {
-        let (path, name, active_access_point) = <(Path<'static>, String, Path<'static>)>::get(i)?;
+        let (path, name, active_access_point) = <(Path<'static>, String, Vec<u8>)>::get(i)?;
         Some(WifiDevice {
             path,
             name,
@@ -196,7 +196,7 @@ impl<'a> Get<'a> for WifiDevice {
 impl Arg for WifiDevice {
     const ARG_TYPE: arg::ArgType = ArgType::Struct;
     fn signature() -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(oso)\0") }
+        unsafe { Signature::from_slice_unchecked("(osay)\0") }
     }
 }
 
@@ -205,7 +205,7 @@ impl RefArg for WifiDevice {
         ArgType::Struct
     }
     fn signature(&self) -> Signature<'static> {
-        unsafe { Signature::from_slice_unchecked("(oso)\0") }
+        unsafe { Signature::from_slice_unchecked("(osay)\0") }
     }
     fn append(&self, i: &mut IterAppend) {
         self.append_by_ref(i);

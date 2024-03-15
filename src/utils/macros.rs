@@ -1,9 +1,10 @@
-#[allow(unused_macros)]
+#[macro_export]
+#[cfg(not(debug_assertions))]
 macro_rules! LOG {
     ($message:expr) => {{}};
 }
 
-#[allow(unused_macros)]
+#[macro_export]
 #[cfg(debug_assertions)]
 macro_rules! LOG {
     ($log_file:expr, $message:expr) => {{
@@ -12,12 +13,13 @@ macro_rules! LOG {
     }};
 }
 
-#[allow(unused_macros)]
+#[macro_export]
+#[cfg(not(debug_assertions))]
 macro_rules! ERROR {
     ($message:expr, $level:expr ) => {{}};
 }
 
-#[allow(unused_macros)]
+#[macro_export]
 #[cfg(debug_assertions)]
 macro_rules! ERROR {
     ($log_file:expr, $message:expr, $level:expr) => {{
@@ -30,7 +32,8 @@ macro_rules! ERROR {
     }};
 }
 
-#[allow(unused_macros)]
+#[macro_export]
+#[cfg(not(debug_assertions))]
 macro_rules! write_log_to_file {
     ($message:expr, $log_file:expr) => {{
         use std::{fs::OpenOptions, io::Write};

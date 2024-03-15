@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use dbus::arg::{prop_cast, PropMap, RefArg, Variant};
 
@@ -132,13 +132,13 @@ impl FromStr for Trust {
     }
 }
 
-impl ToString for Trust {
-    fn to_string(&self) -> String {
+impl Display for Trust {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Trust::HOME => String::from("Home"),
-            Trust::WORK => String::from("Work"),
-            Trust::PUBLIC => String::from("Public"),
-            Trust::DEFAULT => String::from("null"),
+            Trust::HOME => f.write_str("Home"),
+            Trust::WORK => f.write_str("Work"),
+            Trust::PUBLIC => f.write_str("Public"),
+            Trust::DEFAULT => f.write_str("null"),
         }
     }
 }
@@ -183,12 +183,12 @@ impl FromStr for Mode {
     }
 }
 
-impl ToString for Mode {
-    fn to_string(&self) -> String {
+impl Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Mode::ADHOC => String::from("adhoc"),
-            Mode::AP => String::from("ap"),
-            Mode::INFRASTRUCTURE => String::from("infrastructure"),
+            Mode::ADHOC => f.write_str("adhoc"),
+            Mode::AP => f.write_str("ap"),
+            Mode::INFRASTRUCTURE => f.write_str("infrastructure"),
         }
     }
 }
@@ -231,12 +231,12 @@ impl FromStr for Band {
     }
 }
 
-impl ToString for Band {
-    fn to_string(&self) -> String {
+impl Display for Band {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Band::_5GHZ => String::from("bg"),
-            Band::_24GHZ => String::from("a"),
-            Band::NONE => String::from(""),
+            Band::_5GHZ => f.write_str("bg"),
+            Band::_24GHZ => f.write_str("a"),
+            Band::NONE => f.write_str(""),
         }
     }
 }
@@ -277,11 +277,11 @@ impl FromStr for Duplex {
     }
 }
 
-impl ToString for Duplex {
-    fn to_string(&self) -> String {
+impl Display for Duplex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Duplex::HALF => String::from("half"),
-            Duplex::FULL => String::from("full"),
+            Duplex::HALF => f.write_str("half"),
+            Duplex::FULL => f.write_str("full"),
         }
     }
 }
@@ -311,13 +311,13 @@ pub enum TypeSettings {
     None,
 }
 
-impl ToString for TypeSettings {
-    fn to_string(&self) -> String {
+impl Display for TypeSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TypeSettings::WIFI(_) => String::from("wifi"),
-            TypeSettings::ETHERNET(_) => String::from("ethernet"),
-            TypeSettings::VPN(_) => String::from("vpn"),
-            TypeSettings::None => String::from(""),
+            TypeSettings::WIFI(_) => f.write_str("wifi"),
+            TypeSettings::ETHERNET(_) => f.write_str("ethernet"),
+            TypeSettings::VPN(_) => f.write_str("vpn"),
+            TypeSettings::None => f.write_str(""),
         }
     }
 }
@@ -692,14 +692,14 @@ impl FromStr for DNSMethod4 {
     }
 }
 
-impl ToString for DNSMethod4 {
-    fn to_string(&self) -> String {
+impl Display for DNSMethod4 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DNSMethod4::AUTO => String::from("auto"),
-            DNSMethod4::MANUAL => String::from("manual"),
-            DNSMethod4::LINKLOCAL => String::from("link-local"),
-            DNSMethod4::SHARED => String::from("shared"),
-            DNSMethod4::DISABLED => String::from("disabled"),
+            DNSMethod4::AUTO => f.write_str("auto"),
+            DNSMethod4::MANUAL => f.write_str("manual"),
+            DNSMethod4::LINKLOCAL => f.write_str("link-local"),
+            DNSMethod4::SHARED => f.write_str("shared"),
+            DNSMethod4::DISABLED => f.write_str("disabled"),
         }
     }
 }
@@ -752,15 +752,15 @@ impl FromStr for DNSMethod6 {
     }
 }
 
-impl ToString for DNSMethod6 {
-    fn to_string(&self) -> String {
+impl Display for DNSMethod6 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DNSMethod6::AUTO => String::from("auto"),
-            DNSMethod6::DHCP => String::from("dhcp"),
-            DNSMethod6::MANUAL => String::from("manual"),
-            DNSMethod6::LINKLOCAL => String::from("link-local"),
-            DNSMethod6::SHARED => String::from("shared"),
-            DNSMethod6::DISABLED => String::from("disabled"),
+            DNSMethod6::AUTO => f.write_str("auto"),
+            DNSMethod6::DHCP => f.write_str("dhcp"),
+            DNSMethod6::MANUAL => f.write_str("manual"),
+            DNSMethod6::LINKLOCAL => f.write_str("link-local"),
+            DNSMethod6::SHARED => f.write_str("shared"),
+            DNSMethod6::DISABLED => f.write_str("disabled"),
         }
     }
 }
@@ -925,13 +925,13 @@ impl FromStr for IPV6PrivacyMode {
     }
 }
 
-impl ToString for IPV6PrivacyMode {
-    fn to_string(&self) -> String {
+impl Display for IPV6PrivacyMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            IPV6PrivacyMode::UNKNOWN => String::from("unknown"),
-            IPV6PrivacyMode::DISABLED => String::from("disabled"),
-            IPV6PrivacyMode::ENABLEDPEFERPUBLIC => String::from("enabled-prefer-public"),
-            IPV6PrivacyMode::ENABLEDPEFERTEMPORARY => String::from("enabled-prefer-temporary"),
+            IPV6PrivacyMode::UNKNOWN => f.write_str("unknown"),
+            IPV6PrivacyMode::DISABLED => f.write_str("disabled"),
+            IPV6PrivacyMode::ENABLEDPEFERPUBLIC => f.write_str("enabled-prefer-public"),
+            IPV6PrivacyMode::ENABLEDPEFERTEMPORARY => f.write_str("enabled-prefer-temporary"),
         }
     }
 }
@@ -1270,14 +1270,14 @@ impl KeyManagement {
     }
 }
 
-impl ToString for KeyManagement {
-    fn to_string(&self) -> String {
+impl Display for KeyManagement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            KeyManagement::NONE => String::from("none"),
-            KeyManagement::IEEE8021X => String::from("ieee8021x"),
-            KeyManagement::WPANONE => String::from("wpa-none"),
-            KeyManagement::WPAPSK => String::from("wpa-psk"),
-            KeyManagement::WPAEAP => String::from("wpa-eap"),
+            KeyManagement::NONE => f.write_str("none"),
+            KeyManagement::IEEE8021X => f.write_str("ieee8021x"),
+            KeyManagement::WPANONE => f.write_str("wpa-none"),
+            KeyManagement::WPAPSK => f.write_str("wpa-psk"),
+            KeyManagement::WPAEAP => f.write_str("wpa-eap"),
         }
     }
 }

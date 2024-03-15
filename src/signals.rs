@@ -7,7 +7,7 @@ use crate::{
     audio::audio_structures::{InputStream, OutputStream, Sink, Source},
     bluetooth::bluetooth_structures::BluetoothDevice,
     network::network_structures::{AccessPoint, WifiDevice},
-    utils::{AUDIO, BLUETOOTH, WIRELESS},
+    utils::dbus_utils::{AUDIO, BLUETOOTH, WIRELESS},
 };
 
 pub trait GetVal<T> {

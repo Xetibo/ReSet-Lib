@@ -2,7 +2,6 @@
 #[allow(unused_imports)]
 use dbus::arg;
 use dbus::blocking;
-use dbus::{self};
 
 pub trait OrgFreedesktopDBusIntrospectable {
     fn introspect(&self) -> Result<String, dbus::Error>;

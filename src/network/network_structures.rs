@@ -166,7 +166,7 @@ impl RefArg for AccessPoint {
 pub struct WifiDevice {
     pub path: Path<'static>,
     pub name: String,
-    pub active_access_point: Vec<u8>, 
+    pub active_access_point: Vec<u8>,
 }
 
 unsafe impl Send for WifiDevice {}

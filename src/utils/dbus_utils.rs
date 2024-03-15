@@ -12,7 +12,6 @@ pub const BLUETOOTH: &str = "org.Xetibo.ReSet.Bluetooth";
 pub const AUDIO: &str = "org.Xetibo.ReSet.Audio";
 pub const BASE: &str = "org.Xetibo.ReSet.Daemon";
 
-
 pub fn call_system_dbus_method<I: AppendAll + 'static, O: ReadAll + 'static>(
     name: &str,
     object: Path<'static>,
@@ -81,11 +80,7 @@ pub fn call_reset_dbus_method<
     params: I,
 ) -> Result<O, dbus::Error> {
     let conn = Connection::new_session().unwrap();
-    let proxy = conn.with_proxy(
-        BASE,
-        DBUS_PATH,
-        Duration::from_millis(1000),
-    );
+    let proxy = conn.with_proxy(BASE, DBUS_PATH, Duration::from_millis(1000));
     let result: Result<O, dbus::Error> = proxy.method_call(
         "org.Xetibo.ReSet".to_string() + "." + interface,
         function,

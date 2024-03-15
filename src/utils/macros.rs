@@ -33,7 +33,6 @@ macro_rules! ERROR {
 }
 
 #[macro_export]
-#[cfg(not(debug_assertions))]
 macro_rules! write_log_to_file {
     ($message:expr, $log_file:expr) => {{
         use std::{fs::OpenOptions, io::Write};

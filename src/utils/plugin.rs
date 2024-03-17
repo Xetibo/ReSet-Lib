@@ -41,3 +41,16 @@ pub struct Plugin {
     pub data: PluginData,
 }
 
+impl Plugin {
+    pub fn new(
+        path: Path<'static>,
+        interfaces: Vec<dbus_crossroads::IfaceToken<PluginData>>,
+        data: PluginData,
+    ) -> Self {
+        Self {
+            path,
+            interfaces,
+            data,
+        }
+    }
+}

@@ -19,8 +19,7 @@ impl fmt::Display for PathNotFoundError {
     }
 }
 
-#[allow(dead_code)]
-fn create_config(project_organization: &str, project_name: &str) -> Option<PathBuf> {
+pub fn create_config(project_organization: &str, project_name: &str) -> Option<PathBuf> {
     let config_dir = dirs::ProjectDirs::from("com", project_organization, project_name)?;
     let config_dir = config_dir.config_dir();
     if !config_dir.exists() {

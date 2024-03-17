@@ -1,100 +1,100 @@
 use std::{any::Any, collections::HashMap, ops::Deref};
 
-pub trait MockDebug: std::fmt::Debug {}
+pub trait Debug: std::fmt::Debug {}
 
-impl MockDebug for MockEmpty {}
-impl MockDebug for bool {}
-impl MockDebug for u8 {}
-impl MockDebug for i8 {}
-impl MockDebug for u16 {}
-impl MockDebug for i16 {}
-impl MockDebug for u32 {}
-impl MockDebug for i32 {}
-impl MockDebug for u64 {}
-impl MockDebug for i64 {}
-impl MockDebug for String {}
-impl<T: std::fmt::Debug> MockDebug for Vec<T> {}
-impl<T: std::fmt::Debug> MockDebug for Option<T> {}
-impl<K: std::fmt::Debug, V: std::fmt::Debug> MockDebug for HashMap<K, V> {}
+impl Debug for Empty {}
+impl Debug for bool {}
+impl Debug for u8 {}
+impl Debug for i8 {}
+impl Debug for u16 {}
+impl Debug for i16 {}
+impl Debug for u32 {}
+impl Debug for i32 {}
+impl Debug for u64 {}
+impl Debug for i64 {}
+impl Debug for String {}
+impl<T: std::fmt::Debug> Debug for Vec<T> {}
+impl<T: std::fmt::Debug> Debug for Option<T> {}
+impl<K: std::fmt::Debug, V: std::fmt::Debug> Debug for HashMap<K, V> {}
 
-pub trait TMockVariant: MockDebug + Any {
-    fn into_mock_variant(self) -> MockVariant;
+pub trait TVariant: Debug + Any + Send {
+    fn into_mock_variant(self) -> Variant;
 }
 
-impl TMockVariant for bool {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<bool>(self, "bool")
+impl TVariant for bool {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<bool>(self, "bool")
     }
 }
-impl TMockVariant for u8 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<u8>(self, "u8")
+impl TVariant for u8 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<u8>(self, "u8")
     }
 }
-impl TMockVariant for i8 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<i8>(self, "i8")
+impl TVariant for i8 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<i8>(self, "i8")
     }
 }
-impl TMockVariant for u16 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<u16>(self, "u16")
+impl TVariant for u16 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<u16>(self, "u16")
     }
 }
-impl TMockVariant for i16 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<i16>(self, "i16")
+impl TVariant for i16 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<i16>(self, "i16")
     }
 }
-impl TMockVariant for u32 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<u32>(self, "u32")
+impl TVariant for u32 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<u32>(self, "u32")
     }
 }
-impl TMockVariant for i32 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<i32>(self, "i32")
+impl TVariant for i32 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<i32>(self, "i32")
     }
 }
-impl TMockVariant for u64 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<u64>(self, "u64")
+impl TVariant for u64 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<u64>(self, "u64")
     }
 }
-impl TMockVariant for i64 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<i64>(self, "i64")
+impl TVariant for i64 {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<i64>(self, "i64")
     }
 }
-impl TMockVariant for String {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<String>(self.clone(), "String")
+impl TVariant for String {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<String>(self.clone(), "String")
     }
 }
-impl<T: IntrospectType + MockDebug + 'static> TMockVariant for Option<T>
+impl<T: IntrospectType + Debug + Send + 'static> TVariant for Option<T>
 where
     T: IntrospectType + Clone,
 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new(self, "Option ".to_string() + &T::get_type())
+    fn into_mock_variant(self) -> Variant {
+        Variant::new(self, "Option ".to_string() + &T::get_type())
     }
 }
-impl<T: IntrospectType + MockDebug + 'static> TMockVariant for Vec<T>
+impl<T: IntrospectType + Debug + Send + 'static> TVariant for Vec<T>
 where
     T: IntrospectType + Clone,
 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new(self, "Vec ".to_string() + &T::get_type())
+    fn into_mock_variant(self) -> Variant {
+        Variant::new(self, "Vec ".to_string() + &T::get_type())
     }
 }
-impl<K: IntrospectType + MockDebug + 'static, V: IntrospectType + MockDebug + 'static> TMockVariant
-    for HashMap<K, V>
+impl<K: IntrospectType + Debug + Send + 'static, V: IntrospectType + Debug + Send + 'static>
+    TVariant for HashMap<K, V>
 where
     K: IntrospectType + Clone,
     V: IntrospectType + Clone,
 {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new(
+    fn into_mock_variant(self) -> Variant {
+        Variant::new(
             self,
             "HashMap ".to_string() + &K::get_type() + " " + &V::get_type(),
         )
@@ -102,29 +102,26 @@ where
 }
 
 #[derive(Debug)]
-pub struct MockVariant {
-    value: Box<dyn TMockVariant>,
+pub struct Variant {
+    value: Box<dyn TVariant>,
     kind: String,
 }
 
-impl MockVariant {
+impl Variant {
     pub fn empty() -> Self {
-        Self::new::<MockEmpty>(MockEmpty {}, "None")
+        Self::new::<Empty>(Empty {}, "None")
     }
 
-    pub fn new<T: TMockVariant + 'static>(value: T, kind: impl Into<String>) -> Self {
-        MockVariant {
+    pub fn new<T: TVariant + 'static>(value: T, kind: impl Into<String>) -> Self {
+        Variant {
             value: Box::new(value),
             kind: kind.into(),
         }
     }
 
-    pub fn to_value<T: Copy>(
-        &self,
-        conversion_type: &'static str,
-    ) -> Result<T, MockConversionError> {
+    pub fn to_value<T: Copy>(&self, conversion_type: &'static str) -> Result<T, ConversionError> {
         if self.kind != conversion_type {
-            return Err(MockConversionError("Conversion Failed"));
+            return Err(ConversionError("Conversion Failed"));
         }
         unsafe { Ok(*self.to_value_unchecked::<T>()) }
     }
@@ -132,9 +129,9 @@ impl MockVariant {
     pub fn to_value_cloned<T: Clone>(
         &self,
         conversion_type: &'static str,
-    ) -> Result<&T, MockConversionError> {
+    ) -> Result<&T, ConversionError> {
         if self.kind != conversion_type {
-            return Err(MockConversionError("Conversion Failed"));
+            return Err(ConversionError("Conversion Failed"));
         }
         unsafe { Ok(self.to_value_unchecked::<T>()) }
     }
@@ -145,20 +142,20 @@ impl MockVariant {
 }
 
 #[derive(Debug)]
-pub struct MockConversionError(pub &'static str);
+pub struct ConversionError(pub &'static str);
 
 #[derive(Clone, Copy, Debug)]
-pub struct MockEmpty {}
+pub struct Empty {}
 
-impl IntrospectType for MockEmpty {
+impl IntrospectType for Empty {
     fn get_type() -> String {
         "None".into()
     }
 }
 
-impl TMockVariant for MockEmpty {
-    fn into_mock_variant(self) -> MockVariant {
-        MockVariant::new::<MockEmpty>(self, "None")
+impl TVariant for Empty {
+    fn into_mock_variant(self) -> Variant {
+        Variant::new::<Empty>(self, "None")
     }
 }
 

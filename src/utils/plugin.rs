@@ -15,6 +15,10 @@ impl PluginCapabilities {
     pub fn get_capabilities(&self) -> Vec<String> {
         self.0.clone()
     }
+
+    pub fn new(capabilities: Vec<String>) -> Self {
+        Self(capabilities)
+    }
 }
 
 #[repr(C)]
@@ -23,6 +27,10 @@ pub struct PluginData(HashMap<String, Variant>);
 impl PluginData {
     pub fn get_data(&self) -> HashMap<String, Variant> {
         self.0.clone()
+    }
+
+    pub fn new(map: HashMap<String, Variant>) -> Self {
+        Self(map)
     }
 }
 

@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use dbus::Path;
+
 use super::variant::Variant;
 
 pub fn plugin_data() -> PluginData {
@@ -23,3 +25,11 @@ impl PluginData {
         self.0.clone()
     }
 }
+
+#[repr(C)]
+pub struct Plugin {
+    pub path: Path<'static>,
+    pub interfaces: Vec<dbus_crossroads::IfaceToken<PluginData>>,
+    pub data: PluginData,
+}
+

@@ -22,12 +22,12 @@ impl<T: std::fmt::Debug> Debug for Option<T> {}
 impl<K: std::fmt::Debug, V: std::fmt::Debug> Debug for HashMap<K, V> {}
 
 pub trait TVariant: Debug + Any + Send {
-    fn into_mock_variant(self) -> Variant;
+    fn into_variant(self) -> Variant;
     fn value(&self) -> Box<dyn TVariant>;
 }
 
 impl TVariant for bool {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<bool>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -35,7 +35,7 @@ impl TVariant for bool {
     }
 }
 impl TVariant for u8 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<u8>(self)
     }
 
@@ -44,7 +44,7 @@ impl TVariant for u8 {
     }
 }
 impl TVariant for i8 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<i8>(self)
     }
 
@@ -53,7 +53,7 @@ impl TVariant for i8 {
     }
 }
 impl TVariant for u16 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<u16>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -61,7 +61,7 @@ impl TVariant for u16 {
     }
 }
 impl TVariant for i16 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<i16>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -69,7 +69,7 @@ impl TVariant for i16 {
     }
 }
 impl TVariant for u32 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<u32>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -77,7 +77,7 @@ impl TVariant for u32 {
     }
 }
 impl TVariant for i32 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<i32>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -85,7 +85,7 @@ impl TVariant for i32 {
     }
 }
 impl TVariant for u64 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<u64>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -93,7 +93,7 @@ impl TVariant for u64 {
     }
 }
 impl TVariant for i64 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<i64>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -101,7 +101,7 @@ impl TVariant for i64 {
     }
 }
 impl TVariant for String {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<String>(self.clone())
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -112,7 +112,7 @@ impl<T: Debug + Send + 'static> TVariant for Option<T>
 where
     T: Clone,
 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -123,7 +123,7 @@ impl<T: Debug + Send + 'static> TVariant for Vec<T>
 where
     T: Clone,
 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -135,7 +135,7 @@ where
     K: Clone,
     V: Clone,
 {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
@@ -197,7 +197,7 @@ pub struct ConversionError(pub &'static str);
 pub struct Empty {}
 
 impl TVariant for Empty {
-    fn into_mock_variant(self) -> Variant {
+    fn into_variant(self) -> Variant {
         Variant::new::<Empty>(self)
     }
 
@@ -208,21 +208,21 @@ impl TVariant for Empty {
 
 #[test]
 fn test_i32() {
-    let mock = 5.into_mock_variant();
+    let mock = 5.into_variant();
     assert_eq!(mock.kind, TypeId::of::<i32>());
     assert_eq!(mock.to_value::<i32>().unwrap(), 5);
 }
 
 #[test]
 fn test_option() {
-    let mock = Some(10).into_mock_variant();
+    let mock = Some(10).into_variant();
     assert_eq!(mock.kind, TypeId::of::<Option<i32>>());
     assert_eq!(mock.to_value::<Option<i32>>().unwrap(), Some(10));
 }
 
 #[test]
 fn test_vec() {
-    let mock = vec![3, 2, 4, 5, 10].into_mock_variant();
+    let mock = vec![3, 2, 4, 5, 10].into_variant();
     assert_eq!(mock.kind, TypeId::of::<Vec<i32>>());
     assert_eq!(
         mock.to_value_cloned::<Vec<i32>>().unwrap().clone(),
@@ -234,7 +234,7 @@ fn test_vec() {
 fn test_hashmap() {
     let mut map = HashMap::new();
     map.insert("Something".to_string(), 20);
-    let mock = map.into_mock_variant();
+    let mock = map.into_variant();
 
     let mut testmap = HashMap::new();
     testmap.insert("Something".to_string(), 20);
@@ -250,7 +250,7 @@ fn test_hashmap() {
 
 #[test]
 fn test_conversion_fail() {
-    let mock = "hello".to_string().into_mock_variant();
+    let mock = "hello".to_string().into_variant();
     assert_eq!(mock.kind, TypeId::of::<String>());
     assert!(mock.to_value_cloned::<i32>().is_err());
 }
@@ -259,7 +259,7 @@ fn test_conversion_fail() {
 fn test_variant_clone() {
     let mut map = HashMap::new();
     map.insert("Something".to_string(), 20);
-    let mock = map.into_mock_variant();
+    let mock = map.into_variant();
     let new_mock = mock.clone();
 
     let mut testmap = HashMap::new();

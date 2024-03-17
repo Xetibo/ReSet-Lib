@@ -1,4 +1,5 @@
 #![feature(trait_upcasting)]
+#![feature(unsized_fn_params)]
 use directories_next as dirs;
 use std::{fmt, fs, path::PathBuf};
 

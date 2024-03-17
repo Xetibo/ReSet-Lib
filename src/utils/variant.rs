@@ -1,4 +1,8 @@
-use std::{any::Any, collections::HashMap, ops::Deref};
+use std::{
+    any::{Any, TypeId},
+    collections::HashMap,
+    ops::Deref,
+};
 
 pub trait Debug: std::fmt::Debug {}
 
@@ -19,118 +23,163 @@ impl<K: std::fmt::Debug, V: std::fmt::Debug> Debug for HashMap<K, V> {}
 
 pub trait TVariant: Debug + Any + Send {
     fn into_mock_variant(self) -> Variant;
+    fn value(&self) -> Box<dyn TVariant>;
 }
 
 impl TVariant for bool {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<bool>(self, "bool")
+        Variant::new::<bool>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for u8 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<u8>(self, "u8")
+        Variant::new::<u8>(self)
+    }
+
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for i8 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<i8>(self, "i8")
+        Variant::new::<i8>(self)
+    }
+
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for u16 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<u16>(self, "u16")
+        Variant::new::<u16>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for i16 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<i16>(self, "i16")
+        Variant::new::<i16>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for u32 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<u32>(self, "u32")
+        Variant::new::<u32>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for i32 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<i32>(self, "i32")
+        Variant::new::<i32>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for u64 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<u64>(self, "u64")
+        Variant::new::<u64>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for i64 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<i64>(self, "i64")
+        Variant::new::<i64>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
     }
 }
 impl TVariant for String {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<String>(self.clone(), "String")
+        Variant::new::<String>(self.clone())
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(self.clone())
     }
 }
-impl<T: IntrospectType + Debug + Send + 'static> TVariant for Option<T>
+impl<T: Debug + Send + 'static> TVariant for Option<T>
 where
-    T: IntrospectType + Clone,
+    T: Clone,
 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new(self, "Option ".to_string() + &T::get_type())
+        Variant::new(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(self.clone())
     }
 }
-impl<T: IntrospectType + Debug + Send + 'static> TVariant for Vec<T>
+impl<T: Debug + Send + 'static> TVariant for Vec<T>
 where
-    T: IntrospectType + Clone,
+    T: Clone,
 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new(self, "Vec ".to_string() + &T::get_type())
+        Variant::new(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(self.clone())
     }
 }
-impl<K: IntrospectType + Debug + Send + 'static, V: IntrospectType + Debug + Send + 'static>
-    TVariant for HashMap<K, V>
+impl<K: Debug + Send + 'static, V: Debug + Send + 'static> TVariant for HashMap<K, V>
 where
-    K: IntrospectType + Clone,
-    V: IntrospectType + Clone,
+    K: Clone,
+    V: Clone,
 {
     fn into_mock_variant(self) -> Variant {
-        Variant::new(
-            self,
-            "HashMap ".to_string() + &K::get_type() + " " + &V::get_type(),
-        )
+        Variant::new(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(self.clone())
     }
 }
 
 #[derive(Debug)]
 pub struct Variant {
     value: Box<dyn TVariant>,
-    kind: String,
+    kind: TypeId,
+}
+
+impl Clone for Variant {
+    fn clone(&self) -> Self {
+        Self {
+            value: self.value.value(),
+            kind: self.kind,
+        }
+    }
 }
 
 impl Variant {
-    pub fn empty() -> Self {
-        Self::new::<Empty>(Empty {}, "None")
+    pub fn empty() -> Variant {
+        Self::new::<Empty>(Empty {})
     }
 
-    pub fn new<T: TVariant + 'static>(value: T, kind: impl Into<String>) -> Self {
+    pub fn new<T: TVariant + 'static>(value: T) -> Self {
+        let id = value.type_id();
         Variant {
             value: Box::new(value),
-            kind: kind.into(),
+            kind: id,
         }
     }
 
-    pub fn to_value<T: Copy>(&self, conversion_type: &'static str) -> Result<T, ConversionError> {
-        if self.kind != conversion_type {
+    pub fn to_value<T: Copy + 'static>(&self) -> Result<T, ConversionError> {
+        if self.kind != TypeId::of::<T>() {
             return Err(ConversionError("Conversion Failed"));
         }
         unsafe { Ok(*self.to_value_unchecked::<T>()) }
     }
 
-    pub fn to_value_cloned<T: Clone>(
-        &self,
-        conversion_type: &'static str,
-    ) -> Result<&T, ConversionError> {
-        if self.kind != conversion_type {
+    pub fn to_value_cloned<T: Clone + 'static>(&self) -> Result<&T, ConversionError> {
+        if self.kind != TypeId::of::<T>() {
             return Err(ConversionError("Conversion Failed"));
         }
         unsafe { Ok(self.to_value_unchecked::<T>()) }
@@ -147,123 +196,36 @@ pub struct ConversionError(pub &'static str);
 #[derive(Clone, Copy, Debug)]
 pub struct Empty {}
 
-impl IntrospectType for Empty {
-    fn get_type() -> String {
-        "None".into()
-    }
-}
-
 impl TVariant for Empty {
     fn into_mock_variant(self) -> Variant {
-        Variant::new::<Empty>(self, "None")
+        Variant::new::<Empty>(self)
     }
-}
 
-pub trait IntrospectType {
-    fn get_type() -> String;
-}
-
-impl IntrospectType for bool {
-    fn get_type() -> String {
-        "bool".into()
-    }
-}
-
-impl IntrospectType for u8 {
-    fn get_type() -> String {
-        "u8".into()
-    }
-}
-
-impl IntrospectType for i8 {
-    fn get_type() -> String {
-        "i8".into()
-    }
-}
-
-impl IntrospectType for u16 {
-    fn get_type() -> String {
-        "u16".into()
-    }
-}
-
-impl IntrospectType for i16 {
-    fn get_type() -> String {
-        "i16".into()
-    }
-}
-
-impl IntrospectType for u32 {
-    fn get_type() -> String {
-        "u32".into()
-    }
-}
-
-impl IntrospectType for i32 {
-    fn get_type() -> String {
-        "i32".into()
-    }
-}
-
-impl IntrospectType for u64 {
-    fn get_type() -> String {
-        "u64".into()
-    }
-}
-
-impl IntrospectType for i64 {
-    fn get_type() -> String {
-        "i64".into()
-    }
-}
-
-impl IntrospectType for String {
-    fn get_type() -> String {
-        "String".into()
-    }
-}
-
-impl<T: IntrospectType> IntrospectType for Option<T> {
-    fn get_type() -> String {
-        "Option".to_string() + " " + &T::get_type()
-    }
-}
-
-impl<T: IntrospectType> IntrospectType for Vec<T> {
-    fn get_type() -> String {
-        "Vec".to_string() + " " + &T::get_type()
-    }
-}
-
-impl<K: IntrospectType, V: IntrospectType> IntrospectType for HashMap<K, V> {
-    fn get_type() -> String {
-        "HashMap".to_string() + " " + &K::get_type() + " " + &V::get_type()
+    fn value(&self) -> Box<dyn TVariant> {
+        todo!()
     }
 }
 
 #[test]
 fn test_i32() {
     let mock = 5.into_mock_variant();
-    assert_eq!(mock.kind, "i32".to_string());
-    assert_eq!(mock.to_value::<i32>("i32").unwrap(), 5);
+    assert_eq!(mock.kind, TypeId::of::<i32>());
+    assert_eq!(mock.to_value::<i32>().unwrap(), 5);
 }
 
 #[test]
 fn test_option() {
     let mock = Some(10).into_mock_variant();
-    assert_eq!(mock.kind, "Option i32".to_string());
-    assert_eq!(
-        mock.to_value::<Option<i32>>("Option i32").unwrap(),
-        Some(10)
-    );
+    assert_eq!(mock.kind, TypeId::of::<Option<i32>>());
+    assert_eq!(mock.to_value::<Option<i32>>().unwrap(), Some(10));
 }
 
 #[test]
 fn test_vec() {
     let mock = vec![3, 2, 4, 5, 10].into_mock_variant();
-    assert_eq!(mock.kind, "Vec i32".to_string());
+    assert_eq!(mock.kind, TypeId::of::<Vec<i32>>());
     assert_eq!(
-        mock.to_value_cloned::<Vec<i32>>("Vec i32").unwrap().clone(),
+        mock.to_value_cloned::<Vec<i32>>().unwrap().clone(),
         vec![3, 2, 4, 5, 10]
     );
 }
@@ -277,9 +239,9 @@ fn test_hashmap() {
     let mut testmap = HashMap::new();
     testmap.insert("Something".to_string(), 20);
 
-    assert_eq!(mock.kind, "HashMap String i32".to_string());
+    assert_eq!(mock.kind, TypeId::of::<HashMap<String, i32>>());
     assert_eq!(
-        mock.to_value_cloned::<HashMap<String, i32>>("HashMap String i32")
+        mock.to_value_cloned::<HashMap<String, i32>>()
             .unwrap()
             .clone(),
         testmap
@@ -289,6 +251,25 @@ fn test_hashmap() {
 #[test]
 fn test_conversion_fail() {
     let mock = "hello".to_string().into_mock_variant();
-    assert_eq!(mock.kind, "String".to_string());
-    assert!(mock.to_value_cloned::<i32>("Not String").is_err());
+    assert_eq!(mock.kind, TypeId::of::<String>());
+    assert!(mock.to_value_cloned::<i32>().is_err());
+}
+
+#[test]
+fn test_variant_clone() {
+    let mut map = HashMap::new();
+    map.insert("Something".to_string(), 20);
+    let mock = map.into_mock_variant();
+    let new_mock = mock.clone();
+
+    let mut testmap = HashMap::new();
+    testmap.insert("Something".to_string(), 20);
+
+    assert_eq!(
+        new_mock
+            .to_value_cloned::<HashMap<String, i32>>()
+            .unwrap()
+            .clone(),
+        testmap
+    );
 }

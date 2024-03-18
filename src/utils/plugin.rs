@@ -9,14 +9,14 @@ pub fn plugin_data() -> PluginData {
 }
 
 #[repr(C)]
-pub struct PluginCapabilities(Vec<String>);
+pub struct PluginCapabilities(Vec<&'static str>);
 
 impl PluginCapabilities {
-    pub fn get_capabilities(&self) -> Vec<String> {
+    pub fn get_capabilities(&self) -> Vec<&'static str> {
         self.0.clone()
     }
 
-    pub fn new(capabilities: Vec<String>) -> Self {
+    pub fn new(capabilities: Vec<&'static str>) -> Self {
         Self(capabilities)
     }
 }

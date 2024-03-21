@@ -47,6 +47,7 @@ pub fn create_config(project_organization: &str, project_name: &str) -> Option<P
 pub fn parse_flags(flags: &[String]) -> Flags {
     let mut parsed_flags = Flags(Vec::new());
     let mut iter = flags.iter();
+    iter.next().expect("Did not recieve a binary name!");
     loop {
         let next = iter.next();
         if next.is_none() {

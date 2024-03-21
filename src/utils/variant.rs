@@ -26,6 +26,16 @@ pub trait TVariant: Debug + Any + Send {
     fn value(&self) -> Box<dyn TVariant>;
 }
 
+pub trait TVariantClone: TVariant {
+    fn into_variant(self) -> Variant;
+    fn value(&self) -> Box<dyn TVariantClone>;
+}
+
+pub trait TVariantCopy: TVariant {
+    fn into_variant(self) -> Variant;
+    fn value(&self) -> Box<dyn TVariantCopy>;
+}
+
 impl TVariant for bool {
     fn into_variant(self) -> Variant {
         Variant::new::<bool>(self)
@@ -151,6 +161,126 @@ impl TVariant for Empty {
         Box::new(*self)
     }
 }
+
+macro_rules! impl_debug {
+    ( $( $V:ident )+ ) => {
+        impl<$($V: Debug),+> Debug for ($($V,)+)
+        {
+        }
+    };
+}
+
+impl_debug! {A}
+impl_debug! {A B}
+impl_debug! {A B C}
+impl_debug! {A B C D}
+impl_debug! {A B C D E}
+impl_debug! {A B C D E F}
+impl_debug! {A B C D E F G}
+impl_debug! {A B C D E F G H}
+impl_debug! {A B C D E F G H I}
+impl_debug! {A B C D E F G H I J}
+impl_debug! {A B C D E F G H I J K}
+impl_debug! {A B C D E F G H I J K L}
+
+macro_rules! impl_variant {
+    ( $( $val:ident )+ ) => {
+    #[allow(non_snake_case, unused_variables)]
+    // removing this causes 80 warnings...
+        impl<$($val: TVariant),+> TVariant for ( $($val,)+ )
+        {
+            fn into_variant(self) -> Variant {
+                let ($($val,)+) = self;
+                Variant::new::<( $($val,)+ )>( ( $($val,)+ ) )
+            }
+
+            fn value(&self) -> Box<dyn TVariant> {
+                let ($($val,)+) = self;
+                // TODO: check if this causes any value to brick?
+                // theoretically copy or clone has to be used due to &self
+                Box::new(0)
+            }
+        }
+    };
+}
+
+impl_variant! { A }
+impl_variant! { A B }
+impl_variant! { A B C }
+impl_variant! { A B C D }
+impl_variant! { A B C D E }
+impl_variant! { A B C D E F }
+impl_variant! { A B C D E F G }
+impl_variant! { A B C D E F G H }
+impl_variant! { A B C D E F G H I }
+impl_variant! { A B C D E F G H I J }
+impl_variant! { A B C D E F G H I J K }
+impl_variant! { A B C D E F G H I J K L }
+
+#[allow(non_snake_case, unused_attributes)]
+macro_rules! impl_variant_clone {
+    ( $( $val:ident )+ ) => {
+    #[allow(non_snake_case)]
+    // removing this causes 80 warnings...
+        impl<$($val: TVariantClone + Clone),+> TVariantClone for ( $($val,)+ )
+        {
+            fn into_variant(self) -> Variant {
+                let ($($val,)+) = self;
+                Variant::new::<( $($val,)+ )>( ( $($val,)+ ) )
+            }
+
+            fn value(&self) -> Box<dyn TVariantClone> {
+                let ($($val,)+) = self;
+                Box::new( ( $($val.clone(),)+ ) )
+            }
+        }
+    };
+}
+
+impl_variant_clone! { A }
+impl_variant_clone! { A B }
+impl_variant_clone! { A B C }
+impl_variant_clone! { A B C D }
+impl_variant_clone! { A B C D E }
+impl_variant_clone! { A B C D E F }
+impl_variant_clone! { A B C D E F G }
+impl_variant_clone! { A B C D E F G H }
+impl_variant_clone! { A B C D E F G H I }
+impl_variant_clone! { A B C D E F G H I J }
+impl_variant_clone! { A B C D E F G H I J K }
+impl_variant_clone! { A B C D E F G H I J K L }
+
+macro_rules! impl_variant_copy {
+    ( $( $val:ident )+ ) => {
+    #[allow(non_snake_case)]
+    // removing this causes 80 warnings...
+        impl<$($val: TVariantCopy + Copy),+> TVariantCopy for ( $($val,)+ )
+        {
+            fn into_variant(self) -> Variant {
+                let ($($val,)+) = self;
+                Variant::new::<( $($val,)+ )>( ( $($val,)+ ) )
+            }
+
+            fn value(&self) -> Box<dyn TVariantCopy> {
+                let ($($val,)+) = self;
+                Box::new( ( $(*$val,)+ ) )
+            }
+        }
+    };
+}
+
+impl_variant_copy! { A }
+impl_variant_copy! { A B }
+impl_variant_copy! { A B C }
+impl_variant_copy! { A B C D }
+impl_variant_copy! { A B C D E }
+impl_variant_copy! { A B C D E F }
+impl_variant_copy! { A B C D E F G }
+impl_variant_copy! { A B C D E F G H }
+impl_variant_copy! { A B C D E F G H I }
+impl_variant_copy! { A B C D E F G H I J }
+impl_variant_copy! { A B C D E F G H I J K }
+impl_variant_copy! { A B C D E F G H I J K L }
 
 #[derive(Debug)]
 pub struct Variant {
@@ -283,4 +413,30 @@ fn test_variant_clone() {
             .clone(),
         testmap
     );
+}
+
+#[test]
+fn test_conversion_tuple() {
+    let mock = (25, "pingpang".to_string()).into_variant();
+    dbg!(&mock);
+    assert_eq!(mock.kind, TypeId::of::<(i32, String)>());
+    let converted_value = mock.to_value_cloned::<(i32, String)>();
+    assert!(converted_value.is_ok());
+    let comparison_value = (25, "pingpang".to_string());
+    let converted_value = converted_value.unwrap();
+    assert_eq!(converted_value.0, comparison_value.0);
+    assert_eq!(converted_value.1, comparison_value.1);
+}
+
+#[test]
+fn test_conversion_tuple_same_type() {
+    let mock = (25, 25).into_variant();
+    dbg!(&mock);
+    assert_eq!(mock.kind, TypeId::of::<(i32, i32)>());
+    let converted_value = mock.to_value::<(i32, i32)>();
+    assert!(converted_value.is_ok());
+    let comparison_value = (25, 25);
+    let converted_value = converted_value.unwrap();
+    assert_eq!(converted_value.0, comparison_value.0);
+    assert_eq!(converted_value.1, comparison_value.1);
 }

@@ -2,6 +2,7 @@
 #[derive(Debug, PartialEq, PartialOrd, Eq)]
 pub enum Flag<'a> {
     ConfigDir(&'a String),
+    PluginDir(&'a String),
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq)]

@@ -7,7 +7,7 @@ fn test_config_dir() {
 }
 
 #[test]
-fn test_parameters() {
+fn test_custom_config() {
     use crate::parse_flags;
     use crate::utils::flags::{Flag, Flags};
     use std::fs;
@@ -22,4 +22,17 @@ fn test_parameters() {
     assert!(!flags.0.is_empty());
     assert_eq!(flags, Flags(vec![Flag::ConfigDir(&"test.txt".to_string())]));
     fs::remove_file("test.txt").expect("Could not delete test file");
+}
+
+#[test]
+fn test_custom_config_non_existing() {
+    use crate::parse_flags;
+
+    let command_flags = vec![
+        String::from("binary name"),
+        String::from("--config"),
+        String::from("test.txt"),
+    ];
+    let flags = parse_flags(&command_flags);
+    assert!(flags.0.is_empty());
 }

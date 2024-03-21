@@ -9,7 +9,7 @@ macro_rules! LOG {
 macro_rules! LOG {
     ($log_file:expr, $message:expr) => {{
         write_log_to_file!($message, $log_file);
-        print!("LOG: {}", $message);
+        println!("LOG: {}", $message);
     }};
 }
 
@@ -25,9 +25,9 @@ macro_rules! ERROR {
     ($log_file:expr, $message:expr, $level:expr) => {{
         write_log_to_file!($message, $log_file);
         match $level {
-            ErrorLevel::Recoverable => print!("Minor Error: {}", $message),
-            ErrorLevel::PartialBreakage => print!("Partial Error: {}", $message),
-            ErrorLevel::Critical => print!("Critical Error: {}", $message),
+            ErrorLevel::Recoverable => println!("Minor Error: {}", $message),
+            ErrorLevel::PartialBreakage => println!("Partial Error: {}", $message),
+            ErrorLevel::Critical => println!("Critical Error: {}", $message),
         };
     }};
 }
@@ -38,6 +38,7 @@ macro_rules! write_log_to_file {
         use std::{fs::OpenOptions, io::Write};
         let mut file = OpenOptions::new()
             .append(true)
+            .create(true)
             .open($log_file)
             .expect("Could not open log file");
         file.write_all($message.as_bytes())

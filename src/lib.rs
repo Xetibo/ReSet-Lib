@@ -55,6 +55,7 @@ pub fn parse_flags(flags: &[String]) -> Flags {
         }
         match next.unwrap().as_str() {
             "--config" => handle_config(&mut parsed_flags, iter.next()),
+            "--plugins" => handle_plugins(&mut parsed_flags, iter.next()),
             _ => LOG!("/tmp/reset_lib_log", "Unknown Flag passed"),
         }
     }
@@ -90,4 +91,35 @@ fn handle_config<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
         return;
     }
     flags.0.push(Flag::ConfigDir(path));
+}
+
+fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
+    if file.is_none() {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            "No directory provided!",
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    let path = file.unwrap();
+    let data = fs::metadata(path);
+    if data.is_err() {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            "Provided path does not exist!",
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    let data = data.unwrap();
+    if !data.is_dir() {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            "Provided path is not a file!",
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    flags.0.push(Flag::PluginDir(path));
 }

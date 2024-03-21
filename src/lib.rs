@@ -1,7 +1,7 @@
 #![feature(trait_upcasting)]
 #![feature(unsized_fn_params)]
 use directories_next as dirs;
-use std::{fmt, fs, path::PathBuf};
+use std::{fmt, fs, path::PathBuf, slice::Iter};
 use utils::{
     flags::{Flag, Flags},
     variant::{Empty, TVariant},
@@ -60,7 +60,7 @@ pub fn parse_flags(flags: &[String]) -> Flags {
         match flag {
             "--config" => handle_config(&mut parsed_flags, iter.next()),
             "--plugins" => handle_plugins(&mut parsed_flags, iter.next()),
-            _ => handle_other(&mut parsed_flags, flag, iter.next()),
+            _ => handle_other(&mut parsed_flags, flag, &mut iter),
         }
     }
     parsed_flags
@@ -128,7 +128,7 @@ fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
     flags.0.push(Flag::PluginDir(path));
 }
 
-fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, value: Option<&'a String>) {
+fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Iter<String>) {
     if !flag.starts_with('-') || !flag.starts_with("--") {
         ERROR!(
             "/tmp/reset_lib_log",
@@ -137,14 +137,28 @@ fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, value: Option<&'a Stri
         );
         return;
     }
-    if let Some(value) = value {
-        flags.0.push(Flag::Other((
-            flag.to_string(),
-            value.clone().into_variant(),
-        )))
-    } else {
-        flags
+    if values.len() == 0 {
+        return;
+    }
+    let mut parsed_flags = Vec::new();
+    loop {
+        let next = values.next();
+        if let Some(value) = next {
+            parsed_flags.push(value.clone());
+        } else {
+            break;
+        }
+    }
+    match parsed_flags.len() {
+        0 => flags
             .0
-            .push(Flag::Other((flag.to_string(), Empty {}.into_variant())))
+            .push(Flag::Other((flag.to_string(), Empty {}.into_variant()))),
+        1 => flags.0.push(Flag::Other((
+            flag.to_string(),
+            parsed_flags.pop().unwrap().into_variant(),
+        ))),
+        _ => flags
+            .0
+            .push(Flag::Other((flag.to_string(), parsed_flags.into_variant()))),
     }
 }

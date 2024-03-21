@@ -60,6 +60,7 @@ fn test_custom_flag() {
         String::from("binary name"),
         String::from("--something"),
         String::from("test.txt"),
+        String::from("test2.txt"),
     ];
     let flags = parse_flags(&command_flags);
     let matched_name: &String;
@@ -79,10 +80,10 @@ fn test_custom_flag() {
     assert!(!flags.0.is_empty());
     assert_eq!(matched_name, &String::from("--something"));
     assert_eq!(
-        matched_value.to_value_cloned::<String>().unwrap(),
-        String::from("test.txt")
+        matched_value.to_value_cloned::<Vec<String>>().unwrap(),
+        vec![String::from("test.txt"), String::from("test2.txt")]
             .into_variant()
-            .to_value_cloned::<String>()
+            .to_value_cloned::<Vec<String>>()
             .unwrap()
     );
 }

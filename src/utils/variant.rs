@@ -108,7 +108,7 @@ impl TVariant for String {
         Box::new(self.clone())
     }
 }
-impl<T: Debug + Send + 'static> TVariant for Option<T>
+impl<T: TVariant + 'static> TVariant for Option<T>
 where
     T: Clone,
 {
@@ -119,7 +119,7 @@ where
         Box::new(self.clone())
     }
 }
-impl<T: Debug + Send + 'static> TVariant for Vec<T>
+impl<T: TVariant + 'static> TVariant for Vec<T>
 where
     T: Clone,
 {
@@ -130,7 +130,7 @@ where
         Box::new(self.clone())
     }
 }
-impl<K: Debug + Send + 'static, V: Debug + Send + 'static> TVariant for HashMap<K, V>
+impl<K: TVariant + 'static, V: TVariant + Send + 'static> TVariant for HashMap<K, V>
 where
     K: Clone,
     V: Clone,
@@ -156,6 +156,18 @@ impl TVariant for Empty {
 pub struct Variant {
     value: Box<dyn TVariant>,
     kind: TypeId,
+}
+
+impl Debug for Variant {}
+
+impl TVariant for Variant {
+    fn into_variant(self) -> Variant {
+        self.clone()
+    }
+
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(self.clone())
+    }
 }
 
 impl Clone for Variant {

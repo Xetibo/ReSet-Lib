@@ -29,6 +29,15 @@ impl PluginData {
         self.0.clone()
     }
 
+    pub fn move_data(self) -> HashMap<String, Variant> {
+        self.0
+    }
+
+    pub fn get_data_ref(&self) -> &HashMap<String, Variant> {
+        &self.0
+    }
+
+
     pub fn new(map: HashMap<String, Variant>) -> Self {
         Self(map)
     }

@@ -68,30 +68,18 @@ pub fn parse_flags(flags: &[String]) -> Flags {
 
 fn handle_config<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
     if file.is_none() {
-        ERROR!(
-            "/tmp/reset_lib_log",
-            "No file provided!",
-            ErrorLevel::Critical
-        );
+        ERROR!("No file provided!", ErrorLevel::Critical);
         return;
     }
     let path = file.unwrap();
     let data = fs::metadata(path);
     if data.is_err() {
-        ERROR!(
-            "/tmp/reset_lib_log",
-            "Provided path does not exist!",
-            ErrorLevel::Critical
-        );
+        ERROR!("Provided path does not exist!", ErrorLevel::Critical);
         return;
     }
     let data = data.unwrap();
     if !data.is_file() {
-        ERROR!(
-            "/tmp/reset_lib_log",
-            "Provided path is not a file!",
-            ErrorLevel::Critical
-        );
+        ERROR!("Provided path is not a file!", ErrorLevel::Critical);
         return;
     }
     flags.0.push(Flag::ConfigDir(path));
@@ -99,30 +87,18 @@ fn handle_config<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
 
 fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
     if file.is_none() {
-        ERROR!(
-            "/tmp/reset_lib_log",
-            "No directory provided!",
-            ErrorLevel::Critical
-        );
+        ERROR!("No directory provided!", ErrorLevel::Critical);
         return;
     }
     let path = file.unwrap();
     let data = fs::metadata(path);
     if data.is_err() {
-        ERROR!(
-            "/tmp/reset_lib_log",
-            "Provided path does not exist!",
-            ErrorLevel::Critical
-        );
+        ERROR!("Provided path does not exist!", ErrorLevel::Critical);
         return;
     }
     let data = data.unwrap();
     if !data.is_dir() {
-        ERROR!(
-            "/tmp/reset_lib_log",
-            "Provided path is not a file!",
-            ErrorLevel::Critical
-        );
+        ERROR!("Provided path is not a file!", ErrorLevel::Critical);
         return;
     }
     flags.0.push(Flag::PluginDir(path));
@@ -131,7 +107,6 @@ fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
 fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Iter<String>) {
     if !flag.starts_with('-') || !flag.starts_with("--") {
         ERROR!(
-            "/tmp/reset_lib_log",
             format!("Expected a flag, got a regular string instead: {}", flag),
             ErrorLevel::Critical
         );

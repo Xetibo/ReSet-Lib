@@ -283,6 +283,7 @@ impl_variant_copy! { A B C D E F G H I J K }
 impl_variant_copy! { A B C D E F G H I J K L }
 
 #[derive(Debug)]
+#[repr(C)]
 pub struct Variant {
     value: Box<dyn TVariant>,
     kind: TypeId,

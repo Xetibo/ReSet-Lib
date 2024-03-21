@@ -2,6 +2,9 @@
 #![feature(unsized_fn_params)]
 use directories_next as dirs;
 use std::{fmt, fs, path::PathBuf};
+use utils::flags::{Flag, Flags};
+
+use crate::utils::macros::ErrorLevel;
 
 pub mod audio;
 pub mod bluetooth;
@@ -13,6 +16,10 @@ pub mod utils;
 #[derive(Debug, Clone)]
 struct PathNotFoundError;
 
+/// Version of the current package.
+/// Use this to avoid version mismatch conflicts.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 impl fmt::Display for PathNotFoundError {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(formatter, "File could not be found")
@@ -20,7 +27,7 @@ impl fmt::Display for PathNotFoundError {
 }
 
 pub fn create_config(project_organization: &str, project_name: &str) -> Option<PathBuf> {
-    let config_dir = dirs::ProjectDirs::from("com", project_organization, project_name)?;
+    let config_dir = dirs::ProjectDirs::from("org", project_organization, project_name)?;
     let config_dir = config_dir.config_dir();
     if !config_dir.exists() {
         fs::create_dir(config_dir).expect("Could not create directory");
@@ -35,4 +42,51 @@ pub fn create_config(project_organization: &str, project_name: &str) -> Option<P
         fs::File::create(&file_path).expect("Could not write config file");
     }
     Some(config_dir.join(""))
+}
+
+pub fn parse_flags(flags: &[String]) -> Flags {
+    let mut parsed_flags = Flags(Vec::new());
+    let mut iter = flags.iter();
+    loop {
+        let next = iter.next();
+        if next.is_none() {
+            break;
+        }
+        match next.unwrap().as_str() {
+            "--config" => handle_config(&mut parsed_flags, iter.next()),
+            _ => LOG!("/tmp/reset_lib_log", "Unknown Flag passed"),
+        }
+    }
+    parsed_flags
+}
+
+fn handle_config<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
+    if file.is_none() {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            "No file provided!",
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    let path = file.unwrap();
+    let data = fs::metadata(path);
+    if data.is_err() {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            "Provided path does not exist!",
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    let data = data.unwrap();
+    if !data.is_file() {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            "Provided path is not a file!",
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    flags.0.push(Flag::ConfigDir(path));
 }

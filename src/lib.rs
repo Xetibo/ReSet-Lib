@@ -2,7 +2,10 @@
 #![feature(unsized_fn_params)]
 use directories_next as dirs;
 use std::{fmt, fs, path::PathBuf};
-use utils::flags::{Flag, Flags};
+use utils::{
+    flags::{Flag, Flags},
+    variant::{Empty, TVariant},
+};
 
 use crate::utils::macros::ErrorLevel;
 
@@ -53,10 +56,11 @@ pub fn parse_flags(flags: &[String]) -> Flags {
         if next.is_none() {
             break;
         }
-        match next.unwrap().as_str() {
+        let flag = next.unwrap().as_str();
+        match flag {
             "--config" => handle_config(&mut parsed_flags, iter.next()),
             "--plugins" => handle_plugins(&mut parsed_flags, iter.next()),
-            _ => LOG!("/tmp/reset_lib_log", "Unknown Flag passed"),
+            _ => handle_other(&mut parsed_flags, flag, iter.next()),
         }
     }
     parsed_flags
@@ -122,4 +126,25 @@ fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
         return;
     }
     flags.0.push(Flag::PluginDir(path));
+}
+
+fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, value: Option<&'a String>) {
+    if !flag.starts_with('-') || !flag.starts_with("--") {
+        ERROR!(
+            "/tmp/reset_lib_log",
+            format!("Expected a flag, got a regular string instead: {}", flag),
+            ErrorLevel::Critical
+        );
+        return;
+    }
+    if let Some(value) = value {
+        flags.0.push(Flag::Other((
+            flag.to_string(),
+            value.clone().into_variant(),
+        )))
+    } else {
+        flags
+            .0
+            .push(Flag::Other((flag.to_string(), Empty {}.into_variant())))
+    }
 }

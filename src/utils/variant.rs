@@ -142,6 +142,15 @@ where
         Box::new(self.clone())
     }
 }
+impl TVariant for Empty {
+    fn into_variant(self) -> Variant {
+        Variant::new::<Empty>(self)
+    }
+
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
+    }
+}
 
 #[derive(Debug)]
 pub struct Variant {
@@ -195,16 +204,6 @@ pub struct ConversionError(pub &'static str);
 
 #[derive(Clone, Copy, Debug)]
 pub struct Empty {}
-
-impl TVariant for Empty {
-    fn into_variant(self) -> Variant {
-        Variant::new::<Empty>(self)
-    }
-
-    fn value(&self) -> Box<dyn TVariant> {
-        todo!()
-    }
-}
 
 #[test]
 fn test_i32() {

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error, fmt::Display};
 
 use dbus::Path;
 
@@ -37,7 +37,6 @@ impl PluginData {
         &self.0
     }
 
-
     pub fn new(map: HashMap<String, Variant>) -> Self {
         Self(map)
     }
@@ -62,4 +61,102 @@ impl Plugin {
             data,
         }
     }
+}
+
+#[derive(Debug)]
+pub struct PluginTestError(&'static str);
+
+impl PluginTestError {
+    pub fn new(message: &'static str) -> Self {
+        Self(message)
+    }
+
+    pub fn message(&self) -> &'static str {
+        self.0
+    }
+}
+
+impl Display for PluginTestError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
+impl Error for PluginTestError {}
+
+unsafe impl Send for PluginTestError {}
+unsafe impl Sync for PluginTestError {}
+
+pub struct PluginTestFunc(
+    Box<dyn FnOnce() -> Result<(), PluginTestError>>,
+    &'static str,
+);
+
+impl PluginTestFunc {
+    pub fn new(
+        func: impl Fn() -> Result<(), PluginTestError> + 'static,
+        name: &'static str,
+    ) -> Self {
+        Self(Box::new(func), name)
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.1
+    }
+}
+
+impl FnOnce<()> for PluginTestFunc {
+    type Output = Result<(), PluginTestError>;
+
+    extern "rust-call" fn call_once(self, _: ()) -> Self::Output {
+        self.0.call_once(())
+    }
+}
+
+unsafe impl Send for PluginTestFunc {}
+unsafe impl Sync for PluginTestFunc {}
+
+#[cfg(test)]
+pub fn plugin_tests(tests: Vec<PluginTestFunc>) {
+    use std::thread;
+
+    let mut running = String::from("");
+    let running_index = tests.len();
+    let mut crashed = String::from("");
+    let mut crashed_index = 0;
+    let mut failed = String::from("");
+    let mut failed_index = 0;
+    let mut success = String::from("");
+    let mut success_index = 0;
+    for func in tests {
+        let name = func.name();
+        running += &format!("running test {}\n", name);
+        let test = thread::spawn(func).join();
+        if test.is_err() {
+            // panic is currently handled differently
+            crashed += &format!("Thread of test {} crashed!\n", name);
+            crashed_index += 1;
+        } else if let Ok(Err(error)) = test {
+            failed += &format!("Test {} failed with error: {}\n", name, error.message());
+            failed_index += 1;
+        } else {
+            success += &format!("Success: {}\n", name);
+            success_index += 1;
+        }
+    }
+    let mut buffer = String::from("");
+    buffer += "\n----------- Plugin Tests -----------\n\n";
+    buffer += &format!("running {} tests:\n", running_index);
+    buffer += &running;
+    buffer += &format!("\n{} test crashed:\n", crashed_index);
+    buffer += &crashed;
+    buffer += &format!("\n{} tests failed:\n", failed_index);
+    buffer += &failed;
+    buffer += &format!("\n{} tests successful:\n", success_index);
+    buffer += &success;
+    buffer += "\n----------- Plugin Tests end -----------\n\n";
+    print!("{}", buffer);
+    // this combination is done to avoid conflicts with other tests
+    // -> the cli only has one buffer, e.g. multiple threads writing
+    // to it could cause conflicts with the terminal output
 }

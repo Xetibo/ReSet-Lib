@@ -1,3 +1,8 @@
+#[cfg(test)]
+use crate::utils::plugin::plugin_tests;
+#[cfg(test)]
+use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
+
 #[test]
 fn test_config_dir() {
     use crate::create_config;
@@ -95,4 +100,14 @@ fn test_custom_error_flag() {
     let command_flags = vec![String::from("binary name"), String::from("notaflag")];
     let flags = parse_flags(&command_flags);
     assert!(flags.0.is_empty());
+}
+
+#[test]
+fn test_custom_tests() {
+    let func1 = || -> Result<(), PluginTestError> { Ok(()) };
+    let func2 = || -> Result<(), PluginTestError> { Err(PluginTestError::new("fail")) };
+    let func1 = PluginTestFunc::new(func1, "henlo");
+    let func2 = PluginTestFunc::new(func2, "fail");
+    let funcs = vec![func1, func2];
+    plugin_tests(funcs);
 }

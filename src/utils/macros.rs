@@ -51,3 +51,14 @@ pub enum ErrorLevel {
     PartialBreakage,
     Critical,
 }
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! plug_assert {
+    ($e:expr) => {{
+        if !$e {
+            return Err(PluginTestError::new("Failed"));
+        }
+        Ok(())
+    }};
+}

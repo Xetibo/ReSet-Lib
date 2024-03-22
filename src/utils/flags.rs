@@ -5,7 +5,7 @@ use super::variant::Variant;
 pub enum Flag<'a> {
     ConfigDir(&'a String),
     PluginDir(&'a String),
-    Other((String,Variant))
+    Other((String, Variant)),
 }
 
 #[derive(Debug)]

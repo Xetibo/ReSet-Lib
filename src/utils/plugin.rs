@@ -116,7 +116,7 @@ impl FnOnce<()> for PluginTestFunc {
 unsafe impl Send for PluginTestFunc {}
 unsafe impl Sync for PluginTestFunc {}
 
-pub fn plugin_tests(tests: Vec<PluginTestFunc>) {
+pub fn plugin_tests(plugig_name: &'static str, tests: Vec<PluginTestFunc>) {
     use std::thread;
 
     let mut running = String::from("");
@@ -144,7 +144,10 @@ pub fn plugin_tests(tests: Vec<PluginTestFunc>) {
         }
     }
     let mut buffer = String::from("");
-    buffer += "\n----------- Plugin Tests -----------\n\n";
+    buffer += &format!(
+        "\n----------- Plugin Tests for {} -----------\n\n",
+        plugig_name
+    );
     buffer += &format!("running {} tests:\n", running_index);
     buffer += &running;
     buffer += &format!("\n{} test crashed:\n", crashed_index);

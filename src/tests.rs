@@ -109,5 +109,5 @@ fn test_custom_tests() {
     let func1 = PluginTestFunc::new(func1, "henlo");
     let func2 = PluginTestFunc::new(func2, "fail");
     let funcs = vec![func1, func2];
-    plugin_tests("libtest",funcs);
+    plugin_tests(String::from("libtest"), funcs);
 }

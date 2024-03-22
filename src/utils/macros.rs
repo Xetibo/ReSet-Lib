@@ -52,7 +52,6 @@ pub enum ErrorLevel {
     Critical,
 }
 
-#[cfg(test)]
 #[macro_export]
 macro_rules! plug_assert {
     ($e:expr) => {{

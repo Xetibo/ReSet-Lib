@@ -116,7 +116,6 @@ impl FnOnce<()> for PluginTestFunc {
 unsafe impl Send for PluginTestFunc {}
 unsafe impl Sync for PluginTestFunc {}
 
-#[cfg(test)]
 pub fn plugin_tests(tests: Vec<PluginTestFunc>) {
     use std::thread;
 

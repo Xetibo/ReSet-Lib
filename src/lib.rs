@@ -100,7 +100,7 @@ fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
     }
     let data = data.unwrap();
     if !data.is_dir() {
-        ERROR!("Provided path is not a file!", ErrorLevel::Critical);
+        ERROR!("Provided path is not a directory!", ErrorLevel::Critical);
         return;
     }
     flags.0.push(Flag::PluginDir(path));

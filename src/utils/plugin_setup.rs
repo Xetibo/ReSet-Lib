@@ -99,7 +99,7 @@ static SETUP_PLUGINS: fn() -> Vec<PluginFunctions> = || -> Vec<PluginFunctions> 
                 libloading::Error,
             > = lib.get(b"frontend_shutdown");
             let data_frontend: Result<
-                libloading::Symbol<unsafe extern "C" fn() -> SidebarInfo>,
+                libloading::Symbol<unsafe extern "C" fn() -> (SidebarInfo, gtk::Box)>,
                 libloading::Error,
             > = lib.get(b"frontend_data");
             let tests_frontend: Result<
@@ -128,7 +128,7 @@ static SETUP_PLUGINS: fn() -> Vec<PluginFunctions> = || -> Vec<PluginFunctions> 
                     tests,
                     startup_frontend,
                     shutdown_frontend,
-                    data_frontend,  
+                    data_frontend,
                     tests_frontend,
                 ));
             } else {
@@ -147,10 +147,10 @@ pub struct PluginFunctions {
     pub name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
     pub data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>, //-> Plugin>,
     pub tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
-    
+
     pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
-    pub frontend_data: libloading::Symbol<'static, unsafe extern "C" fn() -> SidebarInfo>,
+    pub frontend_data: libloading::Symbol<'static, unsafe extern "C" fn() -> (SidebarInfo, gtk::Box)>,
     pub frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
 }
 
@@ -165,7 +165,7 @@ impl PluginFunctions {
         tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
         frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
-        frontend_data: libloading::Symbol<'static, unsafe extern "C" fn() -> SidebarInfo>,
+        frontend_data: libloading::Symbol<'static, unsafe extern "C" fn() -> (SidebarInfo, gtk::Box)>,
         frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {

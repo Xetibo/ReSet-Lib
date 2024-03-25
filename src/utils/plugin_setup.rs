@@ -67,8 +67,6 @@ static SETUP_LIBS: fn() = || {
     }
 };
 
-// static<const T> SETUP_PLUGINS_FN: fn() -> Vec<T> = {};
-
 fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {
     let mut plugins = Vec::new();
     unsafe {

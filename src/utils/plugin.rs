@@ -178,4 +178,3 @@ pub struct SidebarInfo {
     pub icon_name: &'static str,
     pub parent: Option<&'static str>,
 }
-

@@ -8,15 +8,25 @@ pub fn plugin_data() -> PluginData {
 }
 
 #[repr(C)]
-pub struct PluginCapabilities(Vec<&'static str>);
+pub enum PluginImplementation {
+    Frontend,
+    Backend,
+    Both,
+}
+
+#[repr(C)]
+pub struct PluginCapabilities(Vec<&'static str>, PluginImplementation);
 
 impl PluginCapabilities {
     pub fn get_capabilities(&self) -> Vec<&'static str> {
         self.0.clone()
     }
+    pub fn get_implementation(&self) -> &PluginImplementation {
+        &self.1
+    }
 
-    pub fn new(capabilities: Vec<&'static str>) -> Self {
-        Self(capabilities)
+    pub fn new(capabilities: Vec<&'static str>, implementation: PluginImplementation) -> Self {
+        Self(capabilities, implementation)
     }
 }
 

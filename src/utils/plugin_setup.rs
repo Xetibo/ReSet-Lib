@@ -1,11 +1,12 @@
 use std::{fs::create_dir, io::ErrorKind, path::PathBuf};
 
 use dbus_crossroads::Crossroads;
+use libloading::Library;
 use once_cell::sync::Lazy;
 
 use crate::{create_config, write_log_to_file, ErrorLevel, ERROR};
 
-use super::plugin::{PluginCapabilities, PluginTestFunc, SidebarInfo};
+use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
 
 pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
@@ -72,6 +73,16 @@ fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {
     let mut plugins = Vec::new();
     unsafe {
         for lib in LIBS.iter() {
+            let capabilities = get_plugin_capabilities(lib);
+            if capabilities.is_none() {
+                break;
+            }
+            let capabilities = capabilities.unwrap();
+            match capabilities.get_implementation() {
+                PluginImplementation::Both => (),
+                PluginImplementation::Backend => (),
+                PluginImplementation::Frontend => break,
+            }
             let dbus_interface: Result<
                 libloading::Symbol<unsafe extern "C" fn(&mut Crossroads)>, // -> Plugin>,
                 libloading::Error,
@@ -84,10 +95,6 @@ fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {
                 libloading::Symbol<unsafe extern "C" fn() -> ()>,
                 libloading::Error,
             > = lib.get(b"backend_shutdown");
-            let capabilities: Result<
-                libloading::Symbol<unsafe extern "C" fn() -> PluginCapabilities>,
-                libloading::Error,
-            > = lib.get(b"capabilities");
             let name: Result<
                 libloading::Symbol<unsafe extern "C" fn() -> String>,
                 libloading::Error,
@@ -96,19 +103,13 @@ fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {
                 libloading::Symbol<unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
                 libloading::Error,
             > = lib.get(b"backend_tests");
-            if let (
-                Ok(dbus_interface),
-                Ok(startup),
-                Ok(shutdown),
-                Ok(capabilities),
-                Ok(name),
-                Ok(tests),
-            ) = (dbus_interface, startup, shutdown, capabilities, name, tests)
+            if let (Ok(dbus_interface), Ok(startup), Ok(shutdown), Ok(name), Ok(tests)) =
+                (dbus_interface, startup, shutdown, name, tests)
             {
                 plugins.push(BackendPluginFunctions::new(
+                    capabilities.get_capabilities(),
                     startup,
                     shutdown,
-                    capabilities,
                     name,
                     dbus_interface,
                     tests,
@@ -125,6 +126,16 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
     let mut plugins = Vec::new();
     unsafe {
         for lib in LIBS.iter() {
+            let capabilities = get_plugin_capabilities(lib);
+            if capabilities.is_none() {
+                break;
+            }
+            let capabilities = capabilities.unwrap();
+            match capabilities.get_implementation() {
+                PluginImplementation::Both => (),
+                PluginImplementation::Backend => break,
+                PluginImplementation::Frontend => (),
+            }
             let startup_frontend: Result<
                 libloading::Symbol<unsafe extern "C" fn() -> ()>,
                 libloading::Error,
@@ -153,6 +164,7 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                 tests_frontend,
             ) {
                 plugins.push(FrontendPluginFunctions::new(
+                    capabilities.get_capabilities(),
                     startup_frontend,
                     shutdown_frontend,
                     data_frontend,
@@ -164,11 +176,25 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
     plugins
 }
 
+fn get_plugin_capabilities(lib: &Library) -> Option<PluginCapabilities> {
+    unsafe {
+        let capabilities: Result<
+            libloading::Symbol<unsafe extern "C" fn() -> PluginCapabilities>,
+            libloading::Error,
+        > = lib.get(b"capabilities");
+        if capabilities.is_err() {
+            ERROR!("Failed to load plugin", ErrorLevel::Critical);
+            return None;
+        }
+        Some((capabilities.unwrap())())
+    }
+}
+
 #[allow(improper_ctypes_definitions)]
 pub struct BackendPluginFunctions {
+    pub capabilities: Vec<&'static str>,
     pub startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
-    pub capabilities: libloading::Symbol<'static, unsafe extern "C" fn() -> PluginCapabilities>,
     pub name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
     pub data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>, //-> Plugin>,
     pub tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
@@ -177,17 +203,17 @@ pub struct BackendPluginFunctions {
 #[allow(improper_ctypes_definitions)]
 impl BackendPluginFunctions {
     pub fn new(
+        capabilities: Vec<&'static str>,
         backend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
-        capabilities: libloading::Symbol<'static, unsafe extern "C" fn() -> PluginCapabilities>,
         name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
         data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>,
         tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {
+            capabilities,
             startup: backend_startup,
             shutdown,
-            capabilities,
             name,
             data,
             tests,
@@ -201,6 +227,7 @@ unsafe impl Sync for BackendPluginFunctions {}
 
 #[allow(improper_ctypes_definitions)]
 pub struct FrontendPluginFunctions {
+    pub capabilities: Vec<&'static str>,
     pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_data:
@@ -211,6 +238,7 @@ pub struct FrontendPluginFunctions {
 #[allow(improper_ctypes_definitions)]
 impl FrontendPluginFunctions {
     pub fn new(
+        capabilities: Vec<&'static str>,
         frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_data: libloading::Symbol<
@@ -220,6 +248,7 @@ impl FrontendPluginFunctions {
         frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {
+            capabilities,
             frontend_startup,
             frontend_shutdown,
             frontend_data,

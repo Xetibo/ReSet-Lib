@@ -157,7 +157,7 @@ pub struct PluginFunctions {
 #[allow(improper_ctypes_definitions)]
 impl PluginFunctions {
     pub fn new(
-        startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
+        backend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         capabilities: libloading::Symbol<'static, unsafe extern "C" fn() -> PluginCapabilities>,
         name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
@@ -169,7 +169,7 @@ impl PluginFunctions {
         frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {
-            startup,
+            startup: backend_startup,
             shutdown,
             capabilities,
             name,

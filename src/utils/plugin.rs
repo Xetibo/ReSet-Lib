@@ -67,21 +67,21 @@ impl Plugin {
 }
 
 #[derive(Debug)]
-pub struct PluginTestError(&'static str);
+pub struct PluginTestError(String);
 
 impl PluginTestError {
-    pub fn new(message: &'static str) -> Self {
-        Self(message)
+    pub fn new(message: impl Into<String>) -> Self {
+        Self(message.into())
     }
 
-    pub fn message(&self) -> &'static str {
-        self.0
+    pub fn message(&self) -> &String {
+        &self.0
     }
 }
 
 impl Display for PluginTestError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.0)
+        f.write_str(&self.0)
     }
 }
 

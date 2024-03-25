@@ -111,3 +111,16 @@ fn test_custom_tests() {
     let funcs = vec![func1, func2];
     plugin_tests(String::from("libtest"), funcs);
 }
+
+#[test]
+fn test_plug_assert_macros() {
+    use crate::{plug_assert, plug_assert_eq};
+    let test = || plug_assert!(true);
+    assert!(test().is_ok());
+    let test = || plug_assert!(false);
+    assert!(test().is_err());
+    let test = || plug_assert_eq!(1,1);
+    assert!(test().is_ok());
+    let test = || plug_assert_eq!(1,10);
+    assert!(test().is_err());
+}

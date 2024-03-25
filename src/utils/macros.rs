@@ -56,7 +56,20 @@ pub enum ErrorLevel {
 macro_rules! plug_assert {
     ($e:expr) => {{
         if !$e {
-            return Err(PluginTestError::new("Failed"));
+            return Err(PluginTestError::new(format!("{} is not true", $e)));
+        }
+        Ok(())
+    }};
+}
+
+#[macro_export]
+macro_rules! plug_assert_eq {
+    ($a:expr, $b:expr) => {{
+        if $a != $b {
+            return Err(PluginTestError::new(format!(
+                "{} is not equal to {}",
+                $a, $b
+            )));
         }
         Ok(())
     }};

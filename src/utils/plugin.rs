@@ -1,4 +1,7 @@
 use std::{collections::HashMap, error::Error, fmt::Display};
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
 
 use dbus::Path;
 
@@ -161,4 +164,11 @@ pub fn plugin_tests(plugin_name: impl AsRef<str>, tests: Vec<PluginTestFunc>) {
     // this combination is done to avoid conflicts with other tests
     // -> the cli only has one buffer, e.g. multiple threads writing
     // to it could cause conflicts with the terminal output
+}
+
+#[repr(C)]
+pub struct SidebarInfo {
+    pub name: &'static str,
+    pub icon_name: &'static str,
+    pub parent: Option<&'static str>,
 }

@@ -3,9 +3,9 @@ use std::{fs::create_dir, io::ErrorKind, path::PathBuf};
 use dbus_crossroads::Crossroads;
 use once_cell::sync::Lazy;
 
-use crate::{create_config, ERROR, write_log_to_file, ErrorLevel};
+use crate::{create_config, ERROR, ErrorLevel, write_log_to_file};
 
-use super::plugin::{PluginCapabilities, PluginTestFunc};
+use super::plugin::{PluginCapabilities, PluginTestFunc, SidebarInfo};
 
 pub static mut PLUGINS: Lazy<Vec<PluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
@@ -90,6 +90,22 @@ static SETUP_PLUGINS: fn() -> Vec<PluginFunctions> = || -> Vec<PluginFunctions> 
                 libloading::Symbol<unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
                 libloading::Error,
             > = lib.get(b"backend_tests");
+            let startup_frontend: Result<
+                libloading::Symbol<unsafe extern "C" fn() -> ()>,
+                libloading::Error,
+            > = lib.get(b"frontend_startup");
+            let shutdown_frontend: Result<
+                libloading::Symbol<unsafe extern "C" fn() -> ()>,
+                libloading::Error,
+            > = lib.get(b"frontend_shutdown");
+            let data_frontend: Result<
+                libloading::Symbol<unsafe extern "C" fn() -> SidebarInfo>,
+                libloading::Error,
+            > = lib.get(b"frontend_data");
+            let tests_frontend: Result<
+                libloading::Symbol<unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
+                libloading::Error,
+            > = lib.get(b"frontend_tests");
             if let (
                 Ok(dbus_interface),
                 Ok(startup),
@@ -97,7 +113,11 @@ static SETUP_PLUGINS: fn() -> Vec<PluginFunctions> = || -> Vec<PluginFunctions> 
                 Ok(capabilities),
                 Ok(name),
                 Ok(tests),
-            ) = (dbus_interface, startup, shutdown, capabilities, name, tests)
+                Ok(startup_frontend),
+                Ok(shutdown_frontend),
+                Ok(data_frontend),
+                Ok(tests_frontend),
+            ) = (dbus_interface, startup, shutdown, capabilities, name, tests, startup_frontend, shutdown_frontend, data_frontend, tests_frontend)
             {
                 plugins.push(PluginFunctions::new(
                     startup,
@@ -106,6 +126,10 @@ static SETUP_PLUGINS: fn() -> Vec<PluginFunctions> = || -> Vec<PluginFunctions> 
                     name,
                     dbus_interface,
                     tests,
+                    startup_frontend,
+                    shutdown_frontend,
+                    data_frontend,  
+                    tests_frontend,
                 ));
             } else {
                 ERROR!("Failed to load plugin", ErrorLevel::Critical);
@@ -123,6 +147,11 @@ pub struct PluginFunctions {
     pub name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
     pub data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>, //-> Plugin>,
     pub tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
+    
+    pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
+    pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
+    pub frontend_data: libloading::Symbol<'static, unsafe extern "C" fn() -> SidebarInfo>,
+    pub frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
 }
 
 #[allow(improper_ctypes_definitions)]
@@ -134,6 +163,10 @@ impl PluginFunctions {
         name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
         data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>,
         tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
+        frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
+        frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
+        frontend_data: libloading::Symbol<'static, unsafe extern "C" fn() -> SidebarInfo>,
+        frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {
             startup,
@@ -142,9 +175,14 @@ impl PluginFunctions {
             name,
             data,
             tests,
+            frontend_startup,
+            frontend_shutdown,
+            frontend_data,
+            frontend_tests,
         }
     }
 }
 
 unsafe impl Send for PluginFunctions {}
+
 unsafe impl Sync for PluginFunctions {}

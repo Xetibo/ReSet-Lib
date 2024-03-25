@@ -170,5 +170,11 @@ pub fn plugin_tests(plugin_name: impl AsRef<str>, tests: Vec<PluginTestFunc>) {
 pub struct SidebarInfo {
     pub name: &'static str,
     pub icon_name: &'static str,
-    pub parent: Option<&'static str>,
+    pub parent: Option<ParentInfo>,
+}
+
+#[repr(C)]
+pub struct ParentInfo {
+    pub name: &'static str,
+    pub children: i32,
 }

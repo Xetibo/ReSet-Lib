@@ -1,9 +1,5 @@
-use std::{collections::HashMap, error::Error, fmt::Display};
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::Arc;
-
 use dbus::Path;
+use std::{collections::HashMap, error::Error, fmt::Display};
 
 use super::variant::Variant;
 
@@ -172,3 +168,4 @@ pub struct SidebarInfo {
     pub icon_name: &'static str,
     pub parent: Option<&'static str>,
 }
+

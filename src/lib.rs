@@ -19,7 +19,7 @@ mod tests;
 pub mod utils;
 
 #[derive(Debug, Clone)]
-struct PathNotFoundError;
+pub struct PathNotFoundError;
 
 /// Version of the current package.
 /// Use this to avoid version mismatch conflicts.

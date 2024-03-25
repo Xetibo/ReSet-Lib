@@ -159,7 +159,7 @@ pub fn plugin_tests(plugin_name: impl AsRef<str>, tests: Vec<PluginTestFunc>) {
     );
     buffer += &format!("running {} tests:\n", running_index);
     buffer += &running;
-    buffer += &format!("\n{} test crashed:\n", crashed_index);
+    buffer += &format!("\n{} tests crashed:\n", crashed_index);
     buffer += &crashed;
     buffer += &format!("\n{} tests failed:\n", failed_index);
     buffer += &failed;

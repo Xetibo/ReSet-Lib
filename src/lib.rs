@@ -3,7 +3,7 @@
 #![feature(unboxed_closures)]
 #![feature(fn_traits)]
 use directories_next as dirs;
-use std::{fmt, fs, path::PathBuf, slice::Iter};
+use std::{fmt, fs, iter::Peekable, path::PathBuf, slice::Iter};
 use utils::{
     flags::{Flag, Flags},
     variant::{Empty, TVariant},
@@ -51,7 +51,7 @@ pub fn create_config(project_organization: &str, project_name: &str) -> Option<P
 
 pub fn parse_flags(flags: &[String]) -> Flags {
     let mut parsed_flags = Flags(Vec::new());
-    let mut iter = flags.iter();
+    let mut iter = flags.iter().peekable();
     iter.next().expect("Did not recieve a binary name!");
     loop {
         let next = iter.next();
@@ -106,25 +106,26 @@ fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
     flags.0.push(Flag::PluginDir(path));
 }
 
-fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Iter<String>) {
-    if !flag.starts_with('-') || !flag.starts_with("--") {
+fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Peekable<Iter<String>>) {
+    if !is_flag(flag) {
         ERROR!(
             format!("Expected a flag, got a regular string instead: {}", flag),
             ErrorLevel::Critical
         );
         return;
     }
-    if values.len() == 0 {
-        return;
-    }
     let mut parsed_flags = Vec::new();
     loop {
-        let next = values.next();
+        let next = values.peek();
         if let Some(value) = next {
-            parsed_flags.push(value.clone());
+            if is_flag(value) {
+                break;
+            }
         } else {
             break;
         }
+        let next = values.next();
+        parsed_flags.push(next.unwrap().clone());
     }
     match parsed_flags.len() {
         0 => flags
@@ -138,4 +139,13 @@ fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Iter<Stri
             .0
             .push(Flag::Other((flag.to_string(), parsed_flags.into_variant()))),
     }
+}
+
+fn is_flag(maybe_flag: &str) -> bool {
+    if maybe_flag.starts_with('-') && maybe_flag.len() > 1
+        || maybe_flag.starts_with("--") && maybe_flag.len() > 2
+    {
+        return true;
+    }
+    false
 }

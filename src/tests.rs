@@ -1,4 +1,7 @@
 #[cfg(test)]
+use serial_test::serial;
+
+#[cfg(test)]
 use crate::utils::plugin::plugin_tests;
 #[cfg(test)]
 use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
@@ -12,6 +15,7 @@ fn test_config_dir() {
 }
 
 #[test]
+#[serial]
 fn test_custom_config() {
     use crate::parse_flags;
     use crate::utils::flags::{Flag, Flags};
@@ -42,6 +46,7 @@ fn test_custom_config() {
 }
 
 #[test]
+#[serial]
 fn test_custom_config_non_existing() {
     use crate::parse_flags;
 
@@ -66,6 +71,8 @@ fn test_custom_flag() {
         String::from("--something"),
         String::from("test.txt"),
         String::from("test2.txt"),
+        String::from("--other"),
+        String::from("othervalue"),
     ];
     let flags = parse_flags(&command_flags);
     let matched_name: &String;
@@ -82,7 +89,7 @@ fn test_custom_flag() {
             matched_value = &failed_variant;
         }
     }
-    assert!(!flags.0.is_empty());
+    assert_eq!(flags.0.len(), 2);
     assert_eq!(matched_name, &String::from("--something"));
     assert_eq!(
         matched_value.to_value_cloned::<Vec<String>>().unwrap(),

@@ -16,6 +16,10 @@ impl Debug for u32 {}
 impl Debug for i32 {}
 impl Debug for u64 {}
 impl Debug for i64 {}
+impl Debug for u128 {}
+impl Debug for i128 {}
+impl Debug for f32 {}
+impl Debug for f64 {}
 impl Debug for String {}
 impl<T: std::fmt::Debug> Debug for Vec<T> {}
 impl<T: std::fmt::Debug> Debug for Option<T> {}
@@ -105,6 +109,38 @@ impl TVariant for u64 {
 impl TVariant for i64 {
     fn into_variant(self) -> Variant {
         Variant::new::<i64>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
+    }
+}
+impl TVariant for u128 {
+    fn into_variant(self) -> Variant {
+        Variant::new::<u128>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
+    }
+}
+impl TVariant for i128 {
+    fn into_variant(self) -> Variant {
+        Variant::new::<i128>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
+    }
+}
+impl TVariant for f32 {
+    fn into_variant(self) -> Variant {
+        Variant::new::<f32>(self)
+    }
+    fn value(&self) -> Box<dyn TVariant> {
+        Box::new(*self)
+    }
+}
+impl TVariant for f64 {
+    fn into_variant(self) -> Variant {
+        Variant::new::<f64>(self)
     }
     fn value(&self) -> Box<dyn TVariant> {
         Box::new(*self)

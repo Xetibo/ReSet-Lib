@@ -283,7 +283,7 @@ impl<'a> CrossWrapper<'a> {
         self.0.register(name.into(), token)
     }
 
-    pub fn insert<T: Send + Sync + 'static>(&mut self, interfaces: &Vec<IfaceToken<T>>, data: T) {
+    pub fn insert<T: Send + Sync + 'static>(&mut self, interfaces: &[IfaceToken<T>], data: T) {
         self.0.insert(DBUS_PATH, interfaces, data);
     }
 }

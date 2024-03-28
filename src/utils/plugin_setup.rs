@@ -1,12 +1,20 @@
-use std::{fs::create_dir, io::ErrorKind, path::PathBuf};
+use std::{
+    fs::create_dir,
+    io::ErrorKind,
+    path::PathBuf,
+    sync::{Arc, RwLock},
+};
 
-use dbus_crossroads::Crossroads;
+use dbus_crossroads::{Crossroads, IfaceBuilder, IfaceToken};
 use libloading::Library;
 use once_cell::sync::Lazy;
 
 use crate::{create_config, write_log_to_file, ErrorLevel, ERROR};
 
-use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
+use super::{
+    dbus_utils::DBUS_PATH,
+    plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo},
+};
 
 pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
@@ -82,7 +90,7 @@ fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {
                 PluginImplementation::Frontend => break,
             }
             let dbus_interface: Result<
-                libloading::Symbol<unsafe extern "C" fn(&mut Crossroads)>, // -> Plugin>,
+                libloading::Symbol<unsafe extern "C" fn(Arc<RwLock<CrossWrapper>>)>, // -> Plugin>,
                 libloading::Error,
             > = lib.get(b"dbus_interface");
             let startup: Result<
@@ -194,7 +202,7 @@ pub struct BackendPluginFunctions {
     pub startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
-    pub data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>, //-> Plugin>,
+    pub data: libloading::Symbol<'static, unsafe extern "C" fn(Arc<RwLock<CrossWrapper>>)>, //-> Plugin>,
     pub tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
 }
 
@@ -205,7 +213,7 @@ impl BackendPluginFunctions {
         backend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
-        data: libloading::Symbol<'static, unsafe extern "C" fn(&mut Crossroads)>,
+        data: libloading::Symbol<'static, unsafe extern "C" fn(Arc<RwLock<CrossWrapper>>)>,
         tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {
@@ -256,5 +264,29 @@ impl FrontendPluginFunctions {
 }
 
 unsafe impl Send for FrontendPluginFunctions {}
-
 unsafe impl Sync for FrontendPluginFunctions {}
+
+type Registration<T> = Box<dyn FnOnce(&mut IfaceBuilder<T>)>;
+
+pub struct CrossWrapper<'a>(&'a mut Crossroads);
+
+impl<'a> CrossWrapper<'a> {
+    pub fn new(cross: &'a mut Crossroads) -> Self {
+        Self(cross)
+    }
+
+    pub fn register<T: Send + Sync + 'static>(
+        &mut self,
+        name: impl Into<String>,
+        token: Registration<T>,
+    ) -> dbus_crossroads::IfaceToken<T> {
+        self.0.register(name.into(), token)
+    }
+
+    pub fn insert<T: Send + Sync + 'static>(&mut self, interfaces: &Vec<IfaceToken<T>>, data: T) {
+        self.0.insert(DBUS_PATH, interfaces, data);
+    }
+}
+
+unsafe impl<'a> Send for CrossWrapper<'a> {}
+unsafe impl<'a> Sync for CrossWrapper<'a> {}

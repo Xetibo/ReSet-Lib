@@ -142,7 +142,7 @@ fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Peekable<
 }
 
 fn is_flag(maybe_flag: &str) -> bool {
-    if maybe_flag.starts_with('-') && maybe_flag.len() > 1
+    if maybe_flag.starts_with('-') && !maybe_flag.starts_with("--") && maybe_flag.len() > 1
         || maybe_flag.starts_with("--") && maybe_flag.len() > 2
     {
         return true;

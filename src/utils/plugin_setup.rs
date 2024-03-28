@@ -11,10 +11,7 @@ use once_cell::sync::Lazy;
 
 use crate::{create_config, write_log_to_file, ErrorLevel, ERROR};
 
-use super::{
-    dbus_utils::DBUS_PATH,
-    plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo},
-};
+use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
 
 pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
@@ -281,8 +278,17 @@ impl<'a> CrossWrapper<'a> {
         self.0.register(name.into(), token)
     }
 
-    pub fn insert<T: Send + Sync + 'static>(&mut self, interfaces: &[IfaceToken<T>], data: T) {
-        self.0.insert(DBUS_PATH, interfaces, data);
+    pub fn insert<T: Send + Sync + 'static>(
+        &mut self,
+        object_name: impl Into<String>,
+        interfaces: &[IfaceToken<T>],
+        data: T,
+    ) {
+        self.0.insert(
+            "/org/Xebito/ReSet/Plugins/".to_string() + &object_name.into(),
+            interfaces,
+            data,
+        );
     }
 }
 

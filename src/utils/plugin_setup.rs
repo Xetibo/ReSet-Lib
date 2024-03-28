@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use dbus_crossroads::{Crossroads, IfaceBuilder, IfaceToken};
+use dbus_crossroads::{Crossroads, IfaceToken};
 use libloading::Library;
 use once_cell::sync::Lazy;
 
@@ -266,8 +266,6 @@ impl FrontendPluginFunctions {
 unsafe impl Send for FrontendPluginFunctions {}
 unsafe impl Sync for FrontendPluginFunctions {}
 
-type Registration<T> = Box<dyn FnOnce(&mut IfaceBuilder<T>)>;
-
 pub struct CrossWrapper<'a>(&'a mut Crossroads);
 
 impl<'a> CrossWrapper<'a> {
@@ -278,7 +276,7 @@ impl<'a> CrossWrapper<'a> {
     pub fn register<T: Send + Sync + 'static>(
         &mut self,
         name: impl Into<String>,
-        token: Registration<T>,
+        token: fn(&mut dbus_crossroads::IfaceBuilder<T>),
     ) -> dbus_crossroads::IfaceToken<T> {
         self.0.register(name.into(), token)
     }

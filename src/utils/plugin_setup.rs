@@ -78,13 +78,13 @@ fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {
         for lib in LIBS.iter() {
             let capabilities = get_plugin_capabilities(lib);
             if capabilities.is_none() {
-                break;
+                continue;
             }
             let capabilities = capabilities.unwrap();
             match capabilities.get_implementation() {
                 PluginImplementation::Both => (),
                 PluginImplementation::Backend => (),
-                PluginImplementation::Frontend => break,
+                PluginImplementation::Frontend => continue,
             }
             let dbus_interface: Result<
                 libloading::Symbol<unsafe extern "C" fn(Arc<RwLock<CrossWrapper>>)>, // -> Plugin>,
@@ -131,12 +131,12 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
         for lib in LIBS.iter() {
             let capabilities = get_plugin_capabilities(lib);
             if capabilities.is_none() {
-                break;
+                continue;
             }
             let capabilities = capabilities.unwrap();
             match capabilities.get_implementation() {
                 PluginImplementation::Both => (),
-                PluginImplementation::Backend => break,
+                PluginImplementation::Backend => continue,
                 PluginImplementation::Frontend => (),
             }
             let startup_frontend: Result<

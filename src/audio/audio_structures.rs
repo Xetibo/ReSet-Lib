@@ -27,6 +27,17 @@ pub struct Volume {
     value: u32,
 }
 
+pub trait AudioObject {
+    fn alias(&self) -> String;
+    fn name(&self) -> String;
+    fn volume(&self) -> Vec<u32>;
+    fn index(&self) -> u32;
+    fn channels(&self) -> u16;
+    fn muted(&self) -> bool;
+    fn toggle_muted(&mut self);
+    fn active(&self) -> i32;
+}
+
 impl Volume {
     pub fn from_i32(value: i32) -> Option<Self> {
         match value {
@@ -167,6 +178,40 @@ impl From<&SourceInfo<'_>> for Source {
             muted: value.mute,
             active: value.state as i32,
         }
+    }
+}
+
+impl AudioObject for Source {
+    fn alias(&self) -> String {
+        self.alias.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume
+    }
+
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
+    fn active(&self) -> i32 {
+        self.active
     }
 }
 

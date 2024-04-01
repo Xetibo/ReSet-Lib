@@ -191,7 +191,7 @@ impl AudioObject for Source {
     }
 
     fn volume(&self) -> Vec<u32> {
-        self.volume
+        self.volume.clone()
     }
 
     fn index(&self) -> u32 {

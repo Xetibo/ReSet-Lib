@@ -27,7 +27,7 @@ pub struct Volume {
     value: u32,
 }
 
-pub trait AudioObject {
+pub trait TAudioObject {
     fn alias(&self) -> String;
     fn name(&self) -> String;
     fn volume(&self) -> Vec<u32>;
@@ -36,6 +36,17 @@ pub trait AudioObject {
     fn muted(&self) -> bool;
     fn toggle_muted(&mut self);
     fn active(&self) -> i32;
+}
+
+pub trait TAudioStreamObject {
+    fn index(&self) -> u32;
+    fn name(&self) -> String;
+    fn application_name(&self) -> String;
+    fn audio_object_index(&self) -> u32;
+    fn channels(&self) -> u16;
+    fn volume(&self) -> Vec<u32>;
+    fn muted(&self) -> bool;
+    fn corked(&self) -> bool;
 }
 
 impl Volume {
@@ -181,7 +192,7 @@ impl From<&SourceInfo<'_>> for Source {
     }
 }
 
-impl AudioObject for Source {
+impl TAudioObject for Source {
     fn alias(&self) -> String {
         self.alias.clone()
     }
@@ -295,7 +306,7 @@ impl From<&SinkInfo<'_>> for Sink {
     }
 }
 
-impl AudioObject for Sink {
+impl TAudioObject for Sink {
     fn alias(&self) -> String {
         self.alias.clone()
     }
@@ -409,6 +420,40 @@ impl From<&SinkInputInfo<'_>> for InputStream {
     }
 }
 
+impl TAudioStreamObject for InputStream {
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn application_name(&self) -> String {
+        self.application_name.clone()
+    }
+
+    fn audio_object_index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn corked(&self) -> bool {
+        self.corked
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct OutputStream {
     pub index: u32,
@@ -486,6 +531,40 @@ impl From<&SourceOutputInfo<'_>> for OutputStream {
             muted: value.mute,
             corked: value.corked,
         }
+    }
+}
+
+impl TAudioStreamObject for OutputStream {
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn application_name(&self) -> String {
+        self.application_name.clone()
+    }
+
+    fn audio_object_index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn corked(&self) -> bool {
+        self.corked
     }
 }
 

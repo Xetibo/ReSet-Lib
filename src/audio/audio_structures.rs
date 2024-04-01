@@ -295,6 +295,40 @@ impl From<&SinkInfo<'_>> for Sink {
     }
 }
 
+impl AudioObject for Sink {
+    fn alias(&self) -> String {
+        self.alias.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
+    fn active(&self) -> i32 {
+        self.active
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct InputStream {
     pub index: u32,

@@ -46,6 +46,7 @@ pub trait TAudioStreamObject {
     fn channels(&self) -> u16;
     fn volume(&self) -> Vec<u32>;
     fn muted(&self) -> bool;
+    fn toggle_muted(&mut self);
     fn corked(&self) -> bool;
 }
 
@@ -449,6 +450,10 @@ impl TAudioStreamObject for InputStream {
         self.muted
     }
 
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
     fn corked(&self) -> bool {
         self.corked
     }
@@ -561,6 +566,10 @@ impl TAudioStreamObject for OutputStream {
 
     fn muted(&self) -> bool {
         self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
     }
 
     fn corked(&self) -> bool {

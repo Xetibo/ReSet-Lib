@@ -292,19 +292,19 @@ impl dbus::message::SignalArgs for WifiDeviceReset {
     const INTERFACE: &'static str = WIRELESS;
 }
 
-pub trait TAudioObjectEvent<AudioObject: TAudioObject> {
+pub trait TAudioObjectEvent<AudioObject: TAudioObject>: Send + Sync + 'static {
     fn object(&self) -> AudioObject;
     fn object_move(self) -> AudioObject;
     fn object_ref(&self) -> &AudioObject;
 }
 
-pub trait TAudioStreamEvent<AudioStreamObject: TAudioStreamObject> {
+pub trait TAudioStreamEvent<AudioStreamObject: TAudioStreamObject>: Send + Sync + 'static {
     fn stream(&self) -> AudioStreamObject;
     fn stream_move(self) -> AudioStreamObject;
     fn stream_ref(&self) -> &AudioStreamObject;
 }
 
-pub trait TAudioEventRemoved {
+pub trait TAudioEventRemoved: Send + Sync + 'static {
     fn index(&self) -> u32;
 }
 

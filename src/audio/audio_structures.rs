@@ -27,7 +27,7 @@ pub struct Volume {
     value: u32,
 }
 
-pub trait TAudioObject: Arg + for<'z> Get<'z> + 'static {
+pub trait TAudioObject: Arg + for<'z> Get<'z> + Send + Sync + 'static {
     fn alias(&self) -> String;
     fn name(&self) -> String;
     fn volume(&self) -> Vec<u32>;
@@ -38,7 +38,7 @@ pub trait TAudioObject: Arg + for<'z> Get<'z> + 'static {
     fn active(&self) -> i32;
 }
 
-pub trait TAudioStreamObject: Arg + for<'z> Get<'z> + 'static {
+pub trait TAudioStreamObject: Arg + for<'z> Get<'z> + Send + Sync + 'static {
     fn index(&self) -> u32;
     fn name(&self) -> String;
     fn application_name(&self) -> String;

@@ -4,7 +4,9 @@ use dbus::{
 };
 
 use crate::{
-    audio::audio_structures::{InputStream, OutputStream, Sink, Source},
+    audio::audio_structures::{
+        InputStream, OutputStream, Sink, Source, TAudioObject, TAudioStreamObject,
+    },
     bluetooth::bluetooth_structures::BluetoothDevice,
     network::network_structures::{AccessPoint, WifiDevice},
     utils::dbus_utils::{AUDIO, BLUETOOTH, WIRELESS},
@@ -290,6 +292,22 @@ impl dbus::message::SignalArgs for WifiDeviceReset {
     const INTERFACE: &'static str = WIRELESS;
 }
 
+pub trait TAudioObjectEvent<AudioObject: TAudioObject> {
+    fn object(&self) -> AudioObject;
+    fn object_move(self) -> AudioObject;
+    fn object_ref(&self) -> &AudioObject;
+}
+
+pub trait TAudioStreamEvent<AudioStreamObject: TAudioStreamObject> {
+    fn stream(&self) -> AudioStreamObject;
+    fn stream_move(self) -> AudioStreamObject;
+    fn stream_ref(&self) -> &AudioStreamObject;
+}
+
+pub trait TAudioEventRemoved {
+    fn index(&self) -> u32;
+}
+
 #[derive(Debug)]
 pub struct SinkAdded {
     pub sink: Sink,
@@ -315,6 +333,20 @@ impl dbus::message::SignalArgs for SinkAdded {
 impl GetVal<(Sink,)> for SinkAdded {
     fn get_value(&self) -> (Sink,) {
         (self.sink.clone(),)
+    }
+}
+
+impl TAudioObjectEvent<Sink> for SinkAdded {
+    fn object(&self) -> Sink {
+        self.sink.clone()
+    }
+
+    fn object_move(self) -> Sink {
+        self.sink
+    }
+
+    fn object_ref(&self) -> &Sink {
+        &self.sink
     }
 }
 
@@ -346,6 +378,20 @@ impl GetVal<(Sink,)> for SinkChanged {
     }
 }
 
+impl TAudioObjectEvent<Sink> for SinkChanged {
+    fn object(&self) -> Sink {
+        self.sink.clone()
+    }
+
+    fn object_move(self) -> Sink {
+        self.sink
+    }
+
+    fn object_ref(&self) -> &Sink {
+        &self.sink
+    }
+}
+
 #[derive(Debug)]
 pub struct SinkRemoved {
     pub index: u32,
@@ -371,6 +417,12 @@ impl dbus::message::SignalArgs for SinkRemoved {
 impl GetVal<(u32,)> for SinkRemoved {
     fn get_value(&self) -> (u32,) {
         (self.index,)
+    }
+}
+
+impl TAudioEventRemoved for SinkRemoved {
+    fn index(&self) -> u32 {
+        self.index
     }
 }
 
@@ -402,6 +454,20 @@ impl GetVal<(InputStream,)> for InputStreamAdded {
     }
 }
 
+impl TAudioStreamEvent<InputStream> for InputStreamAdded {
+    fn stream(&self) -> InputStream {
+        self.stream.clone()
+    }
+
+    fn stream_move(self) -> InputStream {
+        self.stream
+    }
+
+    fn stream_ref(&self) -> &InputStream {
+        &self.stream
+    }
+}
+
 #[derive(Debug)]
 pub struct InputStreamChanged {
     pub stream: InputStream,
@@ -422,6 +488,20 @@ impl arg::ReadAll for InputStreamChanged {
 impl dbus::message::SignalArgs for InputStreamChanged {
     const NAME: &'static str = "InputStreamChanged";
     const INTERFACE: &'static str = AUDIO;
+}
+
+impl TAudioStreamEvent<InputStream> for InputStreamChanged {
+    fn stream(&self) -> InputStream {
+        self.stream.clone()
+    }
+
+    fn stream_move(self) -> InputStream {
+        self.stream
+    }
+
+    fn stream_ref(&self) -> &InputStream {
+        &self.stream
+    }
 }
 
 #[derive(Debug)]
@@ -449,6 +529,12 @@ impl dbus::message::SignalArgs for InputStreamRemoved {
 impl GetVal<(u32,)> for InputStreamRemoved {
     fn get_value(&self) -> (u32,) {
         (self.index,)
+    }
+}
+
+impl TAudioEventRemoved for InputStreamRemoved {
+    fn index(&self) -> u32 {
+        self.index
     }
 }
 
@@ -480,6 +566,20 @@ impl GetVal<(Source,)> for SourceAdded {
     }
 }
 
+impl TAudioObjectEvent<Source> for SourceAdded {
+    fn object(&self) -> Source {
+        self.source.clone()
+    }
+
+    fn object_move(self) -> Source {
+        self.source
+    }
+
+    fn object_ref(&self) -> &Source {
+        &self.source
+    }
+}
+
 #[derive(Debug)]
 pub struct SourceChanged {
     pub source: Source,
@@ -505,6 +605,20 @@ impl dbus::message::SignalArgs for SourceChanged {
 impl GetVal<(Source,)> for SourceChanged {
     fn get_value(&self) -> (Source,) {
         (self.source.clone(),)
+    }
+}
+
+impl TAudioObjectEvent<Source> for SourceChanged {
+    fn object(&self) -> Source {
+        self.source.clone()
+    }
+
+    fn object_move(self) -> Source {
+        self.source
+    }
+
+    fn object_ref(&self) -> &Source {
+        &self.source
     }
 }
 
@@ -536,6 +650,12 @@ impl GetVal<(u32,)> for SourceRemoved {
     }
 }
 
+impl TAudioEventRemoved for SourceRemoved {
+    fn index(&self) -> u32 {
+        self.index
+    }
+}
+
 #[derive(Debug)]
 pub struct OutputStreamAdded {
     pub stream: OutputStream,
@@ -564,6 +684,20 @@ impl GetVal<(OutputStream,)> for OutputStreamAdded {
     }
 }
 
+impl TAudioStreamEvent<OutputStream> for OutputStreamAdded {
+    fn stream(&self) -> OutputStream {
+        self.stream.clone()
+    }
+
+    fn stream_move(self) -> OutputStream {
+        self.stream
+    }
+
+    fn stream_ref(&self) -> &OutputStream {
+        &self.stream
+    }
+}
+
 #[derive(Debug)]
 pub struct OutputStreamChanged {
     pub stream: OutputStream,
@@ -584,6 +718,20 @@ impl arg::ReadAll for OutputStreamChanged {
 impl dbus::message::SignalArgs for OutputStreamChanged {
     const NAME: &'static str = "OutputStreamChanged";
     const INTERFACE: &'static str = AUDIO;
+}
+
+impl TAudioStreamEvent<OutputStream> for OutputStreamChanged {
+    fn stream(&self) -> OutputStream {
+        self.stream.clone()
+    }
+
+    fn stream_move(self) -> OutputStream {
+        self.stream
+    }
+
+    fn stream_ref(&self) -> &OutputStream {
+        &self.stream
+    }
 }
 
 #[derive(Debug)]
@@ -611,6 +759,12 @@ impl dbus::message::SignalArgs for OutputStreamRemoved {
 impl GetVal<(u32,)> for OutputStreamRemoved {
     fn get_value(&self) -> (u32,) {
         (self.index,)
+    }
+}
+
+impl TAudioEventRemoved for OutputStreamRemoved {
+    fn index(&self) -> u32 {
+        self.index
     }
 }
 

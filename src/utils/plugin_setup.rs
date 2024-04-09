@@ -195,7 +195,7 @@ fn get_plugin_capabilities(lib: &Library) -> Option<PluginCapabilities> {
 
 #[allow(improper_ctypes_definitions)]
 pub struct BackendPluginFunctions {
-    pub capabilities: Vec<&'static str>,
+    pub capabilities: (Vec<&'static str>, bool),
     pub startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
@@ -206,7 +206,7 @@ pub struct BackendPluginFunctions {
 #[allow(improper_ctypes_definitions)]
 impl BackendPluginFunctions {
     pub fn new(
-        capabilities: Vec<&'static str>,
+        capabilities: (Vec<&'static str>, bool),
         backend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,

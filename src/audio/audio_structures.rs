@@ -27,6 +27,29 @@ pub struct Volume {
     value: u32,
 }
 
+pub trait TAudioObject: Arg + for<'z> Get<'z> + Send + Sync + 'static {
+    fn alias(&self) -> String;
+    fn name(&self) -> String;
+    fn volume(&self) -> Vec<u32>;
+    fn index(&self) -> u32;
+    fn channels(&self) -> u16;
+    fn muted(&self) -> bool;
+    fn toggle_muted(&mut self);
+    fn active(&self) -> i32;
+}
+
+pub trait TAudioStreamObject: Arg + for<'z> Get<'z> + Send + Sync + 'static {
+    fn index(&self) -> u32;
+    fn name(&self) -> String;
+    fn application_name(&self) -> String;
+    fn audio_object_index(&self) -> u32;
+    fn channels(&self) -> u16;
+    fn volume(&self) -> Vec<u32>;
+    fn muted(&self) -> bool;
+    fn toggle_muted(&mut self);
+    fn corked(&self) -> bool;
+}
+
 impl Volume {
     pub fn from_i32(value: i32) -> Option<Self> {
         match value {
@@ -170,6 +193,40 @@ impl From<&SourceInfo<'_>> for Source {
     }
 }
 
+impl TAudioObject for Source {
+    fn alias(&self) -> String {
+        self.alias.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
+    fn active(&self) -> i32 {
+        self.active
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Sink {
     pub index: u32,
@@ -247,6 +304,40 @@ impl From<&SinkInfo<'_>> for Sink {
             muted: value.mute,
             active: value.state as i32,
         }
+    }
+}
+
+impl TAudioObject for Sink {
+    fn alias(&self) -> String {
+        self.alias.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
+    fn active(&self) -> i32 {
+        self.active
     }
 }
 
@@ -330,6 +421,44 @@ impl From<&SinkInputInfo<'_>> for InputStream {
     }
 }
 
+impl TAudioStreamObject for InputStream {
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn application_name(&self) -> String {
+        self.application_name.clone()
+    }
+
+    fn audio_object_index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
+    fn corked(&self) -> bool {
+        self.corked
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct OutputStream {
     pub index: u32,
@@ -407,6 +536,44 @@ impl From<&SourceOutputInfo<'_>> for OutputStream {
             muted: value.mute,
             corked: value.corked,
         }
+    }
+}
+
+impl TAudioStreamObject for OutputStream {
+    fn index(&self) -> u32 {
+        self.index
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn application_name(&self) -> String {
+        self.application_name.clone()
+    }
+
+    fn audio_object_index(&self) -> u32 {
+        self.index
+    }
+
+    fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    fn volume(&self) -> Vec<u32> {
+        self.volume.clone()
+    }
+
+    fn muted(&self) -> bool {
+        self.muted
+    }
+
+    fn toggle_muted(&mut self) {
+        self.muted = !self.muted;
+    }
+
+    fn corked(&self) -> bool {
+        self.corked
     }
 }
 

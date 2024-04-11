@@ -206,7 +206,7 @@ pub struct BackendPluginFunctions {
 #[allow(improper_ctypes_definitions)]
 impl BackendPluginFunctions {
     pub fn new(
-        capabilities: Vec<&'static str>,
+        capabilities: (Vec<&'static str>, bool),
         backend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
@@ -214,7 +214,7 @@ impl BackendPluginFunctions {
         tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
     ) -> Self {
         Self {
-            capabilities,
+            capabilities: capabilities.0,
             startup: backend_startup,
             shutdown,
             name,
@@ -230,7 +230,7 @@ unsafe impl Sync for BackendPluginFunctions {}
 
 #[allow(improper_ctypes_definitions)]
 pub struct FrontendPluginFunctions {
-    pub capabilities: Vec<&'static str>,
+    pub capabilities: (Vec<&'static str>, bool),
     pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_data:
@@ -241,7 +241,7 @@ pub struct FrontendPluginFunctions {
 #[allow(improper_ctypes_definitions)]
 impl FrontendPluginFunctions {
     pub fn new(
-        capabilities: Vec<&'static str>,
+        capabilities: (Vec<&'static str>, bool),
         frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_data: libloading::Symbol<

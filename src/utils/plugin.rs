@@ -15,18 +15,22 @@ pub enum PluginImplementation {
 }
 
 #[repr(C)]
-pub struct PluginCapabilities(Vec<&'static str>, PluginImplementation);
+pub struct PluginCapabilities(Vec<&'static str>, bool, PluginImplementation);
 
 impl PluginCapabilities {
-    pub fn get_capabilities(&self) -> Vec<&'static str> {
-        self.0.clone()
+    pub fn get_capabilities(&self) -> (Vec<&'static str>, bool) {
+        (self.0.clone(), self.1)
     }
     pub fn get_implementation(&self) -> &PluginImplementation {
-        &self.1
+        &self.2
     }
 
-    pub fn new(capabilities: Vec<&'static str>, implementation: PluginImplementation) -> Self {
-        Self(capabilities, implementation)
+    pub fn new(
+        capabilities: Vec<&'static str>,
+        requires_backend: bool,
+        implementation: PluginImplementation,
+    ) -> Self {
+        Self(capabilities, requires_backend, implementation)
     }
 }
 

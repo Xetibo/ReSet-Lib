@@ -3,7 +3,7 @@ use std::{fs, io::Read};
 use once_cell::sync::Lazy;
 use toml::Table;
 
-use crate::{utils::macros::ErrorLevel, ERROR};
+use crate::{utils::macros::ErrorLevel, ERROR, write_log_to_file};
 
 pub static mut CONFIG_STRING: &str = "~/.config/reset/ReSet.toml";
 pub const CONFIG: Lazy<Table> = Lazy::new(parse_config);

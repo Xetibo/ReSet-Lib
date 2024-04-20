@@ -3,16 +3,18 @@ use std::{fs, io::Read};
 use once_cell::sync::Lazy;
 use toml::Table;
 
-use crate::{utils::macros::ErrorLevel, ERROR, write_log_to_file};
+use crate::{utils::macros::ErrorLevel, write_log_to_file, ERROR};
 
-pub static mut CONFIG_STRING: &str = "~/.config/reset/ReSet.toml";
+pub static mut CONFIG_STRING: &str = "~/reset/ReSet.toml";
+#[allow(clippy::declare_interior_mutable_const)]
 pub const CONFIG: Lazy<Table> = Lazy::new(parse_config);
 
 pub fn parse_config() -> Table {
     unsafe {
-        let config_file = fs::File::options().write(false).open(CONFIG_STRING);
+        let config_file = fs::File::open(CONFIG_STRING);
         if config_file.is_err() {
             ERROR!("Could not write config file", ErrorLevel::Recoverable);
+            return Table::new();
         }
         let mut config_string = String::from("");
         let err = config_file
@@ -21,6 +23,7 @@ pub fn parse_config() -> Table {
             .is_err();
         if err {
             ERROR!("Could not read config file", ErrorLevel::Recoverable);
+            return Table::new();
         }
         config_string.parse::<Table>().expect("Config has errors")
     }

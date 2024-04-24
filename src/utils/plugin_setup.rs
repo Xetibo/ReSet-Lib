@@ -2,7 +2,7 @@ use std::{
     fs::create_dir,
     io::ErrorKind,
     path::PathBuf,
-    sync::{Arc, RwLock},
+    sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
 use dbus_crossroads::{Crossroads, IfaceToken};
@@ -13,6 +13,7 @@ use crate::{create_config, write_log_to_file, ErrorLevel, ERROR};
 
 use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
 
+pub static LIBS_LOADED: AtomicBool = AtomicBool::new(false);
 pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
     setup_frontend_plugins()
@@ -40,6 +41,9 @@ static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
 };
 
 static SETUP_LIBS: fn() = || {
+    if LIBS_LOADED.load(std::sync::atomic::Ordering::SeqCst) {
+        return;
+    }
     let read_dir: fn(PathBuf) = |dir: PathBuf| {
         let plugin_dir = dir.read_dir().expect("Could not read directory");
         plugin_dir.for_each(|plugin| {

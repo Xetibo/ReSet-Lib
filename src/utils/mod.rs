@@ -4,3 +4,4 @@ pub mod macros;
 pub mod plugin;
 pub mod plugin_setup;
 pub mod variant;
+pub mod config;

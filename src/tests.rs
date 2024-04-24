@@ -27,9 +27,9 @@ fn test_custom_config() {
         String::from("--config"),
         String::from("test.txt"),
     ];
-    let flags = parse_flags(&command_flags);
+    let flags = parse_flags(command_flags);
     let string = "test.txt".to_string();
-    let copy = Flags(vec![Flag::ConfigDir(&string)]);
+    let copy = Flags(vec![Flag::ConfigDir(string)]);
     assert!(!flags.0.is_empty());
     assert_eq!(flags.0.len(), copy.0.len());
     let impossible = String::from("impossible");
@@ -55,7 +55,7 @@ fn test_custom_config_non_existing() {
         String::from("--config"),
         String::from("test.txt"),
     ];
-    let flags = parse_flags(&command_flags);
+    let flags = parse_flags(command_flags);
     assert!(flags.0.is_empty());
 }
 
@@ -74,7 +74,7 @@ fn test_custom_flag() {
         String::from("--other"),
         String::from("othervalue"),
     ];
-    let flags = parse_flags(&command_flags);
+    let flags = parse_flags(command_flags);
     let matched_name: &String;
     let matched_value: &Variant;
     let failed_string = String::from("failed");
@@ -105,7 +105,7 @@ fn test_custom_error_flag() {
     use crate::parse_flags;
 
     let command_flags = vec![String::from("binary name"), String::from("notaflag")];
-    let flags = parse_flags(&command_flags);
+    let flags = parse_flags(command_flags);
     assert!(flags.0.is_empty());
 }
 

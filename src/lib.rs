@@ -49,7 +49,7 @@ pub fn create_config(project_organization: &str, project_name: &str) -> Option<P
     Some(config_dir.join(""))
 }
 
-pub fn parse_flags(flags: &[String]) -> Flags {
+pub fn parse_flags(flags: Vec<String>) -> Flags {
     let mut parsed_flags = Flags(Vec::new());
     let mut iter = flags.iter().peekable();
     iter.next().expect("Did not recieve a binary name!");
@@ -68,7 +68,7 @@ pub fn parse_flags(flags: &[String]) -> Flags {
     parsed_flags
 }
 
-fn handle_config<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
+fn handle_config(flags: &mut Flags, file: Option<&String>) {
     if file.is_none() {
         ERROR!("No file provided!", ErrorLevel::Critical);
         return;
@@ -84,10 +84,10 @@ fn handle_config<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
         ERROR!("Provided path is not a file!", ErrorLevel::Critical);
         return;
     }
-    flags.0.push(Flag::ConfigDir(path));
+    flags.0.push(Flag::ConfigDir(path.clone()));
 }
 
-fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
+fn handle_plugins(flags: &mut Flags, file: Option<&String>) {
     if file.is_none() {
         ERROR!("No directory provided!", ErrorLevel::Critical);
         return;
@@ -103,10 +103,10 @@ fn handle_plugins<'a>(flags: &mut Flags<'a>, file: Option<&'a String>) {
         ERROR!("Provided path is not a directory!", ErrorLevel::Critical);
         return;
     }
-    flags.0.push(Flag::PluginDir(path));
+    flags.0.push(Flag::PluginDir(path.clone()));
 }
 
-fn handle_other<'a>(flags: &mut Flags<'a>, flag: &'a str, values: &mut Peekable<Iter<String>>) {
+fn handle_other(flags: &mut Flags, flag: &str, values: &mut Peekable<Iter<String>>) {
     if !is_flag(flag) {
         ERROR!(
             format!("Expected a flag, got a regular string instead: {}", flag),

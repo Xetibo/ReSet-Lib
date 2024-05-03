@@ -41,3 +41,18 @@ pub fn parse_config() -> Table {
         config_string.parse::<Table>().expect("Config has errors")
     }
 }
+
+pub fn get_config_value<T>(
+    category: &'static str,
+    entry: &'static str,
+    callback: fn(&toml::value::Value) -> T,
+) -> bool {
+    #[allow(clippy::borrow_interior_mutable_const)]
+    if let Some(monitor_config) = CONFIG.get(category) {
+        if let Some(value) = monitor_config.get(entry) {
+            (callback(value));
+            return true;
+        }
+    }
+    false
+}

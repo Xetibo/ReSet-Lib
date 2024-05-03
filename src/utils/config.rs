@@ -42,10 +42,10 @@ pub fn parse_config() -> Table {
     }
 }
 
-pub fn get_config_value<T>(
+pub fn get_config_value<T, F: Fn(&toml::value::Value) -> T>(
     category: &'static str,
     entry: &'static str,
-    callback: fn(&toml::value::Value) -> T,
+    callback: F,
 ) -> bool {
     #[allow(clippy::borrow_interior_mutable_const)]
     if let Some(monitor_config) = CONFIG.get(category) {

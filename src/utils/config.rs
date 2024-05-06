@@ -3,7 +3,9 @@ use std::{fs, io::Read};
 use once_cell::sync::Lazy;
 use toml::Table;
 
-use crate::{utils::macros::ErrorLevel, write_log_to_file, ERROR};
+use crate::ERROR;
+#[cfg(debug_assertions)]
+use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
 pub static mut CONFIG_STRING: Lazy<String> = Lazy::new(|| {
     let base = directories_next::ProjectDirs::from("org", "Xetibo", "ReSet");
@@ -40,4 +42,19 @@ pub fn parse_config() -> Table {
         }
         config_string.parse::<Table>().expect("Config has errors")
     }
+}
+
+pub fn get_config_value<T, F: Fn(&toml::value::Value) -> T>(
+    category: &'static str,
+    entry: &'static str,
+    callback: F,
+) -> bool {
+    #[allow(clippy::borrow_interior_mutable_const)]
+    if let Some(monitor_config) = CONFIG.get(category) {
+        if let Some(value) = monitor_config.get(entry) {
+            (callback(value));
+            return true;
+        }
+    }
+    false
 }

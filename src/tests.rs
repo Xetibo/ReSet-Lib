@@ -4,6 +4,8 @@ use serial_test::serial;
 #[cfg(test)]
 use crate::utils::plugin::plugin_tests;
 #[cfg(test)]
+use crate::{utils::macros::ErrorLevel, ERROR, LOG, write_log_to_file};
+#[cfg(test)]
 use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
 
 #[test]
@@ -130,4 +132,10 @@ fn test_plug_assert_macros() {
     assert!(test().is_ok());
     let test = || plug_assert_eq!(1, 10);
     assert!(test().is_err());
+}
+
+#[test]
+fn test_log_macros() {
+    ERROR!("test error", ErrorLevel::Recoverable);
+    LOG!("test log");
 }

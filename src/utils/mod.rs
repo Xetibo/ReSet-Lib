@@ -5,3 +5,4 @@ pub mod plugin;
 pub mod plugin_setup;
 pub mod variant;
 pub mod config;
+pub mod gtk;

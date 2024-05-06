@@ -9,7 +9,9 @@ use dbus_crossroads::{Crossroads, IfaceToken};
 use libloading::Library;
 use once_cell::sync::Lazy;
 
-use crate::{create_config, write_log_to_file, ErrorLevel, ERROR};
+use crate::{create_config, ERROR};
+#[cfg(debug_assertions)]
+use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
 use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
 

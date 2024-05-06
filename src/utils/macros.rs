@@ -5,7 +5,7 @@ macro_rules! LOG {
 }
 
 #[macro_export]
-#[cfg(debug_assertions)]
+#[cfg(any(debug_assertions, test))]
 macro_rules! LOG {
     ($message:expr) => {{
         write_log_to_file!($message);
@@ -16,11 +16,12 @@ macro_rules! LOG {
 #[macro_export]
 #[cfg(not(debug_assertions))]
 macro_rules! ERROR {
-    ($message:expr, $level:expr ) => {{}};
+    ($message:expr, $level:expr ) => {{
+    }};
 }
 
 #[macro_export]
-#[cfg(debug_assertions)]
+#[cfg(any(debug_assertions, test))]
 macro_rules! ERROR {
     ($message:expr, $level:expr) => {{
         write_log_to_file!($message);
@@ -31,6 +32,7 @@ macro_rules! ERROR {
         };
     }};
 }
+
 #[macro_export]
 macro_rules! write_log_to_file {
     ($message:expr) => {{

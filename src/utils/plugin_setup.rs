@@ -76,6 +76,7 @@ static SETUP_LIBS: fn() = || {
             read_dir(plugin_dir)
         }
     }
+    LIBS_LOADED.store(true, std::sync::atomic::Ordering::SeqCst);
 };
 
 fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {

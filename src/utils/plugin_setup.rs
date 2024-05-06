@@ -1,5 +1,6 @@
 use std::{
     fs::create_dir,
+    hint::spin_loop,
     io::ErrorKind,
     path::PathBuf,
     sync::{atomic::AtomicBool, Arc, RwLock},
@@ -16,6 +17,7 @@ use crate::{utils::macros::ErrorLevel, write_log_to_file};
 use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
 
 pub static LIBS_LOADED: AtomicBool = AtomicBool::new(false);
+pub static LIBS_LOADING: AtomicBool = AtomicBool::new(false);
 pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
     setup_frontend_plugins()
@@ -43,9 +45,13 @@ static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
 };
 
 static SETUP_LIBS: fn() = || {
-    if LIBS_LOADED.load(std::sync::atomic::Ordering::SeqCst) {
+    if LIBS_LOADING.load(std::sync::atomic::Ordering::SeqCst) {
+        while !LIBS_LOADED.load(std::sync::atomic::Ordering::SeqCst) {
+            spin_loop();
+        }
         return;
     }
+    LIBS_LOADING.store(true, std::sync::atomic::Ordering::SeqCst);
     let read_dir: fn(PathBuf) = |dir: PathBuf| {
         let plugin_dir = dir.read_dir().expect("Could not read directory");
         plugin_dir.for_each(|plugin| {

@@ -3,7 +3,9 @@ use std::{fs, io::Read};
 use once_cell::sync::Lazy;
 use toml::Table;
 
-use crate::{utils::macros::ErrorLevel, write_log_to_file, ERROR};
+use crate::ERROR;
+#[cfg(debug_assertions)]
+use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
 pub static mut CONFIG_STRING: Lazy<String> = Lazy::new(|| {
     let base = directories_next::ProjectDirs::from("org", "Xetibo", "ReSet");

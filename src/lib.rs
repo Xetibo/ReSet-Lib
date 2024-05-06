@@ -9,6 +9,7 @@ use utils::{
     variant::{Empty, TVariant},
 };
 
+#[cfg(debug_assertions)]
 use crate::utils::macros::ErrorLevel;
 
 pub mod audio;

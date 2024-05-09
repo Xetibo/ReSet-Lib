@@ -182,3 +182,28 @@ pub struct SidebarInfo {
     pub icon_name: &'static str,
     pub parent: Option<&'static str>,
 }
+
+#[derive(Debug)]
+pub struct PluginInstantiationError(&'static str);
+
+impl PluginInstantiationError {
+    pub fn message(&self) -> &'static str {
+        self.0
+    }
+
+    pub fn new(message: &'static str) -> Self {
+        Self(message)
+    }
+}
+
+impl Default for PluginInstantiationError {
+    fn default() -> Self {
+        Self("Environment not supported")
+    }
+}
+
+impl Display for PluginInstantiationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0)
+    }
+}

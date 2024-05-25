@@ -16,8 +16,7 @@ macro_rules! LOG {
 #[macro_export]
 #[cfg(not(debug_assertions))]
 macro_rules! ERROR {
-    ($message:expr, $level:expr ) => {{
-    }};
+    ($message:expr, $level:expr ) => {{}};
 }
 
 #[macro_export]

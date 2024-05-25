@@ -4,7 +4,7 @@ use serial_test::serial;
 #[cfg(test)]
 use crate::utils::plugin::plugin_tests;
 #[cfg(test)]
-use crate::{utils::macros::ErrorLevel, ERROR, LOG, write_log_to_file};
+use crate::{utils::macros::ErrorLevel, write_log_to_file, ERROR, LOG};
 #[cfg(test)]
 use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
 

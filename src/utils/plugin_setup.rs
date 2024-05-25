@@ -9,12 +9,16 @@ use std::{
 use dbus_crossroads::{Crossroads, IfaceToken};
 use libloading::Library;
 use once_cell::sync::Lazy;
+use toml::Value;
 
 use crate::{create_config, ERROR};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
-use super::plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo};
+use super::{
+    config::CONFIG,
+    plugin::{PluginCapabilities, PluginImplementation, PluginTestFunc, SidebarInfo},
+};
 
 pub static LIBS_LOADED: AtomicBool = AtomicBool::new(false);
 pub static LIBS_LOADING: AtomicBool = AtomicBool::new(false);
@@ -53,9 +57,24 @@ static SETUP_LIBS: fn() = || {
     }
     LIBS_LOADING.store(true, std::sync::atomic::Ordering::SeqCst);
     let read_dir: fn(PathBuf) = |dir: PathBuf| {
+        let binding = CONFIG;
+        let plugins = binding.get("plugins");
+        if plugins.is_none() {
+            return;
+        }
+        let plugins = plugins.unwrap().as_array();
+        if plugins.is_none() {
+            return;
+        }
+        let plugins = plugins.unwrap();
         let plugin_dir = dir.read_dir().expect("Could not read directory");
         plugin_dir.for_each(|plugin| {
             if let Ok(file) = plugin {
+                if !plugins.contains(&Value::String(String::from(
+                    file.file_name().to_str().unwrap_or(""),
+                ))) {
+                    return;
+                }
                 unsafe {
                     let path = file.path();
                     let lib = libloading::Library::new(&path);

@@ -95,12 +95,12 @@ static SETUP_LIBS: fn() = || {
     };
     #[allow(clippy::borrow_interior_mutable_const)]
     let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
-        let config = config.to_string();
-        if config.is_empty() {
+        let config = config.as_str();
+        if config.is_none() {
             SETUP_PLUGIN_DIR()
         } else {
             dbg!(&config);
-            let maybe_dir = PathBuf::from(config.to_string());
+            let maybe_dir = PathBuf::from(config.unwrap());
             if maybe_dir.is_dir() {
                 Some(maybe_dir)
             } else {

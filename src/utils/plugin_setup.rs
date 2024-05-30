@@ -22,12 +22,18 @@ use super::{
 
 pub static LIBS_LOADED: AtomicBool = AtomicBool::new(false);
 pub static LIBS_LOADING: AtomicBool = AtomicBool::new(false);
-pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
-    SETUP_LIBS();
+pub static mut FRONTEND_PLUGINS: Lazy<
+    Vec<FrontendPluginFunctions>,
+    fn(Option<&str>) -> Vec<FrontendPluginFunctions>,
+> = Lazy::new(|path: Option<&str>| {
+    SETUP_LIBS(path);
     setup_frontend_plugins()
 });
-pub static mut BACKEND_PLUGINS: Lazy<Vec<BackendPluginFunctions>> = Lazy::new(|| {
-    SETUP_LIBS();
+pub static mut BACKEND_PLUGINS: Lazy<
+    Vec<BackendPluginFunctions>,
+    fn(Option<&str>) -> Vec<BackendPluginFunctions>,
+> = Lazy::new(|path: Option<&str>| {
+    SETUP_LIBS(path);
     setup_backend_plugins()
 });
 static mut LIBS: Vec<libloading::Library> = Vec::new();
@@ -48,7 +54,7 @@ static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
     }
 };
 
-static SETUP_LIBS: fn() = || {
+static SETUP_LIBS: fn(path: Option<&str>) = |path| {
     if LIBS_LOADING.load(std::sync::atomic::Ordering::SeqCst) {
         while !LIBS_LOADED.load(std::sync::atomic::Ordering::SeqCst) {
             spin_loop();
@@ -93,7 +99,11 @@ static SETUP_LIBS: fn() = || {
             }
         });
     };
-    let plugin_dir = SETUP_PLUGIN_DIR();
+    let plugin_dir = if let Some(path) = path {
+        Some(PathBuf::from(path))
+    } else {
+        SETUP_PLUGIN_DIR()
+    };
     unsafe {
         if PLUGIN_DIR.is_dir() {
             read_dir(PLUGIN_DIR.clone());

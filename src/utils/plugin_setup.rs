@@ -93,6 +93,7 @@ static SETUP_LIBS: fn() = || {
             }
         });
     };
+    #[allow(clippy::borrow_interior_mutable_const)]
     let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
         let config = config.to_string();
         if config.is_empty() {

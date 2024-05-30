@@ -31,7 +31,7 @@ pub static mut BACKEND_PLUGINS: Lazy<Vec<BackendPluginFunctions>> = Lazy::new(||
     setup_backend_plugins()
 });
 static mut LIBS: Vec<libloading::Library> = Vec::new();
-static mut PLUGIN_DIR: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(""));
+pub static mut PLUGIN_DIR: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(""));
 
 static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
     let config = create_config("Xetibo", "ReSet").expect("Could not create config directory");

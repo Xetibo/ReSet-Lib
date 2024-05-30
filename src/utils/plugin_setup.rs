@@ -99,6 +99,7 @@ static SETUP_LIBS: fn() = || {
         if config.is_empty() {
             SETUP_PLUGIN_DIR()
         } else {
+            dbg!(&config);
             let maybe_dir = PathBuf::from(config.to_string());
             if maybe_dir.is_dir() {
                 Some(maybe_dir)

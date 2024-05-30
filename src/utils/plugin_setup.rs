@@ -94,7 +94,12 @@ static SETUP_LIBS: fn() = || {
         });
     };
     let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
-        Some(PathBuf::from(config.to_string()))
+        let config = config.to_string();
+        if config.is_empty() {
+            SETUP_PLUGIN_DIR()
+        } else {
+            Some(PathBuf::from(config.to_string()))
+        }
     } else {
         SETUP_PLUGIN_DIR()
     };

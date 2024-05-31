@@ -1,7 +1,7 @@
-#![feature(trait_upcasting)]
-#![feature(unsized_fn_params)]
-#![feature(unboxed_closures)]
-#![feature(fn_traits)]
+ #![feature(trait_upcasting)]
+ #![feature(unsized_fn_params)]
+ #![feature(unboxed_closures)]
+ #![feature(fn_traits)]
 use directories_next as dirs;
 use std::{fmt, fs, iter::Peekable, path::PathBuf, slice::Iter};
 use utils::{

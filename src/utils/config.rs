@@ -3,23 +3,18 @@ use std::{fs, io::Read};
 use once_cell::sync::Lazy;
 use toml::Table;
 
-use crate::{ERROR, LOG};
+use crate::{create_config, ERROR, LOG};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
 pub static mut CONFIG_STRING: Lazy<String> = Lazy::new(|| {
-    let base = xdg::BaseDirectories::new();
-    if let Ok(base) = base {
-        return base
-            .get_config_home()
-            .join("ReSet.toml")
-            .to_str()
-            .unwrap()
-            .to_string();
+    let config = create_config("reset");
+    if let Some(config) = config {
+        config.to_str().unwrap().to_string()
     } else {
         ERROR!("Failed to get user home", ErrorLevel::Critical);
+        String::from("")
     }
-    String::from("")
 });
 #[allow(clippy::declare_interior_mutable_const)]
 pub const CONFIG: Lazy<Table> = Lazy::new(parse_config);

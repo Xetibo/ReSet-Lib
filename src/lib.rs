@@ -1,4 +1,5 @@
 #![feature(trait_upcasting)]
+#![feature(string_remove_matches)]
 #![feature(unsized_fn_params)]
 #![feature(unboxed_closures)]
 #![feature(fn_traits)]
@@ -7,7 +8,6 @@ use utils::{
     flags::{Flag, Flags},
     variant::{Empty, TVariant},
 };
-use xdg;
 
 #[cfg(debug_assertions)]
 use crate::utils::macros::ErrorLevel;
@@ -56,7 +56,11 @@ pub fn create_config(project_name: &str) -> Option<PathBuf> {
         }
         config_file = Some(res.unwrap());
     }
-    Some(config_file.unwrap())
+    let config_file = config_file.unwrap();
+    // Hacky flatpak workaround
+    let mut hacked_path = config_file.to_str().unwrap().to_string();
+    hacked_path.remove_matches("./var/app");
+    Some(PathBuf::from(hacked_path))
 }
 
 pub fn parse_flags(flags: Vec<String>) -> Flags {

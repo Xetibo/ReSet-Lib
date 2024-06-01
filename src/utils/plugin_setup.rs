@@ -11,7 +11,7 @@ use libloading::Library;
 use once_cell::sync::Lazy;
 use toml::Value;
 
-use crate::{create_config, ERROR};
+use crate::{create_config, ERROR, LOG};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
@@ -60,10 +60,12 @@ static SETUP_LIBS: fn() = || {
         let binding = CONFIG;
         let plugins = binding.get("plugins");
         if plugins.is_none() {
+            LOG!("No plugins entry found in config");
             return;
         }
         let plugins = plugins.unwrap().as_array();
         if plugins.is_none() {
+            ERROR!("Wrong config, please write plugins entry as array of strings: e.g [\"libyourplugin.so\"]", ErrorLevel::PartialBreakage);
             return;
         }
         let plugins = plugins.unwrap();

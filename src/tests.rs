@@ -16,6 +16,20 @@ fn test_config_dir() {
 }
 
 #[test]
+fn test_flatpak_fix() {
+    use crate::flatpak_fix;
+    use std::path::PathBuf;
+    let flatpak = "/home/something/.var/app/org.Xetibo.ReSet/config/ReSet.toml";
+    assert_eq!(
+        flatpak_fix(PathBuf::from(flatpak))
+            .unwrap()
+            .to_str()
+            .unwrap(),
+        "/home/something/.config/reset/ReSet.toml"
+    );
+}
+
+#[test]
 #[serial]
 fn test_custom_config() {
     use crate::parse_flags;

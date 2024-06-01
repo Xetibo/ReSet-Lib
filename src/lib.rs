@@ -57,11 +57,20 @@ pub fn create_config(project_name: &str) -> Option<PathBuf> {
         config_file = Some(res.unwrap());
     }
     let config_file = config_file.unwrap();
-    // Hacky flatpak workaround
-    let mut hacked_path = config_file.to_str().unwrap().to_string();
-    hacked_path.remove_matches("var/app/org.Xetibo.ReSet/config/ReSet.toml");
-    hacked_path.push_str("config/reset/ReSet.toml");
-    Some(PathBuf::from(hacked_path))
+    flatpak_fix(config_file)
+}
+
+// Hacky flatpak workaround
+pub fn flatpak_fix(path_buf: PathBuf) -> Option<PathBuf> {
+    let hacked_path = path_buf.to_str().unwrap().to_string();
+    if hacked_path.contains("var/app") {
+        Some(PathBuf::from(hacked_path.replace(
+            "var/app/org.Xetibo.ReSet/config/ReSet.toml",
+            "config/reset/ReSet.toml",
+        )))
+    } else {
+        Some(path_buf)
+    }
 }
 
 pub fn parse_flags(flags: Vec<String>) -> Flags {

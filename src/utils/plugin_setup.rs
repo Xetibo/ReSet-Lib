@@ -3,7 +3,7 @@ use std::{
     hint::spin_loop,
     io::ErrorKind,
     path::PathBuf,
-    sync::{Arc, atomic::AtomicBool, RwLock},
+    sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
 use dbus_crossroads::{Crossroads, IfaceToken};
@@ -11,7 +11,7 @@ use libloading::Library;
 use once_cell::sync::Lazy;
 use toml::Value;
 
-use crate::{create_config, ERROR, LOG};
+use crate::{create_config, create_config_directory, ERROR, LOG};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
@@ -34,7 +34,7 @@ static mut LIBS: Vec<libloading::Library> = Vec::new();
 pub static mut PLUGIN_DIR: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(""));
 
 static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
-    let config = create_config("reset").expect("Could not create config directory");
+    let config = create_config_directory("reset").expect("Could not create config directory");
     let plugin_dir = create_dir(config.join("plugins"));
     if let Err(error) = plugin_dir {
         if error.kind() != ErrorKind::AlreadyExists {
@@ -96,7 +96,7 @@ static SETUP_LIBS: fn() = || {
         });
     };
     #[allow(clippy::borrow_interior_mutable_const)]
-        let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
+    let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
         let config = config.as_str();
         if config.is_none() {
             SETUP_PLUGIN_DIR()
@@ -216,11 +216,13 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                 data_frontend,
                 tests_frontend,
             ) {
-                (Ok(frontend_name),
+                (
+                    Ok(frontend_name),
                     Ok(startup_frontend),
                     Ok(shutdown_frontend),
                     Ok(data_frontend),
-                    Ok(tests_frontend)) => {
+                    Ok(tests_frontend),
+                ) => {
                     plugins.push(FrontendPluginFunctions::new(
                         capabilities.get_capabilities(),
                         frontend_name,
@@ -231,19 +233,34 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                     ));
                 }
                 (Err(error), _, _, _, _) => {
-                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                    ERROR!(
+                        format!("Failed to load plugin function: {}", error),
+                        ErrorLevel::PartialBreakage
+                    );
                 }
                 (_, Err(error), _, _, _) => {
-                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                    ERROR!(
+                        format!("Failed to load plugin function: {}", error),
+                        ErrorLevel::PartialBreakage
+                    );
                 }
                 (_, _, Err(error), _, _) => {
-                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                    ERROR!(
+                        format!("Failed to load plugin function: {}", error),
+                        ErrorLevel::PartialBreakage
+                    );
                 }
                 (_, _, _, Err(error), _) => {
-                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                    ERROR!(
+                        format!("Failed to load plugin function: {}", error),
+                        ErrorLevel::PartialBreakage
+                    );
                 }
                 (_, _, _, _, Err(error)) => {
-                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                    ERROR!(
+                        format!("Failed to load plugin function: {}", error),
+                        ErrorLevel::PartialBreakage
+                    );
                 }
             }
         }
@@ -307,7 +324,7 @@ pub struct FrontendPluginFunctions {
     pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_data:
-    libloading::Symbol<'static, unsafe extern "C" fn() -> (SidebarInfo, Vec<gtk::Box>)>,
+        libloading::Symbol<'static, unsafe extern "C" fn() -> (SidebarInfo, Vec<gtk::Box>)>,
     pub frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
 }
 

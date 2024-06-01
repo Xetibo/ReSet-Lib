@@ -32,7 +32,7 @@ impl fmt::Display for PathNotFoundError {
     }
 }
 
-pub fn create_config(project_name: &str) -> Option<PathBuf> {
+pub fn create_config_directory(project_name: &str) -> Option<PathBuf> {
     let base_dir = xdg::BaseDirectories::new();
     if base_dir.is_err() {
         ERROR!("Could not get base directories", ErrorLevel::Critical);
@@ -44,6 +44,17 @@ pub fn create_config(project_name: &str) -> Option<PathBuf> {
         ERROR!("Could not create config directory", ErrorLevel::Critical);
         return None;
     }
+    Some(config_dir.unwrap())
+}
+
+pub fn create_config(project_name: &str) -> Option<PathBuf> {
+    create_config_directory(project_name);
+    let base_dir = xdg::BaseDirectories::new();
+    if base_dir.is_err() {
+        ERROR!("Could not get base directories", ErrorLevel::Critical);
+        return None;
+    }
+    let base_dir = base_dir.unwrap();
     let mut config_file = base_dir.find_config_file(format!("{}/ReSet.toml", project_name));
     if config_file.is_none() {
         let res = base_dir.place_config_file(format!("{}/ReSet.toml", project_name));

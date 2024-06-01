@@ -12,7 +12,20 @@ use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
 fn test_config_dir() {
     use crate::create_config;
     let project_name = "globiTM";
-    assert!(create_config(project_name).is_some());
+    let config_file = create_config(project_name);
+    assert!(config_file.is_some());
+    let config_file = config_file.unwrap();
+    let config_file = config_file.to_str().unwrap();
+    dbg!(&config_file);
+    assert_eq!(
+        config_file,
+        xdg::BaseDirectories::new()
+            .unwrap()
+            .get_config_home()
+            .join("globiTM/ReSet.toml")
+            .to_str()
+            .unwrap()
+    );
 }
 
 #[test]

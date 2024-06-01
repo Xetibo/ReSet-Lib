@@ -11,9 +11,8 @@ use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
 #[test]
 fn test_config_dir() {
     use crate::create_config;
-    let organization_name = "xetibo";
     let project_name = "globiTM";
-    assert!(create_config(organization_name, project_name).is_some());
+    assert!(create_config(project_name).is_some());
 }
 
 #[test]

@@ -34,7 +34,7 @@ static mut LIBS: Vec<libloading::Library> = Vec::new();
 pub static mut PLUGIN_DIR: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(""));
 
 static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
-    let config = create_config("Xetibo", "ReSet").expect("Could not create config directory");
+    let config = create_config("ReSet").expect("Could not create config directory");
     let plugin_dir = create_dir(config.join("plugins"));
     if let Err(error) = plugin_dir {
         if error.kind() != ErrorKind::AlreadyExists {

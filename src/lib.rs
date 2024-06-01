@@ -1,13 +1,13 @@
- #![feature(trait_upcasting)]
- #![feature(unsized_fn_params)]
- #![feature(unboxed_closures)]
- #![feature(fn_traits)]
-use directories_next as dirs;
+#![feature(trait_upcasting)]
+#![feature(unsized_fn_params)]
+#![feature(unboxed_closures)]
+#![feature(fn_traits)]
 use std::{fmt, fs, iter::Peekable, path::PathBuf, slice::Iter};
 use utils::{
     flags::{Flag, Flags},
     variant::{Empty, TVariant},
 };
+use xdg;
 
 #[cfg(debug_assertions)]
 use crate::utils::macros::ErrorLevel;
@@ -32,22 +32,31 @@ impl fmt::Display for PathNotFoundError {
     }
 }
 
-pub fn create_config(project_organization: &str, project_name: &str) -> Option<PathBuf> {
-    let config_dir = dirs::ProjectDirs::from("org", project_organization, project_name)?;
-    let config_dir = config_dir.config_dir();
-    if !config_dir.exists() {
-        fs::create_dir(config_dir).expect("Could not create directory");
-    }
-    let metadata = fs::metadata(config_dir);
-    if metadata.is_err() {
+pub fn create_config(project_name: &str) -> Option<PathBuf> {
+    let base_dir = xdg::BaseDirectories::new();
+    if base_dir.is_err() {
+        ERROR!("Could not get base directories", ErrorLevel::Critical);
         return None;
     }
-    let config_file = String::from(project_name) + ".toml";
-    let file_path = config_dir.join(config_file);
-    if !file_path.exists() {
-        fs::File::create(&file_path).expect("Could not write config file");
+    let base_dir = base_dir.unwrap();
+    let config_dir = base_dir.create_config_directory(project_name);
+    if config_dir.is_err() {
+        ERROR!("Could not create config directory", ErrorLevel::Critical);
+        return None;
     }
-    Some(config_dir.join(""))
+    let mut config_file = base_dir.find_config_file(format!("{}/ReSet.toml", project_name));
+    if config_file.is_none() {
+        let res = base_dir.place_config_file(format!("{}/ReSet.toml", project_name));
+        if let Err(error) = res {
+            ERROR!(
+                format!("Could not create config file: {}", error),
+                ErrorLevel::Critical
+            );
+            return None;
+        }
+        config_file = Some(res.unwrap());
+    }
+    Some(config_file.unwrap())
 }
 
 pub fn parse_flags(flags: Vec<String>) -> Flags {

@@ -8,10 +8,10 @@ use crate::{ERROR, LOG};
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
 pub static mut CONFIG_STRING: Lazy<String> = Lazy::new(|| {
-    let base = directories_next::ProjectDirs::from("org", "Xetibo", "ReSet");
-    if let Some(base) = base {
+    let base = xdg::BaseDirectories::new();
+    if let Ok(base) = base {
         return base
-            .config_dir()
+            .get_config_home()
             .join("ReSet.toml")
             .to_str()
             .unwrap()

@@ -3,7 +3,7 @@ use std::{fs, io::Read};
 use once_cell::sync::Lazy;
 use toml::Table;
 
-use crate::ERROR;
+use crate::{ERROR, LOG};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
@@ -27,6 +27,7 @@ pub const CONFIG: Lazy<Table> = Lazy::new(parse_config);
 pub fn parse_config() -> Table {
     unsafe {
         let config_file = fs::File::open(CONFIG_STRING.as_str());
+        LOG!(format!("Config file: {}", CONFIG_STRING.as_str()));
         if config_file.is_err() {
             ERROR!("Could not write config file", ErrorLevel::Recoverable);
             return Table::new();
@@ -40,6 +41,7 @@ pub fn parse_config() -> Table {
             ERROR!("Could not read config file", ErrorLevel::Recoverable);
             return Table::new();
         }
+        LOG!(format!("Config file content: {}", config_string));
         config_string.parse::<Table>().expect("Config has errors")
     }
 }

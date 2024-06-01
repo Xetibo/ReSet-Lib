@@ -32,7 +32,7 @@ fn test_config_dir() {
 fn test_flatpak_fix() {
     use crate::flatpak_fix;
     use std::path::PathBuf;
-    let flatpak = "/home/something/.var/app/org.Xetibo.ReSet/config/ReSet.toml";
+    let flatpak = "/home/something/.var/app/org.Xetibo.ReSet/config/reset/ReSet.toml";
     assert_eq!(
         flatpak_fix(PathBuf::from(flatpak))
             .unwrap()

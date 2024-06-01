@@ -3,7 +3,7 @@ use std::{
     hint::spin_loop,
     io::ErrorKind,
     path::PathBuf,
-    sync::{atomic::AtomicBool, Arc, RwLock},
+    sync::{Arc, atomic::AtomicBool, RwLock},
 };
 
 use dbus_crossroads::{Crossroads, IfaceToken};
@@ -94,7 +94,7 @@ static SETUP_LIBS: fn() = || {
         });
     };
     #[allow(clippy::borrow_interior_mutable_const)]
-    let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
+        let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
         let config = config.as_str();
         if config.is_none() {
             SETUP_PLUGIN_DIR()
@@ -206,27 +206,43 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                 libloading::Symbol<unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
                 libloading::Error,
             > = lib.get(b"frontend_tests");
-            if let (
-                Ok(frontend_name),
-                Ok(startup_frontend),
-                Ok(shutdown_frontend),
-                Ok(data_frontend),
-                Ok(tests_frontend),
-            ) = (
+
+            match (
                 frontend_name,
                 startup_frontend,
                 shutdown_frontend,
                 data_frontend,
                 tests_frontend,
             ) {
-                plugins.push(FrontendPluginFunctions::new(
-                    capabilities.get_capabilities(),
-                    frontend_name,
-                    startup_frontend,
-                    shutdown_frontend,
-                    data_frontend,
-                    tests_frontend,
-                ));
+                (Ok(frontend_name),
+                    Ok(startup_frontend),
+                    Ok(shutdown_frontend),
+                    Ok(data_frontend),
+                    Ok(tests_frontend)) => {
+                    plugins.push(FrontendPluginFunctions::new(
+                        capabilities.get_capabilities(),
+                        frontend_name,
+                        startup_frontend,
+                        shutdown_frontend,
+                        data_frontend,
+                        tests_frontend,
+                    ));
+                }
+                (Err(error), _, _, _, _) => {
+                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                }
+                (_, Err(error), _, _, _) => {
+                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                }
+                (_, _, Err(error), _, _) => {
+                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                }
+                (_, _, _, Err(error), _) => {
+                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                }
+                (_, _, _, _, Err(error)) => {
+                    ERROR!(format!("Failed to load plugin function: {}", error), ErrorLevel::PartialBreakage);
+                }
             }
         }
     }
@@ -289,7 +305,7 @@ pub struct FrontendPluginFunctions {
     pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_data:
-        libloading::Symbol<'static, unsafe extern "C" fn() -> (SidebarInfo, Vec<gtk::Box>)>,
+    libloading::Symbol<'static, unsafe extern "C" fn() -> (SidebarInfo, Vec<gtk::Box>)>,
     pub frontend_tests: libloading::Symbol<'static, unsafe extern "C" fn() -> Vec<PluginTestFunc>>,
 }
 
@@ -318,6 +334,7 @@ impl FrontendPluginFunctions {
 }
 
 unsafe impl Send for FrontendPluginFunctions {}
+
 unsafe impl Sync for FrontendPluginFunctions {}
 
 pub struct CrossWrapper<'a>(&'a mut Crossroads);
@@ -350,4 +367,5 @@ impl<'a> CrossWrapper<'a> {
 }
 
 unsafe impl<'a> Send for CrossWrapper<'a> {}
+
 unsafe impl<'a> Sync for CrossWrapper<'a> {}

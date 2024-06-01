@@ -186,6 +186,10 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                 PluginImplementation::Backend => continue,
                 PluginImplementation::Frontend => (),
             }
+            let frontend_name: Result<
+                libloading::Symbol<unsafe extern "C" fn() -> String>,
+                libloading::Error,
+            > = lib.get(b"frontend_name");
             let startup_frontend: Result<
                 libloading::Symbol<unsafe extern "C" fn() -> ()>,
                 libloading::Error,
@@ -203,11 +207,13 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                 libloading::Error,
             > = lib.get(b"frontend_tests");
             if let (
+                Ok(frontend_name),
                 Ok(startup_frontend),
                 Ok(shutdown_frontend),
                 Ok(data_frontend),
                 Ok(tests_frontend),
             ) = (
+                frontend_name,
                 startup_frontend,
                 shutdown_frontend,
                 data_frontend,
@@ -215,6 +221,7 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
             ) {
                 plugins.push(FrontendPluginFunctions::new(
                     capabilities.get_capabilities(),
+                    frontend_name,
                     startup_frontend,
                     shutdown_frontend,
                     data_frontend,
@@ -278,6 +285,7 @@ unsafe impl Sync for BackendPluginFunctions {}
 #[allow(improper_ctypes_definitions)]
 pub struct FrontendPluginFunctions {
     pub capabilities: (Vec<&'static str>, bool),
+    pub frontend_name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
     pub frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
     pub frontend_data:
@@ -289,6 +297,7 @@ pub struct FrontendPluginFunctions {
 impl FrontendPluginFunctions {
     pub fn new(
         capabilities: (Vec<&'static str>, bool),
+        frontend_name: libloading::Symbol<'static, unsafe extern "C" fn() -> String>,
         frontend_startup: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_shutdown: libloading::Symbol<'static, unsafe extern "C" fn()>,
         frontend_data: libloading::Symbol<
@@ -299,6 +308,7 @@ impl FrontendPluginFunctions {
     ) -> Self {
         Self {
             capabilities,
+            frontend_name,
             frontend_startup,
             frontend_shutdown,
             frontend_data,

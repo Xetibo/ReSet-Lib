@@ -11,7 +11,7 @@ use libloading::Library;
 use once_cell::sync::Lazy;
 use toml::Value;
 
-use crate::{create_config, create_config_directory, ERROR, LOG};
+use crate::{create_config_directory, ERROR, LOG};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 

@@ -59,7 +59,8 @@ pub fn create_config(project_name: &str) -> Option<PathBuf> {
     let config_file = config_file.unwrap();
     // Hacky flatpak workaround
     let mut hacked_path = config_file.to_str().unwrap().to_string();
-    hacked_path.remove_matches("./var/app");
+    hacked_path.remove_matches("var/app/org.Xetibo.ReSet/config/ReSet.toml");
+    hacked_path.push_str("config/reset/ReSet.toml");
     Some(PathBuf::from(hacked_path))
 }
 

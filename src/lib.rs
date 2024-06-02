@@ -76,7 +76,7 @@ pub fn flatpak_fix(path_buf: PathBuf) -> Option<PathBuf> {
     let hacked_path = path_buf.to_str().unwrap().to_string();
     if hacked_path.contains("var/app") {
         Some(PathBuf::from(hacked_path.replace(
-            "var/app/org.Xetibo.ReSet/config/ReSet.toml",
+            "var/app/org.Xetibo.ReSet/config/reset/ReSet.toml",
             "config/reset/ReSet.toml",
         )))
     } else {

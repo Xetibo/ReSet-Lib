@@ -32,10 +32,10 @@ fn test_config_dir() {
 fn test_flatpak_fix() {
     use crate::flatpak_fix;
     use std::path::PathBuf;
-    let flatpak = "/home/something/.var/app/org.Xetibo.ReSet/config/reset";
+    let flatpak = "/home/something/.var/app/org.Xetibo.ReSet/config";
     assert_eq!(
         flatpak_fix(PathBuf::from(flatpak)).to_str().unwrap(),
-        "/home/something/.config/reset"
+        "/home/something/.config"
     );
 }
 

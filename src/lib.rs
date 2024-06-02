@@ -92,7 +92,7 @@ pub fn create_config(project_name: &str) -> Option<PathBuf> {
 pub fn flatpak_fix(path_buf: PathBuf) -> PathBuf {
     let hacked_path = path_buf.to_str().unwrap().to_string();
     if hacked_path.contains("var/app") {
-        PathBuf::from(hacked_path.replace("var/app/org.Xetibo.ReSet/config/reset", "config/reset"))
+        PathBuf::from(hacked_path.replace("var/app/org.Xetibo.ReSet/config", "config"))
     } else {
         path_buf
     }

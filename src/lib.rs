@@ -3,7 +3,13 @@
 #![feature(unsized_fn_params)]
 #![feature(unboxed_closures)]
 #![feature(fn_traits)]
-use std::{fmt, fs, iter::Peekable, path::PathBuf, slice::Iter};
+use std::{
+    fmt,
+    fs::{self, OpenOptions},
+    iter::Peekable,
+    path::PathBuf,
+    slice::Iter,
+};
 use utils::{
     flags::{Flag, Flags},
     variant::{Empty, TVariant},
@@ -34,53 +40,61 @@ impl fmt::Display for PathNotFoundError {
 
 pub fn create_config_directory(project_name: &str) -> Option<PathBuf> {
     let base_dir = xdg::BaseDirectories::new();
-    if base_dir.is_err() {
-        ERROR!("Could not get base directories", ErrorLevel::Critical);
+    if let Err(error) = base_dir {
+        ERROR!(
+            format!("Could not get base directories: {}", error),
+            ErrorLevel::Critical
+        );
         return None;
     }
-    let base_dir = base_dir.unwrap();
-    let config_dir = base_dir.create_config_directory(project_name);
-    if config_dir.is_err() {
-        ERROR!("Could not create config directory", ErrorLevel::Critical);
+    let base_dir = base_dir.unwrap().get_config_home();
+    let base_dir = flatpak_fix(base_dir);
+    let project_dir = base_dir.join(project_name);
+    let res = fs::create_dir_all(&project_dir);
+    if let Err(error) = res {
+        ERROR!(
+            format!("Could create project directory: {}", error),
+            ErrorLevel::Critical
+        );
         return None;
     }
-    Some(config_dir.unwrap())
+    Some(project_dir)
 }
 
 pub fn create_config(project_name: &str) -> Option<PathBuf> {
-    create_config_directory(project_name);
-    let base_dir = xdg::BaseDirectories::new();
-    if base_dir.is_err() {
-        ERROR!("Could not get base directories", ErrorLevel::Critical);
-        return None;
-    }
-    let base_dir = base_dir.unwrap();
-    let mut config_file = base_dir.find_config_file(format!("{}/ReSet.toml", project_name));
-    if config_file.is_none() {
-        let res = base_dir.place_config_file(format!("{}/ReSet.toml", project_name));
+    let config_dir = create_config_directory(project_name)?;
+    let config_file = config_dir.join("ReSet.toml");
+    dbg!(&config_file);
+    if !config_file.is_file() {
+        let res = OpenOptions::new()
+            .create_new(true)
+            .write(true)
+            .open(&config_file);
         if let Err(error) = res {
             ERROR!(
-                format!("Could not create config file: {}", error),
+                format!("Could not open config file: {}", error),
                 ErrorLevel::Critical
             );
             return None;
         }
-        config_file = Some(res.unwrap());
     }
-    let config_file = config_file.unwrap();
-    flatpak_fix(config_file)
+    if let Err(error) = config_file.metadata() {
+        ERROR!(
+            format!("Metadata of file is faulty: {}", error),
+            ErrorLevel::Critical
+        );
+        return None;
+    }
+    Some(config_file)
 }
 
 // Hacky flatpak workaround
-pub fn flatpak_fix(path_buf: PathBuf) -> Option<PathBuf> {
+pub fn flatpak_fix(path_buf: PathBuf) -> PathBuf {
     let hacked_path = path_buf.to_str().unwrap().to_string();
     if hacked_path.contains("var/app") {
-        Some(PathBuf::from(hacked_path.replace(
-            "var/app/org.Xetibo.ReSet/config/reset/ReSet.toml",
-            "config/reset/ReSet.toml",
-        )))
+        PathBuf::from(hacked_path.replace("var/app/org.Xetibo.ReSet/config/reset", "config/reset"))
     } else {
-        Some(path_buf)
+        path_buf
     }
 }
 

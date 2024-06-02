@@ -123,8 +123,11 @@ fn handle_config(flags: &mut Flags, file: Option<&String>) {
     }
     let path = file.unwrap();
     let data = fs::metadata(path);
-    if data.is_err() {
-        ERROR!("Provided path does not exist!", ErrorLevel::Critical);
+    if let Err(error) = data {
+        ERROR!(
+            format!("Provided path had errors: {}", error),
+            ErrorLevel::Critical
+        );
         return;
     }
     let data = data.unwrap();

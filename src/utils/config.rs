@@ -22,21 +22,27 @@ pub const CONFIG: Lazy<Table> = Lazy::new(parse_config);
 pub fn parse_config() -> Table {
     unsafe {
         let config_file = fs::File::open(CONFIG_STRING.as_str());
-        LOG!(format!("Config file: {}", CONFIG_STRING.as_str()));
-        if config_file.is_err() {
-            ERROR!("Could not write config file", ErrorLevel::Recoverable);
+        LOG!(format!(
+            "Using config file path: {}",
+            CONFIG_STRING.as_str()
+        ));
+        if let Err(error) = config_file {
+            ERROR!(
+                format!("Could not write config file: {}", error),
+                ErrorLevel::Recoverable
+            );
             return Table::new();
         }
         let mut config_string = String::from("");
-        let err = config_file
-            .unwrap()
-            .read_to_string(&mut config_string)
-            .is_err();
-        if err {
-            ERROR!("Could not read config file", ErrorLevel::Recoverable);
+        let err = config_file.unwrap().read_to_string(&mut config_string);
+        if let Err(error) = err {
+            ERROR!(
+                format!("Could not read config file: {}", error),
+                ErrorLevel::Recoverable
+            );
             return Table::new();
         }
-        LOG!(format!("Config file content: {}", config_string));
+        LOG!(format!("Config file content:\n {}", config_string));
         config_string.parse::<Table>().expect("Config has errors")
     }
 }

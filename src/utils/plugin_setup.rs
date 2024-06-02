@@ -274,8 +274,11 @@ fn get_plugin_capabilities(lib: &Library) -> Option<PluginCapabilities> {
             libloading::Symbol<unsafe extern "C" fn() -> PluginCapabilities>,
             libloading::Error,
         > = lib.get(b"capabilities");
-        if capabilities.is_err() {
-            ERROR!("Failed to load plugin", ErrorLevel::Critical);
+        if let Err(error) = capabilities {
+            ERROR!(
+                format!("Failed to load plugin: {}", error),
+                ErrorLevel::Critical
+            );
             return None;
         }
         Some((capabilities.unwrap())())

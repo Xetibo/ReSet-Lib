@@ -64,7 +64,6 @@ pub fn create_config_directory(project_name: &str) -> Option<PathBuf> {
 pub fn create_config(project_name: &str) -> Option<PathBuf> {
     let config_dir = create_config_directory(project_name)?;
     let config_file = config_dir.join("ReSet.toml");
-    dbg!(&config_file);
     if !config_file.is_file() {
         let res = OpenOptions::new()
             .create_new(true)

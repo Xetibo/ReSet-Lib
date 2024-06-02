@@ -16,7 +16,6 @@ fn test_config_dir() {
     assert!(config_file.is_some());
     let config_file = config_file.unwrap();
     let config_file = config_file.to_str().unwrap();
-    dbg!(&config_file);
     assert_eq!(
         config_file,
         xdg::BaseDirectories::new()

@@ -455,7 +455,6 @@ fn test_variant_clone() {
 #[test]
 fn test_conversion_tuple() {
     let mock = (25, "pingpang".to_string()).into_variant();
-    dbg!(&mock);
     assert_eq!(mock.kind, TypeId::of::<(i32, String)>());
     let converted_value = mock.to_value_cloned::<(i32, String)>();
     assert!(converted_value.is_ok());
@@ -468,7 +467,6 @@ fn test_conversion_tuple() {
 #[test]
 fn test_conversion_tuple_same_type() {
     let mock = (25, 25).into_variant();
-    dbg!(&mock);
     assert_eq!(mock.kind, TypeId::of::<(i32, i32)>());
     let converted_value = mock.to_value::<(i32, i32)>();
     assert!(converted_value.is_ok());

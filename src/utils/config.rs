@@ -16,8 +16,7 @@ pub static mut CONFIG_STRING: Lazy<String> = Lazy::new(|| {
         String::from("")
     }
 });
-#[allow(clippy::declare_interior_mutable_const)]
-pub const CONFIG: Lazy<Table> = Lazy::new(parse_config);
+pub static CONFIG: Lazy<Table> = Lazy::new(parse_config);
 
 pub fn parse_config() -> Table {
     unsafe {

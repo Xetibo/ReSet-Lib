@@ -57,8 +57,7 @@ static SETUP_LIBS: fn() = || {
     }
     LIBS_LOADING.store(true, std::sync::atomic::Ordering::SeqCst);
     let read_dir: fn(PathBuf) = |dir: PathBuf| {
-        let binding = CONFIG;
-        let plugins = binding.get("plugins");
+        let plugins = CONFIG.get("plugins");
         if plugins.is_none() {
             LOG!("No plugins entry found in config");
             return;
@@ -69,7 +68,13 @@ static SETUP_LIBS: fn() = || {
             return;
         }
         let plugins = plugins.unwrap();
-        let plugin_dir = dir.read_dir().expect("Could not read directory");
+        let plugin_dir = dir.read_dir();
+        if plugin_dir.is_err() {
+            // do not print error to ignore the usr/lib if not needed
+            dbg!("lib not exist brudi");
+            return;
+        }
+        let plugin_dir = plugin_dir.unwrap();
         plugin_dir.for_each(|plugin| {
             if let Ok(file) = plugin {
                 if !plugins.contains(&Value::String(String::from(
@@ -114,8 +119,10 @@ static SETUP_LIBS: fn() = || {
     unsafe {
         if PLUGIN_DIR.is_dir() {
             read_dir(PLUGIN_DIR.clone());
+            read_dir(PathBuf::from("/usr/lib/reset/"));
         } else if let Some(plugin_dir) = plugin_dir {
-            read_dir(plugin_dir)
+            read_dir(plugin_dir);
+            read_dir(PathBuf::from("/usr/lib/reset/"));
         }
     }
     LIBS_LOADED.store(true, std::sync::atomic::Ordering::SeqCst);

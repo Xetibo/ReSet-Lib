@@ -71,7 +71,6 @@ static SETUP_LIBS: fn() = || {
         let plugin_dir = dir.read_dir();
         if plugin_dir.is_err() {
             // do not print error to ignore the usr/lib if not needed
-            dbg!("lib not exist brudi");
             return;
         }
         let plugin_dir = plugin_dir.unwrap();

@@ -25,18 +25,18 @@ pub fn parse_config() -> Table {
             "Using config file path: {}",
             CONFIG_STRING.as_str()
         ));
-        if let Err(error) = config_file {
+        if let Err(_errorr) = config_file {
             ERROR!(
-                format!("Could not write config file: {}", error),
+                format!("Could not write config file: {}", _errorr),
                 ErrorLevel::Recoverable
             );
             return Table::new();
         }
         let mut config_string = String::from("");
         let err = config_file.unwrap().read_to_string(&mut config_string);
-        if let Err(error) = err {
+        if let Err(_error) = err {
             ERROR!(
-                format!("Could not read config file: {}", error),
+                format!("Could not read config file: {}", _error),
                 ErrorLevel::Recoverable
             );
             return Table::new();

@@ -238,33 +238,33 @@ fn setup_frontend_plugins() -> Vec<FrontendPluginFunctions> {
                         tests_frontend,
                     ));
                 }
-                (Err(error), _, _, _, _) => {
+                (Err(_error), _, _, _, _) => {
                     ERROR!(
-                        format!("Failed to load plugin function: {}", error),
+                        format!("Failed to load plugin function: {}", _error),
                         ErrorLevel::PartialBreakage
                     );
                 }
-                (_, Err(error), _, _, _) => {
+                (_, Err(_error), _, _, _) => {
                     ERROR!(
-                        format!("Failed to load plugin function: {}", error),
+                        format!("Failed to load plugin function: {}", _error),
                         ErrorLevel::PartialBreakage
                     );
                 }
-                (_, _, Err(error), _, _) => {
+                (_, _, Err(_error), _, _) => {
                     ERROR!(
-                        format!("Failed to load plugin function: {}", error),
+                        format!("Failed to load plugin function: {}", _error),
                         ErrorLevel::PartialBreakage
                     );
                 }
-                (_, _, _, Err(error), _) => {
+                (_, _, _, Err(_error), _) => {
                     ERROR!(
-                        format!("Failed to load plugin function: {}", error),
+                        format!("Failed to load plugin function: {}", _error),
                         ErrorLevel::PartialBreakage
                     );
                 }
-                (_, _, _, _, Err(error)) => {
+                (_, _, _, _, Err(_error)) => {
                     ERROR!(
-                        format!("Failed to load plugin function: {}", error),
+                        format!("Failed to load plugin function: {}", _error),
                         ErrorLevel::PartialBreakage
                     );
                 }
@@ -280,9 +280,9 @@ fn get_plugin_capabilities(lib: &Library) -> Option<PluginCapabilities> {
             libloading::Symbol<unsafe extern "C" fn() -> PluginCapabilities>,
             libloading::Error,
         > = lib.get(b"capabilities");
-        if let Err(error) = capabilities {
+        if let Err(_error) = capabilities {
             ERROR!(
-                format!("Failed to load plugin: {}", error),
+                format!("Failed to load plugin: {}", _error),
                 ErrorLevel::Critical
             );
             return None;
@@ -387,7 +387,7 @@ impl<'a> CrossWrapper<'a> {
         data: T,
     ) {
         self.0.insert(
-            "/org/Xebito/ReSet/Plugins/".to_string() + &object_name.into(),
+            "/org/Xetibo/ReSet/Plugins/".to_string() + &object_name.into(),
             interfaces,
             data,
         );

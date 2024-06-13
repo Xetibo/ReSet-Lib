@@ -40,9 +40,9 @@ impl fmt::Display for PathNotFoundError {
 
 pub fn create_config_directory(project_name: &str) -> Option<PathBuf> {
     let base_dir = xdg::BaseDirectories::new();
-    if let Err(error) = base_dir {
+    if let Err(_error) = base_dir {
         ERROR!(
-            format!("Could not get base directories: {}", error),
+            format!("Could not get base directories: {}", _error),
             ErrorLevel::Critical
         );
         return None;
@@ -51,9 +51,9 @@ pub fn create_config_directory(project_name: &str) -> Option<PathBuf> {
     let base_dir = flatpak_fix(base_dir);
     let project_dir = base_dir.join(project_name);
     let res = fs::create_dir_all(&project_dir);
-    if let Err(error) = res {
+    if let Err(_error) = res {
         ERROR!(
-            format!("Could create project directory: {}", error),
+            format!("Could create project directory: {}", _error),
             ErrorLevel::Critical
         );
         return None;
@@ -69,17 +69,17 @@ pub fn create_config(project_name: &str) -> Option<PathBuf> {
             .create_new(true)
             .write(true)
             .open(&config_file);
-        if let Err(error) = res {
+        if let Err(_error) = res {
             ERROR!(
-                format!("Could not open config file: {}", error),
+                format!("Could not open config file: {}", _error),
                 ErrorLevel::Critical
             );
             return None;
         }
     }
-    if let Err(error) = config_file.metadata() {
+    if let Err(_error) = config_file.metadata() {
         ERROR!(
-            format!("Metadata of file is faulty: {}", error),
+            format!("Metadata of file is faulty: {}", _error),
             ErrorLevel::Critical
         );
         return None;
@@ -123,9 +123,9 @@ fn handle_config(flags: &mut Flags, file: Option<&String>) {
     }
     let path = file.unwrap();
     let data = fs::metadata(path);
-    if let Err(error) = data {
+    if let Err(_error) = data {
         ERROR!(
-            format!("Provided path had errors: {}", error),
+            format!("Provided path had errors: {}", _error),
             ErrorLevel::Critical
         );
         return;

@@ -3,7 +3,7 @@ use std::{
     hint::spin_loop,
     io::ErrorKind,
     path::PathBuf,
-    sync::{atomic::AtomicBool, Arc, RwLock},
+    sync::{Arc, LazyLock, RwLock, atomic::AtomicBool},
 };
 
 use dbus_crossroads::{Crossroads, IfaceToken};
@@ -11,7 +11,7 @@ use libloading::Library;
 use once_cell::sync::Lazy;
 use toml::Value;
 
-use crate::{create_config_directory, ERROR, LOG};
+use crate::{ERROR, LOG, create_config_directory};
 #[cfg(debug_assertions)]
 use crate::{utils::macros::ErrorLevel, write_log_to_file};
 
@@ -22,16 +22,16 @@ use super::{
 
 pub static LIBS_LOADED: AtomicBool = AtomicBool::new(false);
 pub static LIBS_LOADING: AtomicBool = AtomicBool::new(false);
-pub static mut FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
+pub static FRONTEND_PLUGINS: Lazy<Vec<FrontendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
     setup_frontend_plugins()
 });
-pub static mut BACKEND_PLUGINS: Lazy<Vec<BackendPluginFunctions>> = Lazy::new(|| {
+pub static BACKEND_PLUGINS: Lazy<Vec<BackendPluginFunctions>> = Lazy::new(|| {
     SETUP_LIBS();
     setup_backend_plugins()
 });
-static mut LIBS: Vec<libloading::Library> = Vec::new();
-pub static mut PLUGIN_DIR: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(""));
+static LIBS: LazyLock<Vec<libloading::Library>> = LazyLock::new(SETUP_LIBS);
+pub static PLUGIN_DIR: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(""));
 
 static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
     let config = create_config_directory("reset").expect("Could not create config directory");
@@ -48,15 +48,19 @@ static SETUP_PLUGIN_DIR: fn() -> Option<PathBuf> = || -> Option<PathBuf> {
     }
 };
 
-static SETUP_LIBS: fn() = || {
+static SETUP_LIBS: fn() -> Vec<libloading::Library> = || -> Vec<libloading::Library> {
+    let mut libs = Vec::new();
     if LIBS_LOADING.load(std::sync::atomic::Ordering::SeqCst) {
         while !LIBS_LOADED.load(std::sync::atomic::Ordering::SeqCst) {
             spin_loop();
         }
-        return;
+        return Vec::new();
     }
     LIBS_LOADING.store(true, std::sync::atomic::Ordering::SeqCst);
-    let read_dir: fn(PathBuf) = |dir: PathBuf| {
+    let read_dir: fn(PathBuf, &mut Vec<libloading::Library>) = |dir: PathBuf,
+                                                                libs: &mut Vec<
+        libloading::Library,
+    >| {
         let plugins = CONFIG.get("plugins");
         if plugins.is_none() {
             LOG!("No plugins entry found in config");
@@ -64,7 +68,10 @@ static SETUP_LIBS: fn() = || {
         }
         let plugins = plugins.unwrap().as_array();
         if plugins.is_none() {
-            ERROR!("Wrong config, please write plugins entry as array of strings: e.g [\"libyourplugin.so\"]", ErrorLevel::PartialBreakage);
+            ERROR!(
+                "Wrong config, please write plugins entry as array of strings: e.g [\"libyourplugin.so\"]",
+                ErrorLevel::PartialBreakage
+            );
             return;
         }
         let plugins = plugins.unwrap();
@@ -85,7 +92,7 @@ static SETUP_LIBS: fn() = || {
                     let path = file.path();
                     let lib = libloading::Library::new(&path);
                     if let Ok(lib) = lib {
-                        LIBS.push(lib);
+                        libs.push(lib);
                     } else {
                         ERROR!(
                             format!(
@@ -101,30 +108,29 @@ static SETUP_LIBS: fn() = || {
     };
     #[allow(clippy::borrow_interior_mutable_const)]
     let plugin_dir = if let Some(config) = CONFIG.get("plugin_path") {
-        let config = config.as_str();
-        if config.is_none() {
-            SETUP_PLUGIN_DIR()
-        } else {
-            let maybe_dir = PathBuf::from(config.unwrap());
+        let config_opt = config.as_str();
+        if let Some(config) = config_opt {
+            let maybe_dir = PathBuf::from(config);
             if maybe_dir.is_dir() {
                 Some(maybe_dir)
             } else {
                 SETUP_PLUGIN_DIR()
             }
+        } else {
+            SETUP_PLUGIN_DIR()
         }
     } else {
         SETUP_PLUGIN_DIR()
     };
-    unsafe {
-        if PLUGIN_DIR.is_dir() {
-            read_dir(PLUGIN_DIR.clone());
-            read_dir(PathBuf::from("/usr/lib/reset/"));
-        } else if let Some(plugin_dir) = plugin_dir {
-            read_dir(plugin_dir);
-            read_dir(PathBuf::from("/usr/lib/reset/"));
-        }
+    if PLUGIN_DIR.is_dir() {
+        read_dir(PLUGIN_DIR.clone(), &mut libs);
+        read_dir(PathBuf::from("/usr/lib/reset/"), &mut libs);
+    } else if let Some(plugin_dir) = plugin_dir {
+        read_dir(plugin_dir, &mut libs);
+        read_dir(PathBuf::from("/usr/lib/reset/"), &mut libs);
     }
     LIBS_LOADED.store(true, std::sync::atomic::Ordering::SeqCst);
+    libs
 };
 
 fn setup_backend_plugins() -> Vec<BackendPluginFunctions> {

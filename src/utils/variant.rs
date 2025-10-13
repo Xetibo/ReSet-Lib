@@ -373,9 +373,9 @@ impl Variant {
         unsafe { Ok(self.to_value_unchecked::<T>()) }
     }
 
-    unsafe fn to_value_unchecked<T>(&self) -> &T {
+    unsafe fn to_value_unchecked<T>(&self) -> &T { unsafe {
         &*(self.value.deref() as *const dyn Any as *mut T)
-    }
+    }}
 }
 
 #[derive(Debug)]

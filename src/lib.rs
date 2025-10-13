@@ -1,6 +1,4 @@
-#![feature(trait_upcasting)]
 #![feature(string_remove_matches)]
-#![feature(unsized_fn_params)]
 #![feature(unboxed_closures)]
 #![feature(fn_traits)]
 use std::{
@@ -40,14 +38,14 @@ impl fmt::Display for PathNotFoundError {
 
 pub fn create_config_directory(project_name: &str) -> Option<PathBuf> {
     let base_dir = xdg::BaseDirectories::new();
-    if let Err(_error) = base_dir {
+    if base_dir.config_home.is_none() {
         ERROR!(
-            format!("Could not get base directories: {}", _error),
+            format!("Could not get base directories"),
             ErrorLevel::Critical
         );
         return None;
     }
-    let base_dir = base_dir.unwrap().get_config_home();
+    let base_dir = base_dir.config_home.unwrap();
     let base_dir = flatpak_fix(base_dir);
     let project_dir = base_dir.join(project_name);
     let res = fs::create_dir_all(&project_dir);

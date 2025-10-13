@@ -1,7 +1,10 @@
+pub mod any;
 pub mod config;
 pub mod dbus_utils;
+pub mod error;
 pub mod flags;
 pub mod gtk;
+pub mod iced_sidebar;
 pub mod macros;
 pub mod plugin;
 pub mod plugin_setup;

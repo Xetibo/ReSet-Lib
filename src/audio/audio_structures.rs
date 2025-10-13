@@ -5,6 +5,7 @@ use dbus::{
 use pulse::context::introspect::{
     CardInfo, CardProfileInfo, SinkInfo, SinkInputInfo, SourceInfo, SourceOutputInfo,
 };
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use crate::network::connection::Enum;
 
@@ -113,7 +114,8 @@ impl Enum for DeviceState {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, DeserializeDict, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
 pub struct Source {
     pub index: u32,
     pub name: String,
@@ -227,7 +229,8 @@ impl TAudioObject for Source {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, DeserializeDict, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
 pub struct Sink {
     pub index: u32,
     pub name: String,
@@ -341,7 +344,8 @@ impl TAudioObject for Sink {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, DeserializeDict, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
 pub struct InputStream {
     pub index: u32,
     pub name: String,
@@ -459,7 +463,8 @@ impl TAudioStreamObject for InputStream {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, DeserializeDict, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
 pub struct OutputStream {
     pub index: u32,
     pub name: String,
@@ -577,7 +582,8 @@ impl TAudioStreamObject for OutputStream {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, DeserializeDict, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
 pub struct Card {
     pub index: u32,
     pub name: String,
@@ -642,7 +648,8 @@ impl From<&CardInfo<'_>> for Card {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, DeserializeDict, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
 pub struct CardProfile {
     pub name: String,
     pub description: String,

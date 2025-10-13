@@ -4,7 +4,7 @@ use serial_test::serial;
 #[cfg(test)]
 use crate::utils::plugin::plugin_tests;
 #[cfg(test)]
-use crate::{utils::macros::ErrorLevel, write_log_to_file, ERROR, LOG};
+use crate::{ERROR, LOG, utils::macros::ErrorLevel, write_log_to_file};
 #[cfg(test)]
 use crate::{utils::plugin::PluginTestError, utils::plugin::PluginTestFunc};
 
@@ -19,8 +19,8 @@ fn test_config_dir() {
     assert_eq!(
         config_file,
         xdg::BaseDirectories::new()
-            .unwrap()
             .get_config_home()
+            .unwrap()
             .join("globiTM/ReSet.toml")
             .to_str()
             .unwrap()
